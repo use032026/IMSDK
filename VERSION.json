@@ -1,0 +1,9 @@
+{
+  "platform": "android",
+  "version": "0.1.0",
+  "branch": "android/v0.1.0",
+  "releaseTag": "android-v0.1.0",
+  "download": "https://github.com/use032026/IMSDK/releases/download/android-v0.1.0/IMSDK-Android-0.1.0.zip",
+  "sourceSnapshot": "source-before.zip at mobile 0.1.0",
+  "sourceRestoration": "Historical archived source only; no current runtime files were backfilled. Podspec version metadata aligned to this version."
+}

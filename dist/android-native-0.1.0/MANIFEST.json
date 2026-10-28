@@ -1,0 +1,31 @@
+{
+  "product": "IM SDK Android",
+  "sdkVersion": "0.1.0",
+  "documentationRevision": "2026-10-28",
+  "deliveryKind": "binary-sdk-with-native-host-source",
+  "binaryTreeSha256": "e380eda6cf15c8eb7017d1b9d2068540c2ffabb3419061b6e798989410dd51ad",
+  "preconfiguredAccountsOrServiceEnvironment": false,
+  "validation": {
+    "status": "passed",
+    "independentJavaHostAssembleDebug": "passed",
+    "javaSnippetCompilation": "passed",
+    "kotlinSnippetCompilation": "passed",
+    "javaTarget": 17,
+    "jdk": "JetBrains Runtime 21.0.10",
+    "kotlinCompiler": "2.1.0",
+    "gradle": "8.14",
+    "androidGradlePlugin": "8.11.1",
+    "compileSdk": 36,
+    "minSdk": 24,
+    "newHostRuntimeValidation": "not_performed_for_packaging"
+  },
+  "historicalBusinessValidation": {
+    "date": "2026-10-27",
+    "environment": "Android API 35 arm64 emulator; Debug native host consuming Release SDK",
+    "personalPasswordLoginConversationListDirectAndGroupTextRoundTrips": "passed",
+    "physicalDeviceAndProductionPush": "not_tested"
+  },
+  "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.0",
+  "sdkBinaryChangedByHandoff": false,
+  "publicTransitiveDependenciesRequired": true
+}
