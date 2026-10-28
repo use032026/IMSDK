@@ -1,0 +1,257 @@
+{
+  "product": "IM SDK iOS",
+  "sdkVersion": "0.1.1",
+  "documentationRevision": "2026-10-28",
+  "deliveryKind": "binary-sdk-with-native-host-source",
+  "binaryTreeSha256": "b8de5c25396cbe5c8153f2bf859234713c722796890f071b9f9d0cad003c9537",
+  "preconfiguredAccountsOrServiceEnvironment": false,
+  "validation": {
+    "status": "passed",
+    "sdkVersion": "0.1.1",
+    "validatedOn": "2026-10-28",
+    "flutterVersion": "3.41.9",
+    "modes": [
+      "Debug",
+      "Release"
+    ],
+    "frameworksPerMode": 35,
+    "staticFrameworksPerMode": 3,
+    "dynamicFrameworksPerMode": 32,
+    "binaryTreeSha256": "b8de5c25396cbe5c8153f2bf859234713c722796890f071b9f9d0cad003c9537",
+    "modeBinaryTreeSha256": {
+      "Debug": "434958791c2f829c07b4b91f0ffed8c30c05e695e2877abb4c8d8ff71d782341",
+      "Release": "a8ab11fce63637b84f0a1401a114250a664c3b09cb1b2579f28d54472da7361c"
+    },
+    "build": {
+      "completeFrameworkExports": true,
+      "nativeFacades": "passed",
+      "architectures": {
+        "Debug": {
+          "frameworkCount": 35,
+          "slices": [
+            {
+              "platform": "ios",
+              "variant": "simulator",
+              "architectures": [
+                "arm64",
+                "x86_64"
+              ],
+              "facadeVersion": "0.1.1"
+            },
+            {
+              "platform": "ios",
+              "variant": "device",
+              "architectures": [
+                "arm64"
+              ],
+              "facadeVersion": "0.1.1"
+            }
+          ]
+        },
+        "Release": {
+          "frameworkCount": 35,
+          "slices": [
+            {
+              "platform": "ios",
+              "variant": "device",
+              "architectures": [
+                "arm64"
+              ],
+              "facadeVersion": "0.1.1"
+            },
+            {
+              "platform": "ios",
+              "variant": "simulator",
+              "architectures": [
+                "arm64",
+                "x86_64"
+              ],
+              "facadeVersion": "0.1.1"
+            }
+          ]
+        }
+      }
+    },
+    "consumer": {
+      "swiftAndObjectiveCActualHandoffCombinations": [
+        {
+          "mode": "Debug",
+          "platform": "device",
+          "arch": "arm64",
+          "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+        },
+        {
+          "mode": "Debug",
+          "platform": "simulator",
+          "arch": "arm64",
+          "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+        },
+        {
+          "mode": "Debug",
+          "platform": "simulator",
+          "arch": "x86_64",
+          "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+        },
+        {
+          "mode": "Release",
+          "platform": "device",
+          "arch": "arm64",
+          "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+        },
+        {
+          "mode": "Release",
+          "platform": "simulator",
+          "arch": "arm64",
+          "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+        },
+        {
+          "mode": "Release",
+          "platform": "simulator",
+          "arch": "x86_64",
+          "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+        }
+      ],
+      "releaseSwiftLinkObjectiveCCompile": [
+        {
+          "platform": "device",
+          "arch": "arm64",
+          "swiftLink": "passed",
+          "objectiveCCompile": "passed"
+        },
+        {
+          "platform": "simulator",
+          "arch": "arm64",
+          "swiftLink": "passed",
+          "objectiveCCompile": "passed"
+        },
+        {
+          "platform": "simulator",
+          "arch": "x86_64",
+          "swiftLink": "passed",
+          "objectiveCCompile": "passed"
+        }
+      ],
+      "standaloneUIKitDebugSimulatorBuild": "passed",
+      "standaloneUIKitReleaseUnsignedDeviceBuild": "passed"
+    },
+    "runtime": {
+      "status": "passed",
+      "mode": "Debug",
+      "platform": "iOS 26.5 simulator",
+      "host": "task-local pure UIKit binary-only consumer",
+      "sourceSdkCompiledByHost": false,
+      "configurationCompiled": false,
+      "steps": [
+        "loginEntryWithRegistration",
+        "passwordLoginConversationList",
+        "existingDirectReplyVisible",
+        "existingGroupReplyVisible",
+        "logoutDisposeCompleted"
+      ],
+      "privateConfigurationConsumedOrRemoved": true,
+      "privateTestEnvironmentRemoved": true,
+      "logoutDisposeErrorsDetected": false,
+      "newRegistrationOrMessageSent": false,
+      "physicalDeviceTested": false
+    },
+    "releaseRuntimeBusinessValidation": "not_tested_on_physical_device",
+    "limitations": [
+      "Release device build is unsigned compile/link validation only",
+      "physical-device/media/push/VoiceOver/performance not tested",
+      "full registration/friend/message roundtrip was verified separately in shared source runtime"
+    ],
+    "evidence": [
+      {
+        "report": "ios-debug-framework-build.log",
+        "sha256": "2ccb4179feafdd1941c1f62a748e61964f54d94e11b9dd51a2ffa84d4c14d85f"
+      },
+      {
+        "report": "ios-debug-facade-build.log",
+        "sha256": "7e1a9b220adf52abd5fd9b5ab4ac55497ca93cfed883d863ae31e840ccc268f7"
+      },
+      {
+        "report": "ios-release-framework-build.log",
+        "sha256": "ba3c7ea5193a15b533237667f948c0be8b4958db5dd38ffacab82fe1ca72300d"
+      },
+      {
+        "report": "ios-release-facade-build.log",
+        "sha256": "98e05b1aa26aaa1709bf58fcd2961d83961a26a71e4f18ce81d0ce508daa73d5"
+      },
+      {
+        "report": "ios-build-validation.json",
+        "sha256": "b5e1f414c1c4375f2d2897ca650ddad24cc01b08660efc3ee4722a83e3584935"
+      },
+      {
+        "report": "ios-consumer-validation.json",
+        "sha256": "d18387581ed103a81ba0f19077a3fbc32c1a8660b94720f118c278f07eb3ff26"
+      },
+      {
+        "report": "ios-snippet-validation.json",
+        "sha256": "12894571571bb2bdf7f37a62b8272ccef2788b1ba8afdc7ecd00057b51a62c7b"
+      },
+      {
+        "report": "ios-runtime-report.json",
+        "sha256": "812bf9e948306cf2c275b3500d75c233ae5bf17b5b123de34b32524fd4cf5108"
+      }
+    ]
+  },
+  "realServiceValidation": {
+    "passed": true,
+    "realBackend": true,
+    "mockedResponses": false,
+    "businessFlowPassed": true,
+    "checks": {
+      "registration": true,
+      "login": true,
+      "friendRequestAccepted": true,
+      "conversationList": true,
+      "directRoundTrip": true,
+      "groupCreateRoundTrip": true,
+      "singleActiveSpace": true,
+      "logoutDisposeClean": true
+    },
+    "verificationCodeRequiredByService": false,
+    "verificationMessagesSent": 0,
+    "testOnlyDedicatedAccounts": true,
+    "actualNewAccountSpaceKind": "personal",
+    "actualEnterpriseAssignment": "not_observed; contract_regression_only",
+    "mobileSurface": "current Flutter SDK in dedicated iOS26.5 simulator; separate final lifecycle acceptance",
+    "webSurface": "actual Chrome browser UI with independent peer persistence readbacks",
+    "mobileSdkRegressionTests": 92,
+    "bugsFixedDuringValidation": [
+      "cold_start_persisted_activation_replacement",
+      "logout_cleanup_drain_before_sdk_disposal",
+      "settings_async_completion_after_disposal"
+    ],
+    "evidence": [
+      {
+        "report": "unification-live-20261028-6576f4b0-r2-mobile.json",
+        "sha256": "8c647b0c36685f50c5277dc4e464053d2c300c2d641a1fe1f87200bf9d09dfe6"
+      },
+      {
+        "report": "unification-live-20261028-6576f4b0-r2-mobile-lifecycle.json",
+        "sha256": "0e787100f49c815273c666fa731c9c54f9041d3be28966f721ace9d205e74119"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/evidence-chain.json",
+        "sha256": "df16a03a5a060e21245f58ff794fab563e920b5a83330d1e99aeced1ecae73ce"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/peer-report.json",
+        "sha256": "7ca64ca32b5bc761e22fec407c8f7bc5ef1fda94ec3e7b43df9dc605d3ca8bbd"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/roundtrip-report.json",
+        "sha256": "1d8b3ad17046bf04304a0d987de415f6876fe2309fa07ddc2df34a2a5dad2949"
+      }
+    ]
+  },
+  "registrationSpacePolicy": "no chooser; personal default; use actual authenticated enterprise response; one active space",
+  "frameworksPerMode": 35,
+  "modes": [
+    "Debug",
+    "Release"
+  ],
+  "releaseRebuiltOn": "2026-10-28",
+  "releaseRuntimeBusinessValidation": "not_tested_on_physical_device"
+}

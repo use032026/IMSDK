@@ -1,0 +1,1948 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/permissions/app_permissions.dart';
+import 'package:im_sdk/core/space/account_scope.dart';
+import 'package:im_sdk/core/storage/account_profile_box_provider.dart';
+import 'package:im_sdk/core/widgets/app_alert_dialog.dart';
+import 'package:im_sdk/core/widgets/app_toast.dart';
+import 'package:im_sdk/core/widgets/user_avatar.dart';
+import 'package:im_sdk/features/chat/data/mappers/group_member_payload_mapper.dart';
+import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
+import 'package:im_sdk/features/chat/presentation/controllers/conversation_actions_controller.dart';
+import 'package:im_sdk/features/chat/presentation/pages/group_remark_page.dart';
+import 'package:im_sdk/features/chat/presentation/providers/conversations_provider.dart';
+import 'package:im_sdk/features/chat/presentation/providers/group_member_nickname_preference_provider.dart';
+import 'package:im_sdk/features/contacts/presentation/providers/contacts_provider.dart';
+import 'package:im_sdk/features/contacts/domain/entities/contact.dart';
+import 'package:im_sdk/features/contacts/domain/services/profile_public_id_visibility.dart';
+import 'package:im_sdk/features/auth/presentation/providers/auth_provider.dart';
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+/// 群角色：严格对应 figma GroupSettingsPage 的三种角色
+/// superAdmin = 群主(owner)，admin = 管理员，member = 普通成员
+enum GroupRole { superAdmin, admin, member }
+
+const double _groupSettingsSideInset = 8;
+
+@visibleForTesting
+class GroupMemberGridMetrics {
+  final double cellWidth;
+  final double avatarSize;
+
+  const GroupMemberGridMetrics({
+    required this.cellWidth,
+    required this.avatarSize,
+  });
+}
+
+@visibleForTesting
+GroupMemberGridMetrics calculateGroupMemberGridMetrics(double availableWidth) {
+  const columnCount = 6;
+  final cellWidth = availableWidth / columnCount;
+  return GroupMemberGridMetrics(
+    cellWidth: cellWidth,
+    avatarSize: (cellWidth - 8).clamp(40.0, 46.0),
+  );
+}
+
+@visibleForTesting
+bool shouldShowGroupDetailSyncError({
+  required bool detailUnavailable,
+  required bool showDetailSyncError,
+}) {
+  return detailUnavailable && showDetailSyncError;
+}
+
+class GroupMember {
+  final String userId;
+  final String displayName;
+  final String? avatarUrl;
+  final GroupRole role;
+  final bool? isMuted;
+  final String? muteUntil;
+  final String? muteReason;
+
+  const GroupMember({
+    required this.userId,
+    required this.displayName,
+    this.avatarUrl,
+    required this.role,
+    this.isMuted,
+    this.muteUntil,
+    this.muteReason,
+  });
+
+  GroupMember copyWith({
+    String? userId,
+    String? displayName,
+    String? avatarUrl,
+    GroupRole? role,
+    bool? isMuted,
+    String? muteUntil,
+    String? muteReason,
+    bool clearMuteUntil = false,
+    bool clearMuteReason = false,
+  }) {
+    return GroupMember(
+      userId: userId ?? this.userId,
+      displayName: displayName ?? this.displayName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      role: role ?? this.role,
+      isMuted: isMuted ?? this.isMuted,
+      muteUntil: clearMuteUntil ? null : (muteUntil ?? this.muteUntil),
+      muteReason: clearMuteReason ? null : (muteReason ?? this.muteReason),
+    );
+  }
+}
+
+class GroupDetail {
+  final String groupId;
+  final String title;
+  final String? avatarUrl;
+  final bool muteMode;
+  final bool preventAddFriend;
+  final bool onlyOwnerViewMembers;
+  final bool allowQrCodeJoin;
+  final bool requireApproval;
+  final bool allowMemberAddFriend;
+  final bool allowMemberModifyTitle;
+  final bool allowMemberInvite;
+  final bool allowMemberAtAll;
+  final int memberCount;
+  final String? ownerUserId;
+  final GroupRole myRole;
+  final bool isPinned;
+  final bool isMuted;
+
+  const GroupDetail({
+    required this.groupId,
+    required this.title,
+    this.avatarUrl,
+    required this.muteMode,
+    required this.preventAddFriend,
+    required this.onlyOwnerViewMembers,
+    this.allowQrCodeJoin = true,
+    this.requireApproval = false,
+    this.allowMemberAddFriend = true,
+    this.allowMemberModifyTitle = false,
+    this.allowMemberInvite = true,
+    this.allowMemberAtAll = false,
+    required this.memberCount,
+    this.ownerUserId,
+    required this.myRole,
+    this.isPinned = false,
+    this.isMuted = false,
+  });
+
+  factory GroupDetail.fromJson(
+      Map<String, dynamic> json, String currentUserId) {
+    final settings = json['settings'] as Map<String, dynamic>? ?? {};
+    final myRoleStr = json['myRole'] as String? ?? 'member';
+    final ownerUserId = json['ownerUserId'] as String?;
+
+    GroupRole myRole;
+    if (myRoleStr == 'owner' || currentUserId == ownerUserId) {
+      myRole = GroupRole.superAdmin;
+    } else if (myRoleStr == 'admin') {
+      myRole = GroupRole.admin;
+    } else {
+      myRole = GroupRole.member;
+    }
+
+    return GroupDetail(
+      groupId: json['groupId'] as String? ?? '',
+      title: json['title'] as String? ?? '群聊',
+      avatarUrl: json['avatarUrl'] as String?,
+      muteMode: _isAllMuted(json['muteMode']),
+      // #2 修复：allowMemberAddFriend 控制禁止添加好友（false=禁止）
+      preventAddFriend: !(settings['allowMemberAddFriend'] as bool? ?? true),
+      // allowMemberViewMemberList=false 时仅限制普通成员，群主和管理员仍可查看。
+      onlyOwnerViewMembers:
+          !(settings['allowMemberViewMemberList'] as bool? ?? true),
+      allowQrCodeJoin: settings['allowQrCodeJoin'] as bool? ?? true,
+      requireApproval: settings['requireApproval'] as bool? ?? false,
+      allowMemberAddFriend: settings['allowMemberAddFriend'] as bool? ?? true,
+      allowMemberModifyTitle:
+          settings['allowMemberModifyTitle'] as bool? ?? false,
+      allowMemberInvite: settings['allowMemberInvite'] as bool? ?? true,
+      allowMemberAtAll: settings['allowMemberAtAll'] as bool? ?? false,
+      memberCount: json['memberCount'] as int? ?? 0,
+      ownerUserId: ownerUserId,
+      myRole: myRole,
+      isPinned: json['isPinned'] as bool? ?? false,
+      isMuted: json['isMuted'] as bool? ?? false,
+    );
+  }
+
+  factory GroupDetail.fromConversationSnapshot(
+    Conversation conversation, {
+    required String currentUserId,
+    String? fallbackTitle,
+    String? fallbackAvatarUrl,
+    int? fallbackMemberCount,
+  }) {
+    final ownerUserId = conversation.ownerUserId;
+    final title = (fallbackTitle?.trim().isNotEmpty == true
+            ? fallbackTitle!.trim()
+            : conversation.title.trim())
+        .trim();
+    return GroupDetail(
+      groupId: conversation.conversationId,
+      title: title.isNotEmpty ? title : '群聊',
+      avatarUrl: fallbackAvatarUrl ?? conversation.avatarUrl,
+      muteMode: false,
+      preventAddFriend: false,
+      onlyOwnerViewMembers: false,
+      allowQrCodeJoin: false,
+      requireApproval: false,
+      allowMemberAddFriend: true,
+      allowMemberModifyTitle: false,
+      allowMemberInvite: false,
+      allowMemberAtAll: false,
+      memberCount: fallbackMemberCount ?? conversation.memberCount ?? 0,
+      ownerUserId: ownerUserId,
+      myRole: ownerUserId != null &&
+              ownerUserId.isNotEmpty &&
+              ownerUserId == currentUserId
+          ? GroupRole.superAdmin
+          : GroupRole.member,
+      isPinned: conversation.isPinned,
+      isMuted: conversation.isMuted,
+    );
+  }
+
+  static bool _isAllMuted(Object? value) {
+    return value == 1 || value == true || value == '1' || value == 'all_muted';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Providers
+// ---------------------------------------------------------------------------
+
+// 群详情用 StateNotifierProvider，支持乐观更新，避免 invalidate 触发全页重建
+// keepAlive = true：provider 在内存中保持，重复打开同一群设置页不重复请求
+class _GroupDetailNotifier extends StateNotifier<AsyncValue<GroupDetail>> {
+  final String groupId;
+  final Ref ref;
+  final AccountScope? accountScope;
+  DateTime? _lastLoadTime;
+  int _requestRevision = 0;
+
+  _GroupDetailNotifier(this.groupId, this.ref, this.accountScope)
+      : super(const AsyncValue.loading()) {
+    if (accountScope != null) _load();
+  }
+
+  Future<void> _load() async {
+    // 如果已有数据且距上次加载不超过 5 分钟，直接用缓存
+    if (state.hasValue &&
+        _lastLoadTime != null &&
+        DateTime.now().difference(_lastLoadTime!) <
+            const Duration(minutes: 5)) {
+      return;
+    }
+    final requestRevision = ++_requestRevision;
+    state = const AsyncLoading<GroupDetail>().copyWithPrevious(state);
+    try {
+      final space = ref.read(currentSpaceProvider);
+      final requestScope = accountScope;
+      if (requestScope == null || space == null || space.accessToken.isEmpty) {
+        return;
+      }
+      final dio = ref.read(dioProvider);
+      final resp = await dio.get('/api/client/v1/groups/$groupId');
+      final detail = GroupDetail.fromJson(
+          resp.data['data'] as Map<String, dynamic>, space.userId);
+      if (!mounted ||
+          requestRevision != _requestRevision ||
+          !_isCurrent(requestScope)) {
+        return;
+      }
+      state = AsyncValue.data(detail);
+      _lastLoadTime = DateTime.now();
+    } catch (e, st) {
+      if (!mounted ||
+          requestRevision != _requestRevision ||
+          accountScope == null ||
+          !_isCurrent(accountScope!)) {
+        return;
+      }
+      state = AsyncError<GroupDetail>(e, st).copyWithPrevious(state);
+    }
+  }
+
+  bool _isCurrent(AccountScope expected) =>
+      ref.read(accountScopeProvider) == expected;
+
+  /// 乐观更新群名，不触发全页重建
+  void updateTitle(String newTitle) {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncValue.data(GroupDetail(
+      groupId: current.groupId,
+      title: newTitle,
+      avatarUrl: current.avatarUrl,
+      muteMode: current.muteMode,
+      preventAddFriend: current.preventAddFriend,
+      onlyOwnerViewMembers: current.onlyOwnerViewMembers,
+      allowQrCodeJoin: current.allowQrCodeJoin,
+      requireApproval: current.requireApproval,
+      allowMemberAddFriend: current.allowMemberAddFriend,
+      allowMemberModifyTitle: current.allowMemberModifyTitle,
+      allowMemberInvite: current.allowMemberInvite,
+      allowMemberAtAll: current.allowMemberAtAll,
+      memberCount: current.memberCount,
+      ownerUserId: current.ownerUserId,
+      myRole: current.myRole,
+      isPinned: current.isPinned,
+      isMuted: current.isMuted,
+    ));
+  }
+
+  /// 乐观更新群设置字段（不重新请求）
+  void updateSettings({
+    bool? muteMode,
+    bool? preventAddFriend,
+    bool? onlyOwnerViewMembers,
+    bool? allowQrCodeJoin,
+    bool? requireApproval,
+    bool? allowMemberAddFriend,
+    bool? allowMemberModifyTitle,
+    bool? allowMemberInvite,
+    bool? allowMemberAtAll,
+  }) {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncValue.data(GroupDetail(
+      groupId: current.groupId,
+      title: current.title,
+      avatarUrl: current.avatarUrl,
+      muteMode: muteMode ?? current.muteMode,
+      preventAddFriend: preventAddFriend ?? current.preventAddFriend,
+      onlyOwnerViewMembers:
+          onlyOwnerViewMembers ?? current.onlyOwnerViewMembers,
+      allowQrCodeJoin: allowQrCodeJoin ?? current.allowQrCodeJoin,
+      requireApproval: requireApproval ?? current.requireApproval,
+      allowMemberAddFriend:
+          allowMemberAddFriend ?? current.allowMemberAddFriend,
+      allowMemberModifyTitle:
+          allowMemberModifyTitle ?? current.allowMemberModifyTitle,
+      allowMemberInvite: allowMemberInvite ?? current.allowMemberInvite,
+      allowMemberAtAll: allowMemberAtAll ?? current.allowMemberAtAll,
+      memberCount: current.memberCount,
+      ownerUserId: current.ownerUserId,
+      myRole: current.myRole,
+      isPinned: current.isPinned,
+      isMuted: current.isMuted,
+    ));
+  }
+
+  /// 乐观更新当前用户的群个人设置（置顶/免打扰），不触发重新请求。
+  void updatePersonalSettings({
+    bool? isPinned,
+    bool? isMuted,
+  }) {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncValue.data(GroupDetail(
+      groupId: current.groupId,
+      title: current.title,
+      avatarUrl: current.avatarUrl,
+      muteMode: current.muteMode,
+      preventAddFriend: current.preventAddFriend,
+      onlyOwnerViewMembers: current.onlyOwnerViewMembers,
+      allowQrCodeJoin: current.allowQrCodeJoin,
+      requireApproval: current.requireApproval,
+      allowMemberAddFriend: current.allowMemberAddFriend,
+      allowMemberModifyTitle: current.allowMemberModifyTitle,
+      allowMemberInvite: current.allowMemberInvite,
+      allowMemberAtAll: current.allowMemberAtAll,
+      memberCount: current.memberCount,
+      ownerUserId: current.ownerUserId,
+      myRole: current.myRole,
+      isPinned: isPinned ?? current.isPinned,
+      isMuted: isMuted ?? current.isMuted,
+    ));
+  }
+
+  /// 强制从服务端刷新（忽略缓存）
+  Future<void> refresh() {
+    _lastLoadTime = null;
+    return _load();
+  }
+}
+
+final groupDetailProvider = StateNotifierProvider.family<_GroupDetailNotifier,
+    AsyncValue<GroupDetail>, String>(
+  (ref, groupId) {
+    final scope = ref.watch(accountScopeProvider);
+    return _GroupDetailNotifier(groupId, ref, scope);
+  },
+  dependencies: [dioProvider],
+);
+
+final groupMembersProvider = StateNotifierProvider.family<_GroupMembersNotifier,
+    AsyncValue<List<GroupMember>>, String>(
+  (ref, groupId) {
+    final scope = ref.watch(accountScopeProvider);
+    return _GroupMembersNotifier(groupId, ref, scope);
+  },
+  dependencies: [
+    dioProvider,
+    accountProfileBoxResolverProvider,
+    accountAuthCacheManagerProvider,
+    userAvatarPreviewProvider,
+  ],
+);
+
+class _GroupMembersNotifier
+    extends StateNotifier<AsyncValue<List<GroupMember>>> {
+  final String groupId;
+  final Ref ref;
+  final AccountScope? accountScope;
+  int _requestRevision = 0;
+
+  _GroupMembersNotifier(this.groupId, this.ref, this.accountScope)
+      : super(const AsyncValue.loading()) {
+    if (accountScope != null) _loadWithCache();
+  }
+
+  String get _cacheKey => accountScope!.group(groupId).memberCacheKey;
+  String get _legacyCacheKey => 'group_members_$groupId';
+
+  Future<void> _loadWithCache() async {
+    final space = ref.read(currentSpaceProvider);
+    if (accountScope == null || space == null || space.accessToken.isEmpty) {
+      return;
+    }
+
+    // 1. 先读本地缓存，立即显示
+    final cached = await _loadFromCache(space.spaceId);
+    if (cached != null && cached.isNotEmpty) {
+      await prefetchAvatarUrls(
+        cached.map((m) => m.avatarUrl).toList(),
+        cacheManager: ref.read(accountAuthCacheManagerProvider),
+      );
+      if (!mounted || !_isCurrent) return;
+      state = AsyncValue.data(cached);
+      // 2. 后台静默刷新
+      _syncFromRemote(space.spaceId);
+      return;
+    }
+
+    // 3. 无缓存：走网络
+    await _fetchAndCache(space.spaceId);
+  }
+
+  Future<List<GroupMember>?> _loadFromCache(String spaceId) async {
+    try {
+      final box = await ref.read(accountProfileBoxResolverProvider)(spaceId);
+      await box.delete(_legacyCacheKey);
+      final raw = box.get(_cacheKey);
+      if (raw == null) return null;
+      final list = jsonDecode(raw as String) as List<dynamic>;
+      return list
+          .map((e) => _memberFromMap(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _saveToCache(
+    String spaceId,
+    List<GroupMember> members, {
+    int? requestRevision,
+  }) async {
+    try {
+      final box = await ref.read(accountProfileBoxResolverProvider)(spaceId);
+      if (requestRevision != null && !_canCommit(requestRevision)) return;
+      await box.put(
+          _cacheKey,
+          jsonEncode(
+            members
+                .map((m) => {
+                      'userId': m.userId,
+                      'displayName': m.displayName,
+                      'avatarUrl': m.avatarUrl,
+                      'role': m.role.name,
+                      'isMuted': m.isMuted,
+                      'muteUntil': m.muteUntil,
+                      'muteReason': m.muteReason,
+                    })
+                .toList(),
+          ));
+    } catch (_) {}
+  }
+
+  static GroupMember _memberFromMap(Map<String, dynamic> m) {
+    GroupRole role;
+    switch (m['role'] as String?) {
+      case 'superAdmin':
+        role = GroupRole.superAdmin;
+      case 'admin':
+        role = GroupRole.admin;
+      default:
+        role = GroupRole.member;
+    }
+    return GroupMember(
+      userId: m['userId'] as String? ?? '',
+      displayName: m['displayName'] as String? ?? '',
+      avatarUrl: m['avatarUrl'] as String?,
+      role: role,
+      isMuted: parseGroupMemberMuted(m),
+      muteUntil: m['muteUntil'] as String?,
+      muteReason: m['muteReason'] as String?,
+    );
+  }
+
+  Future<void> _fetchAndCache(String spaceId) async {
+    final requestRevision = ++_requestRevision;
+    try {
+      final dio = ref.read(dioProvider);
+      final resp = await dio.get('/api/client/v1/groups/$groupId/members');
+      final list = extractGroupMemberPayloadList(resp.data['data']);
+      final members = <GroupMember>[];
+      for (final m in list) {
+        final parsed = parseGroupMemberPayload(m);
+        final preview = parsed.avatarUrl?.isNotEmpty == true
+            ? null
+            : await ref.read(userAvatarPreviewProvider(parsed.userId).future);
+        final role = _roleFromServer(parsed.role);
+        members.add(
+          GroupMember(
+            userId: parsed.userId,
+            displayName: parsed.displayName.isNotEmpty
+                ? parsed.displayName
+                : preview?.displayName ?? '',
+            avatarUrl: parsed.avatarUrl?.isNotEmpty == true
+                ? parsed.avatarUrl
+                : preview?.avatarUrl,
+            role: role,
+            isMuted: parsed.isMuted,
+            muteUntil: parsed.muteUntil,
+            muteReason: parsed.muteReason,
+          ),
+        );
+      }
+      if (!_canCommit(requestRevision)) return;
+      await _saveToCache(
+        spaceId,
+        members,
+        requestRevision: requestRevision,
+      );
+      if (!_canCommit(requestRevision)) return;
+      await prefetchAvatarUrls(
+        members.map((m) => m.avatarUrl).toList(),
+        cacheManager: ref.read(accountAuthCacheManagerProvider),
+      );
+      if (_canCommit(requestRevision)) state = AsyncValue.data(members);
+    } catch (e, st) {
+      if (_canCommit(requestRevision) && state.valueOrNull == null) {
+        state = AsyncValue.error(e, st);
+      }
+    }
+  }
+
+  bool _canCommit(int requestRevision) =>
+      mounted && _isCurrent && requestRevision == _requestRevision;
+
+  bool get _isCurrent =>
+      accountScope != null && ref.read(accountScopeProvider) == accountScope;
+
+  void _syncFromRemote(String spaceId) {
+    Future.microtask(() => _fetchAndCache(spaceId));
+  }
+
+  Future<void> refresh() {
+    final space = ref.read(currentSpaceProvider);
+    if (space == null || !_isCurrent) return Future<void>.value();
+    return _fetchAndCache(space.spaceId);
+  }
+
+  static GroupRole _roleFromServer(String? role) {
+    switch (role) {
+      case 'owner':
+      case 'superAdmin':
+        return GroupRole.superAdmin;
+      case 'admin':
+        return GroupRole.admin;
+      default:
+        return GroupRole.member;
+    }
+  }
+
+  void updateMemberMute(
+    String userId,
+    bool isMuted, {
+    String? muteUntil,
+    String? muteReason,
+  }) {
+    if (!_isCurrent) return;
+    final current = state.valueOrNull;
+    if (current == null) return;
+    final updated = current
+        .map(
+          (member) => member.userId == userId
+              ? member.copyWith(
+                  isMuted: isMuted,
+                  muteUntil: muteUntil,
+                  muteReason: muteReason,
+                  clearMuteUntil: !isMuted || muteUntil == null,
+                  clearMuteReason: !isMuted || muteReason == null,
+                )
+              : member,
+        )
+        .toList();
+    state = AsyncValue.data(updated);
+    final space = ref.read(currentSpaceProvider);
+    if (space != null) {
+      _saveToCache(space.spaceId, updated);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// GroupSettingsPage
+// ---------------------------------------------------------------------------
+
+class GroupSettingsPage extends ConsumerStatefulWidget {
+  final String groupId;
+  final String? fallbackTitle;
+  final String? fallbackAvatarUrl;
+  final int? fallbackMemberCount;
+
+  const GroupSettingsPage({
+    super.key,
+    required this.groupId,
+    this.fallbackTitle,
+    this.fallbackAvatarUrl,
+    this.fallbackMemberCount,
+  });
+
+  @override
+  ConsumerState<GroupSettingsPage> createState() => _GroupSettingsPageState();
+}
+
+class _GroupSettingsPageState extends ConsumerState<GroupSettingsPage> {
+  bool _removeMode = false;
+  final Set<String> _selectedForRemoval = {};
+  int? _lastMemberRefreshTargetCount;
+
+  // 从 groupDetail 初始化后的本地状态
+  bool? _isPinned;
+  bool? _isMuted;
+
+  Future<void> _togglePin(bool value) async {
+    setState(() => _isPinned = value);
+    try {
+      await ref.read(conversationActionsControllerProvider).setPinned(
+            widget.groupId,
+            pinned: value,
+            isGroup: true,
+          );
+      ref
+          .read(groupDetailProvider(widget.groupId).notifier)
+          .updatePersonalSettings(isPinned: value);
+    } catch (_) {
+      setState(() => _isPinned = !value); // 回滚
+      if (mounted) _showError('操作失败');
+    }
+  }
+
+  Future<void> _toggleMute(bool value) async {
+    setState(() => _isMuted = value);
+    try {
+      await ref.read(conversationActionsControllerProvider).setMuted(
+            widget.groupId,
+            muted: value,
+            isGroup: true,
+          );
+      ref
+          .read(groupDetailProvider(widget.groupId).notifier)
+          .updatePersonalSettings(isMuted: value);
+    } catch (_) {
+      setState(() => _isMuted = !value); // 回滚
+      if (mounted) _showError('操作失败');
+    }
+  }
+
+  // 修改群名（在父页面执行，避免子 widget dispose 后 ref 失效）
+  Future<void> _editGroupName(String currentTitle) async {
+    // 用 StatefulBuilder 管理 controller 生命周期，避免 dispose 时序问题
+    String? newName;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => _EditNameDialog(
+        initialTitle: currentTitle,
+        onConfirm: (name) {
+          newName = name;
+          Navigator.pop(ctx);
+        },
+        onCancel: () => Navigator.pop(ctx),
+      ),
+    );
+
+    if (newName == null || newName!.isEmpty || !mounted) return;
+
+    // 提前读取所有 ref 依赖，避免 await 后 widget dispose
+    final dio = ref.read(dioProvider);
+    final groupId = widget.groupId;
+    final spaceId = ref.read(currentSpaceProvider)?.spaceId ?? '';
+
+    try {
+      await dio.put('/api/client/v1/groups/$groupId', data: {'title': newName});
+      if (!mounted) return;
+      // 同步更新详情页、会话列表内存和本地 SQLite，避免返回聊天页/消息列表时显示旧群名。
+      ref.read(groupDetailProvider(groupId).notifier).updateTitle(newName!);
+      if (spaceId.isNotEmpty) {
+        await ref
+            .read(conversationsProvider(spaceId).notifier)
+            .updateConversationTitle(groupId, newName!);
+      }
+      ref.read(groupDetailProvider(groupId).notifier).refresh();
+      if (spaceId.isNotEmpty) {
+        ref.invalidate(conversationsProvider(spaceId));
+      }
+    } catch (_) {
+      if (mounted) _showError('修改失败，请重试');
+    }
+  }
+
+  Future<void> _removeMembers() async {
+    if (_selectedForRemoval.isEmpty) return;
+    try {
+      final dio = ref.read(dioProvider);
+      for (final uid in _selectedForRemoval) {
+        await dio
+            .delete('/api/client/v1/groups/${widget.groupId}/members/$uid');
+      }
+      ref.read(groupMembersProvider(widget.groupId).notifier).refresh();
+      if (mounted) {
+        setState(() {
+          _removeMode = false;
+          _selectedForRemoval.clear();
+        });
+        AppToast.success(context, '已移除成员');
+      }
+    } catch (_) {
+      if (mounted) _showError('操作失败');
+    }
+  }
+
+  Future<void> _leaveOrDismiss(bool isSuperAdmin) async {
+    final label = isSuperAdmin ? '解散群聊' : '删除并退出';
+    final desc = isSuperAdmin ? '确定要解散该群聊吗？所有成员将收到通知。' : '确定要退出该群聊吗？';
+    final colorScheme = Theme.of(context).colorScheme;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AppAlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(label),
+        content: Text(desc),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              '取消',
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(label, style: TextStyle(color: colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    try {
+      final dio = ref.read(dioProvider);
+      if (isSuperAdmin) {
+        await dio.delete('/api/client/v1/groups/${widget.groupId}');
+      } else {
+        await dio.post('/api/client/v1/groups/${widget.groupId}/leave');
+      }
+      if (mounted) context.go('/');
+    } catch (_) {
+      if (mounted) _showError('操作失败');
+    }
+  }
+
+  void _showError(String msg) {
+    AppToast.error(context, msg);
+  }
+
+  void _showPermissionDenied(String msg) {
+    AppToast.info(context, msg);
+  }
+
+  GroupDetail? _fallbackDetail() {
+    final space = ref.watch(currentSpaceProvider);
+    final spaceId = space?.spaceId ?? '';
+    final conversations = spaceId.isNotEmpty
+        ? ref.watch(conversationsProvider(spaceId)).valueOrNull
+        : null;
+    final conversation = conversations
+        ?.where((item) => item.conversationId == widget.groupId)
+        .firstOrNull;
+    if (conversation == null &&
+        widget.fallbackTitle?.trim().isNotEmpty != true &&
+        widget.fallbackMemberCount == null &&
+        widget.fallbackAvatarUrl?.trim().isNotEmpty != true) {
+      return null;
+    }
+    return GroupDetail.fromConversationSnapshot(
+      conversation ??
+          Conversation(
+            conversationId: widget.groupId,
+            type: ConversationType.group,
+            title: widget.fallbackTitle?.trim() ?? '',
+            avatarUrl: widget.fallbackAvatarUrl,
+            memberCount: widget.fallbackMemberCount,
+          ),
+      currentUserId: space?.userId ?? '',
+      fallbackTitle: widget.fallbackTitle,
+      fallbackAvatarUrl: widget.fallbackAvatarUrl,
+      fallbackMemberCount: widget.fallbackMemberCount,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final detailAsync = ref.watch(groupDetailProvider(widget.groupId));
+    final fallbackDetail = _fallbackDetail();
+    final titleDetail = detailAsync.valueOrNull ?? fallbackDetail;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surfaceContainerLow,
+      appBar: _removeMode
+          ? AppBar(
+              backgroundColor: null,
+              elevation: 0,
+              leading: TextButton(
+                onPressed: () => setState(() {
+                  _removeMode = false;
+                  _selectedForRemoval.clear();
+                }),
+                child: const Text('取消',
+                    style: TextStyle(color: Color(0xFF576B95))),
+              ),
+              title: Text('选择成员',
+                  style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface)),
+              centerTitle: true,
+              actions: [
+                TextButton(
+                  onPressed:
+                      _selectedForRemoval.isNotEmpty ? _removeMembers : null,
+                  child: Text(
+                    '删除(${_selectedForRemoval.length})',
+                    style: TextStyle(
+                        color: _selectedForRemoval.isNotEmpty
+                            ? colorScheme.error
+                            : colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            )
+          : AppBar(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  size: 20,
+                  color: colorScheme.onSurface,
+                ),
+                onPressed: () => context.pop(),
+              ),
+              title: titleDetail != null
+                  ? Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '聊天信息 ',
+                            style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface),
+                          ),
+                          TextSpan(
+                            text: '(${titleDetail.memberCount})',
+                            style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Text('聊天信息',
+                      style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface)),
+              centerTitle: true,
+            ),
+      body: detailAsync.when(
+        skipLoadingOnRefresh: true,
+        skipError: detailAsync.hasValue,
+        loading: () => fallbackDetail == null
+            ? const Center(child: CircularProgressIndicator())
+            : _buildDetailBody(
+                fallbackDetail,
+                detailUnavailable: true,
+                showDetailSyncError: false,
+              ),
+        error: (_, __) => fallbackDetail == null
+            ? _GroupDetailErrorState(
+                onRetry: () => ref
+                    .read(groupDetailProvider(widget.groupId).notifier)
+                    .refresh(),
+              )
+            : _buildDetailBody(fallbackDetail, detailUnavailable: true),
+        data: (detail) => _buildDetailBody(detail),
+      ),
+    );
+  }
+
+  Widget _buildDetailBody(
+    GroupDetail detail, {
+    bool detailUnavailable = false,
+    bool showDetailSyncError = true,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final space = ref.watch(currentSpaceProvider);
+    final permissions = AppPermissions.group(
+      myRole: detail.myRole,
+      isAllMuted: detail.muteMode,
+      allowMemberInvite: detail.allowMemberInvite,
+      allowMemberModifyTitle: detail.allowMemberModifyTitle,
+      allowMemberAtAll: detail.allowMemberAtAll,
+      allowMemberViewMemberList: !detail.onlyOwnerViewMembers,
+      allowMemberAddFriend: detail.allowMemberAddFriend,
+      space: space,
+    );
+    final isSuperAdmin = detail.myRole == GroupRole.superAdmin;
+    final isAdminOrAbove = !detailUnavailable && permissions.canManage;
+    final canViewMembers = permissions.canViewMembers;
+    final canInviteMembers = !detailUnavailable && permissions.canInviteMembers;
+    final canRemoveMembers = !detailUnavailable && permissions.canManage;
+    final currentUserId = space?.userId ?? '';
+    final spaceId = space?.spaceId.trim() ?? '';
+    final nicknamePreferenceScope = spaceId.isEmpty
+        ? null
+        : groupMemberNicknamePreferenceScopeKey(
+            spaceId: spaceId,
+            conversationId: widget.groupId,
+          );
+    final showGroupMemberNicknames = nicknamePreferenceScope == null
+        ? true
+        : ref.watch(groupMemberNicknamePreferenceProvider(
+            nicknamePreferenceScope,
+          ));
+    final membersAsync = canViewMembers
+        ? ref.watch(groupMembersProvider(widget.groupId))
+        : const AsyncValue<List<GroupMember>>.data([]);
+    final rawMembers = membersAsync.valueOrNull ?? [];
+    final tenantContacts =
+        ref.watch(tenantMembersProvider).valueOrNull ?? const [];
+    final friendContacts = ref.watch(friendsProvider).valueOrNull ?? const [];
+    final knownContacts = [...tenantContacts, ...friendContacts];
+    final friendsByUserId = {
+      for (final friend in friendContacts) friend.userId: friend,
+    };
+    final avatarByUserId = {
+      for (final contact in knownContacts)
+        if (contact.avatarUrl?.isNotEmpty == true)
+          contact.userId: contact.avatarUrl!
+    };
+    final nameByUserId = {
+      for (final contact in knownContacts)
+        if (contact.displayName.isNotEmpty) contact.userId: contact.displayName
+    };
+    final members = rawMembers
+        .map((member) => GroupMember(
+              userId: member.userId,
+              displayName: resolveFriendDisplayName(
+                friend: friendsByUserId[member.userId],
+                contextualDisplayName: member.displayName,
+                fallback: nameByUserId[member.userId] ?? '',
+              ),
+              avatarUrl: member.avatarUrl?.isNotEmpty == true
+                  ? member.avatarUrl
+                  : avatarByUserId[member.userId],
+              role: member.role,
+              muteReason: member.muteReason,
+            ))
+        .toList();
+    _refreshMembersWhenCountIsStale(
+      canViewMembers: canViewMembers,
+      isLoading: membersAsync.isLoading,
+      detailMemberCount: detail.memberCount,
+      loadedMemberCount: rawMembers.length,
+    );
+    bool canRemoveMember(GroupMember member) {
+      if (!canRemoveMembers || member.userId == currentUserId) {
+        return false;
+      }
+      if (member.role == GroupRole.superAdmin) {
+        return false;
+      }
+      if (!isSuperAdmin && member.role != GroupRole.member) {
+        return false;
+      }
+      return true;
+    }
+
+    // 首次加载时从 detail 初始化本地状态
+    _isPinned ??= detail.isPinned;
+    _isMuted ??= detail.isMuted;
+
+    return ListView(
+      children: [
+        const SizedBox(height: 8),
+
+        if (shouldShowGroupDetailSyncError(
+          detailUnavailable: detailUnavailable,
+          showDetailSyncError: showDetailSyncError,
+        ))
+          _DetailFallbackBanner(
+            onRetry: () => ref
+                .read(groupDetailProvider(widget.groupId).notifier)
+                .refresh(),
+          ),
+
+        // 成员区域
+        if (canViewMembers)
+          _MembersGrid(
+            members: members,
+            isLoading: membersAsync.isLoading,
+            canInviteMembers: canInviteMembers,
+            canRemoveMembers: canRemoveMembers,
+            canRemoveMember: canRemoveMember,
+            removeMode: _removeMode,
+            selectedForRemoval: _selectedForRemoval,
+            onMemberTap: (uid) {
+              if (_removeMode) {
+                final member = members.firstWhere(
+                  (m) => m.userId == uid,
+                  orElse: () => const GroupMember(
+                    userId: '',
+                    displayName: '',
+                    role: GroupRole.superAdmin,
+                  ),
+                );
+                if (!canRemoveMember(member)) return;
+                setState(() {
+                  if (_selectedForRemoval.contains(uid)) {
+                    _selectedForRemoval.remove(uid);
+                  } else {
+                    _selectedForRemoval.add(uid);
+                  }
+                });
+              } else {
+                context.push('/profile/$uid', extra: {
+                  'allowAddFriendFromGroup':
+                      isAdminOrAbove || detail.allowMemberAddFriend,
+                  'profileAccessContext':
+                      ProfileAccessContext.group(role: detail.myRole),
+                });
+              }
+            },
+            onAddMember: () async {
+              // #7 修复：普通成员受限时弹出提示
+              if (!isAdminOrAbove && !detail.allowMemberInvite) {
+                _showPermissionDenied('该群已关闭成员邀请权限');
+                return;
+              }
+              final result =
+                  await context.push('/create-group', extra: widget.groupId);
+              // 如果添加成功，刷新成员列表
+              if (result == true && mounted) {
+                ref
+                    .read(groupMembersProvider(widget.groupId).notifier)
+                    .refresh();
+                ref
+                    .read(groupDetailProvider(widget.groupId).notifier)
+                    .refresh();
+              }
+            },
+            onRemoveMember: () => setState(() => _removeMode = true),
+          )
+        else
+          Container(
+            color: Theme.of(context).colorScheme.surface,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.lock_outline,
+                  size: 36,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '群主或管理员已关闭普通成员查看成员列表权限',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (canInviteMembers) ...[
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final result = await context.push(
+                        '/create-group',
+                        extra: widget.groupId,
+                      );
+                      if (result == true && mounted) {
+                        ref
+                            .read(groupDetailProvider(widget.groupId).notifier)
+                            .refresh();
+                      }
+                    },
+                    icon: const Icon(Icons.person_add_alt_1, size: 18),
+                    label: const Text('添加群成员'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+        const SizedBox(height: 8),
+
+        // 群信息
+        _InfoSection(
+          detail: detail,
+          groupId: widget.groupId,
+          isAdminOrAbove: isAdminOrAbove,
+          onEditName: () {
+            // #7 修复：普通成员受限时弹出提示
+            if (!isAdminOrAbove && !detail.allowMemberModifyTitle) {
+              _showPermissionDenied('仅群主/管理员可修改群名称');
+              return;
+            }
+            _editGroupName(detail.title);
+          },
+        ),
+
+        const SizedBox(height: 8),
+
+        // 个人设置（所有角色）
+        Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: Column(
+            children: [
+              _SwitchRow(
+                label: '置顶聊天',
+                value: _isPinned ?? detail.isPinned,
+                onChanged: _togglePin,
+              ),
+              const _Div(),
+              _SwitchRow(
+                label: '消息免打扰',
+                value: _isMuted ?? detail.isMuted,
+                onChanged: _toggleMute,
+              ),
+              const _Div(),
+              _SwitchRow(
+                label: '显示群成员昵称',
+                value: showGroupMemberNicknames,
+                onChanged: nicknamePreferenceScope == null
+                    ? null
+                    : (value) async {
+                        try {
+                          await ref
+                              .read(groupMemberNicknamePreferenceProvider(
+                                nicknamePreferenceScope,
+                              ).notifier)
+                              .setEnabled(value);
+                        } catch (_) {
+                          if (mounted) _showError('操作失败，请重试');
+                        }
+                      },
+              ),
+            ],
+          ),
+        ),
+
+        // 操作区
+        Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: Column(
+            children: [
+              _Row(
+                  label: '设置当前聊天背景',
+                  onTap: () => context.push(
+                        '/chat-background?conversationId=${widget.groupId}',
+                        extra: {
+                          'isGroup': true,
+                          'conversationType': ConversationType.group.name,
+                          'conversationId': widget.groupId,
+                        },
+                      )),
+              const _Div(),
+              _Row(
+                  label: '清空聊天记录',
+                  showArrow: false,
+                  onTap: () => _showClearSheet(context)),
+              const _Div(),
+              _Row(
+                  label: '投诉',
+                  onTap: () => context
+                      .push('/group-settings/${widget.groupId}/complaint')),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // 退出/解散按钮
+        // 只有超级管理员才能解散群，管理员和普通成员只能退出
+        if (!detailUnavailable)
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: _groupSettingsSideInset),
+            child: ElevatedButton(
+              onPressed: () => _leaveOrDismiss(isSuperAdmin),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                foregroundColor: colorScheme.error,
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: colorScheme.outlineVariant),
+                ),
+              ),
+              child: Text(isSuperAdmin ? '解散群聊' : '删除并退出'),
+            ),
+          ),
+
+        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  void _refreshMembersWhenCountIsStale({
+    required bool canViewMembers,
+    required bool isLoading,
+    required int detailMemberCount,
+    required int loadedMemberCount,
+  }) {
+    if (!shouldRefreshGroupMembers(
+      canViewMembers: canViewMembers,
+      isLoading: isLoading,
+      detailMemberCount: detailMemberCount,
+      loadedMemberCount: loadedMemberCount,
+    )) {
+      if (loadedMemberCount >= detailMemberCount) {
+        _lastMemberRefreshTargetCount = null;
+      }
+      return;
+    }
+    if (_lastMemberRefreshTargetCount == detailMemberCount) return;
+    _lastMemberRefreshTargetCount = detailMemberCount;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(groupMembersProvider(widget.groupId).notifier).refresh();
+    });
+  }
+
+  void _showClearSheet(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text('清空聊天记录',
+                  style: TextStyle(color: colorScheme.error),
+                  textAlign: TextAlign.center),
+              onTap: () {
+                Navigator.pop(context);
+                AppToast.success(context, '聊天记录已清空');
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: Text('取消',
+                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  textAlign: TextAlign.center),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailFallbackBanner extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _DetailFallbackBanner({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+          _groupSettingsSideInset, 0, _groupSettingsSideInset, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colorScheme.tertiary),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: colorScheme.onTertiaryContainer,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '群详情同步失败，已展示本地聊天信息',
+              style: TextStyle(
+                fontSize: 13,
+                color: colorScheme.onTertiaryContainer,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: const Size(44, 32),
+            ),
+            child: const Text('重试'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GroupDetailErrorState extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _GroupDetailErrorState({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 40,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '群信息加载失败',
+            style: TextStyle(
+              fontSize: 15,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton(onPressed: onRetry, child: const Text('重试')),
+        ],
+      ),
+    );
+  }
+}
+
+@visibleForTesting
+bool shouldRefreshGroupMembers({
+  required bool canViewMembers,
+  required bool isLoading,
+  required int detailMemberCount,
+  required int loadedMemberCount,
+}) {
+  if (!canViewMembers || isLoading) return false;
+  if (detailMemberCount <= 0) return false;
+  return loadedMemberCount < detailMemberCount;
+}
+
+// ---------------------------------------------------------------------------
+// Members Grid
+// ---------------------------------------------------------------------------
+
+class _MembersGrid extends StatelessWidget {
+  final List<GroupMember> members;
+  final bool isLoading;
+  final bool canInviteMembers;
+  final bool canRemoveMembers;
+  final bool Function(GroupMember member) canRemoveMember;
+  final bool removeMode;
+  final Set<String> selectedForRemoval;
+  final void Function(String uid) onMemberTap;
+  final VoidCallback onAddMember;
+  final VoidCallback onRemoveMember;
+
+  const _MembersGrid({
+    required this.members,
+    required this.isLoading,
+    required this.canInviteMembers,
+    required this.canRemoveMembers,
+    required this.canRemoveMember,
+    required this.removeMode,
+    required this.selectedForRemoval,
+    required this.onMemberTap,
+    required this.onAddMember,
+    required this.onRemoveMember,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      padding: const EdgeInsets.all(_groupSettingsSideInset),
+      child: isLoading && members.isEmpty
+          ? const SizedBox(
+              height: 80, child: Center(child: CircularProgressIndicator()))
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final metrics =
+                    calculateGroupMemberGridMetrics(constraints.maxWidth);
+                return Wrap(
+                  runSpacing: 12,
+                  children: [
+                    ...members.take(15).map((m) => _MemberCell(
+                          member: m,
+                          cellWidth: metrics.cellWidth,
+                          avatarSize: metrics.avatarSize,
+                          removeMode: removeMode,
+                          removable: canRemoveMember(m),
+                          selected: selectedForRemoval.contains(m.userId),
+                          onTap: () => onMemberTap(m.userId),
+                        )),
+                    if (!removeMode && canInviteMembers)
+                      _ActionCell(
+                        icon: Icons.add,
+                        cellWidth: metrics.cellWidth,
+                        avatarSize: metrics.avatarSize,
+                        onTap: onAddMember,
+                      ),
+                    if (!removeMode && canRemoveMembers)
+                      _ActionCell(
+                        icon: Icons.remove,
+                        cellWidth: metrics.cellWidth,
+                        avatarSize: metrics.avatarSize,
+                        onTap: onRemoveMember,
+                      ),
+                  ],
+                );
+              },
+            ),
+    );
+  }
+}
+
+class _MemberCell extends StatelessWidget {
+  final GroupMember member;
+  final double cellWidth;
+  final double avatarSize;
+  final bool removeMode;
+  final bool removable;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _MemberCell({
+    required this.member,
+    required this.cellWidth,
+    required this.avatarSize,
+    required this.removeMode,
+    required this.removable,
+    required this.selected,
+    required this.onTap,
+  });
+
+  String get _roleLabel {
+    switch (member.role) {
+      case GroupRole.superAdmin:
+        return '群主';
+      case GroupRole.admin:
+        return '管理员';
+      case GroupRole.member:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final disabled = removeMode && !removable;
+    return GestureDetector(
+      onTap: disabled ? null : onTap,
+      child: SizedBox(
+        width: cellWidth,
+        child: Column(
+          children: [
+            Opacity(
+              opacity: disabled ? 0.45 : 1,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: avatarSize,
+                    height: avatarSize,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: selected
+                          ? Border.all(color: Colors.red, width: 2)
+                          : null,
+                    ),
+                    child: UserAvatar(
+                      avatarUrl: member.avatarUrl,
+                      name: member.displayName,
+                      size: avatarSize,
+                      borderRadius: 12,
+                    ),
+                  ),
+                  if (_roleLabel.isNotEmpty && !removeMode)
+                    Positioned(
+                      bottom: -6,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                                colors: [Color(0xFFFFC107), Color(0xFFFF9800)]),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(_roleLabel,
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  color: Theme.of(context).colorScheme.surface,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ),
+                  if (removeMode && selected)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: const BoxDecoration(
+                            color: Colors.red, shape: BoxShape.circle),
+                        child: Icon(Icons.close,
+                            size: 12,
+                            color: Theme.of(context).colorScheme.surface),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(member.displayName,
+                style: TextStyle(fontSize: 11, color: colorScheme.onSurface),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionCell extends StatelessWidget {
+  final IconData icon;
+  final double cellWidth;
+  final double avatarSize;
+  final VoidCallback onTap;
+
+  const _ActionCell({
+    required this.icon,
+    required this.cellWidth,
+    required this.avatarSize,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: cellWidth,
+        child: Column(
+          children: [
+            Container(
+              width: avatarSize,
+              height: avatarSize,
+              decoration: BoxDecoration(
+                border: Border.all(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.3),
+                    width: 2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon,
+                  size: 24,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5)),
+            ),
+            const SizedBox(height: 10),
+            const SizedBox(height: 14),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Info Section
+// ---------------------------------------------------------------------------
+
+class _InfoSection extends ConsumerStatefulWidget {
+  final GroupDetail detail;
+  final String groupId;
+  final bool isAdminOrAbove;
+  final VoidCallback onEditName;
+
+  const _InfoSection({
+    required this.detail,
+    required this.groupId,
+    required this.isAdminOrAbove,
+    required this.onEditName,
+  });
+
+  @override
+  ConsumerState<_InfoSection> createState() => _InfoSectionState();
+}
+
+class _InfoSectionState extends ConsumerState<_InfoSection> {
+  String? _remark;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRemark();
+  }
+
+  Future<void> _loadRemark() async {
+    final space = ref.read(currentSpaceProvider);
+    if (space == null) return;
+    final r = await loadGroupRemark(
+      space.spaceId,
+      widget.groupId,
+      ref.read(accountProfileBoxResolverProvider),
+    );
+    if (mounted) setState(() => _remark = r);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: Column(
+        children: [
+          _Row(
+            label: '群聊名称',
+            value: widget.detail.title,
+            onTap: widget.onEditName,
+          ),
+          const _Div(),
+          _Row(
+            label: '群二维码',
+            trailing: Icon(
+              Icons.qr_code,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            onTap: () =>
+                context.push('/group-settings/${widget.groupId}/qrcode'),
+          ),
+          if (widget.isAdminOrAbove) ...[
+            const _Div(),
+            _Row(
+              label: '群管理',
+              onTap: () => context.push('/group-manage/${widget.groupId}'),
+            ),
+          ],
+          const _Div(),
+          _Row(
+              label: '群公告',
+              onTap: () => context.push(
+                    '/group-settings/${widget.groupId}/announcement',
+                    extra: {'isAdminOrAbove': widget.isAdminOrAbove},
+                  )),
+          const _Div(),
+          _Row(
+            label: '备注',
+            value: _remark?.isNotEmpty == true ? _remark : '未设置',
+            onTap: () async {
+              final result = await context.push<String>(
+                '/group-settings/${widget.groupId}/remark',
+                extra: {
+                  'groupName': widget.detail.title,
+                  'groupAvatarUrl': widget.detail.avatarUrl,
+                },
+              );
+              if (result != null) {
+                setState(() => _remark = result.isEmpty ? null : result);
+              }
+            },
+          ),
+          const _Div(),
+          _Row(
+            icon: Icons.search,
+            label: '查找聊天内容',
+            onTap: () => GoRouter.of(context).push('/search', extra: {
+              'conversationId': widget.groupId,
+              'isGroup': true,
+              'conversationTitle': widget.detail.title,
+            }),
+          ),
+          const _Div(),
+          _Row(
+            icon: Icons.schedule_send_outlined,
+            label: '定时消息',
+            onTap: () => GoRouter.of(context).push(
+              '/chat/${widget.groupId}/scheduled-messages',
+              extra: {
+                'isGroup': true,
+                'conversationType': ConversationType.group.name,
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shared widgets
+// ---------------------------------------------------------------------------
+
+class _Row extends StatelessWidget {
+  final IconData? icon;
+  final String label;
+  final String? value;
+  final Widget? trailing;
+  final bool showArrow;
+  final VoidCallback? onTap;
+
+  const _Row({
+    this.icon,
+    required this.label,
+    this.value,
+    this.trailing,
+    this.showArrow = true,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+            horizontal: _groupSettingsSideInset, vertical: 14),
+        child: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon,
+                  size: 20,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6)),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+                child: Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: colorScheme.onSurface,
+                    ))),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: value != null
+                    ? Text(value!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: colorScheme.onSurfaceVariant,
+                        ))
+                    : trailing ?? const SizedBox.shrink(),
+              ),
+            ),
+            if (showArrow)
+              Icon(
+                Icons.chevron_right,
+                color: colorScheme.onSurfaceVariant,
+                size: 18,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SwitchRow extends StatelessWidget {
+  final String label;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  const _SwitchRow({
+    required this.label,
+    required this.value,
+    this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: _groupSettingsSideInset, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: colorScheme.onSurface,
+                    )),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: colorScheme.primary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Div extends StatelessWidget {
+  const _Div();
+
+  @override
+  Widget build(BuildContext context) => Divider(
+      height: 1,
+      indent: _groupSettingsSideInset,
+      color: Theme.of(context).dividerColor);
+}
+
+// ---------------------------------------------------------------------------
+// Edit Name Dialog — 独立 StatefulWidget，自己管理 TextEditingController 生命周期
+// ---------------------------------------------------------------------------
+
+class _EditNameDialog extends StatefulWidget {
+  final String initialTitle;
+  final void Function(String name) onConfirm;
+  final VoidCallback onCancel;
+
+  const _EditNameDialog({
+    required this.initialTitle,
+    required this.onConfirm,
+    required this.onCancel,
+  });
+
+  @override
+  State<_EditNameDialog> createState() => _EditNameDialogState();
+}
+
+class _EditNameDialogState extends State<_EditNameDialog> {
+  late final TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.initialTitle);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return AppAlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('修改群名称'),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        maxLength: 30,
+        decoration: const InputDecoration(
+          hintText: '请输入群名称',
+          counterText: '',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: widget.onCancel,
+          child: Text(
+            '取消',
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
+        ),
+        TextButton(
+          onPressed: () => widget.onConfirm(_ctrl.text.trim()),
+          child: Text(
+            '确定',
+            style: TextStyle(color: colorScheme.primary),
+          ),
+        ),
+      ],
+    );
+  }
+}

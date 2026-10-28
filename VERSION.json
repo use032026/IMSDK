@@ -1,0 +1,14 @@
+{
+  "platform": "ios",
+  "version": "0.1.1",
+  "branch": "ios/v0.1.1",
+  "releaseTag": "ios-v0.1.1",
+  "download": "https://github.com/use032026/IMSDK/releases/download/ios-v0.1.1/IMSDK-iOS-0.1.1.zip",
+  "sourceSnapshot": "source-before.zip at mobile 0.1.0 + before.zip at mobile 0.1.1",
+  "sourceRestoration": "Historical archived source only; no current runtime files were backfilled. Podspec version metadata aligned to this version.",
+  "validatedRuntimeTreeSha256": {
+    "mobile": "a6c14282d119b6053ac66e87917225e3dceca2858822cb1a323745032e879e51",
+    "nativeIos": "52431305a343587167959be4883cb698206cd0dba40051f600d76b35b489d8c5",
+    "nativeAndroid": "ac03cb6635882916a212956c2670ed32bb69665513f6da13bc12714eacc0a904"
+  }
+}

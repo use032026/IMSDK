@@ -1,0 +1,3306 @@
+{
+  "@@locale": "zh",
+  "navWorkbench": "工作台",
+  "@navWorkbench": {"description": "Workbench navigation label"},
+  "navBadgeOverflow": "99+",
+  "@navBadgeOverflow": {"description": "Overflow count shown on navigation badges"},
+  "appRuntimeLoadFailed": "账号数据加载失败",
+  "@appRuntimeLoadFailed": {"description": "Account runtime load failure"},
+  "startupFailureTitle": "启动失败",
+  "@startupFailureTitle": {"description": "Startup failure title"},
+  "startupFailureMessage": "请检查网络后重试",
+  "@startupFailureMessage": {"description": "Startup failure guidance"},
+  "privacyConsentTitle": "服务协议与隐私政策",
+  "@privacyConsentTitle": {"description": "Privacy consent title"},
+  "privacyConsentBodyAndroid": "欢迎使用{brand}。为向您提供账号登录、即时通讯、企业协作、在线客服、消息提醒和安全保障等服务，我们需要按照用户协议和隐私政策处理必要信息。\n\n在您点击同意前，我们不会读取剪切板信息，不会初始化极光及手机厂商推送 SDK，也不会通过这些 SDK 获取 Android ID、OAID、安装应用列表、MAC 地址等信息。若您暂不同意，我们会保存该选择；您仍可继续阅读协议，并可稍后重新选择。\n\n您同意后，为完成消息、客服和来电提醒，极光 JPush/JCore 及手机厂商推送服务可能处理设备型号、Android 版本、应用包名与版本、网络类型、IP 地址、Android ID、OAID、推送 Registration ID、厂商推送 Token 以及通知送达和点击信息。我们已关闭智能推送、安装应用列表、MAC、IMEI、IMSI、Wi-Fi 列表、自动唤醒和关联启动等非必要能力。\n\n剪切板仅在您主动使用复制或粘贴功能时调用；相机、麦克风和通知等系统权限仅在您主动使用相关功能时申请。拒绝单项权限只影响对应功能。请阅读下方完整协议后，自主选择是否同意。",
+  "@privacyConsentBodyAndroid": {"description": "Android pre-consent data processing disclosure", "placeholders": {"brand": {"type": "String"}}},
+  "privacyConsentBodyIos": "欢迎使用{brand}。为向您提供账号登录、即时通讯、企业协作、在线客服、消息提醒和安全保障等服务，我们需要按照用户协议和隐私政策处理必要信息。\n\n在您点击同意前，我们不会读取剪切板信息，不会初始化极光 JPush/JCore 或注册 Apple 推送通知服务（APNs），也不会获取极光 Registration ID、APNs 设备令牌等推送标识。若您暂不同意，我们会保存该选择；您仍可继续阅读协议，并可稍后重新选择。\n\n您同意后，为完成消息、客服和来电提醒，我们可能处理 iPhone 型号、iOS 版本、应用包名与版本、网络类型、IP 地址、IDFV、极光 Registration ID、APNs 设备令牌以及通知送达和点击信息。极光 JPush/JCore 用于连接推送服务；Apple APNs 处理 App 标识、设备令牌和通知负载以完成系统推送。当前 iOS 版不接入广告服务，不获取 IDFA。\n\n剪切板仅在您主动使用复制或粘贴功能时调用；相机、麦克风和通知等系统权限仅在您主动使用相关功能时申请。拒绝单项权限只影响对应功能。请阅读下方完整协议后，自主选择是否同意。",
+  "@privacyConsentBodyIos": {"description": "iOS pre-consent data processing disclosure", "placeholders": {"brand": {"type": "String"}}},
+  "privacyConsentTermsLink": "《用户协议》",
+  "@privacyConsentTermsLink": {"description": "Terms link"},
+  "privacyConsentConjunction": "和",
+  "@privacyConsentConjunction": {"description": "Terms and privacy conjunction"},
+  "privacyConsentPrivacyLink": "《隐私政策》",
+  "@privacyConsentPrivacyLink": {"description": "Privacy policy link"},
+  "privacyConsentDecline": "不同意",
+  "@privacyConsentDecline": {"description": "Decline privacy consent"},
+  "privacyConsentDeclinedExit": "您未同意服务协议和隐私政策，应用即将退出",
+  "@privacyConsentDeclinedExit": {"description": "Android notice shown before exiting after privacy consent is declined"},
+  "privacyConsentAccept": "同意",
+  "@privacyConsentAccept": {"description": "Accept privacy consent"},
+  "privacyConsentRuntimeFailure": "启动失败，请检查网络后重试",
+  "@privacyConsentRuntimeFailure": {"description": "Authorized runtime startup failure"},
+  "privacyConsentSaveFailure": "未能保存选择，请重试",
+  "@privacyConsentSaveFailure": {"description": "Consent choice persistence failure"},
+  "appUpdateRequiredTitle": "必须更新后继续使用",
+  "@appUpdateRequiredTitle": {"description": "Required update title"},
+  "appUpdateOptionalTitle": "发现新版本",
+  "@appUpdateOptionalTitle": {"description": "Optional update title"},
+  "appUpdateVersionAvailable": "{brand} {version} 已可更新",
+  "@appUpdateVersionAvailable": {"description": "Available app version", "placeholders": {"brand": {"type": "String"}, "version": {"type": "String"}}},
+  "appUpdateLater": "稍后",
+  "@appUpdateLater": {"description": "Dismiss optional update"},
+  "appUpdateNow": "立即更新",
+  "@appUpdateNow": {"description": "Start app update"},
+  "appUpdateProcessing": "处理中...",
+  "@appUpdateProcessing": {"description": "App update processing"},
+  "appUpdateInvalidUrl": "更新地址无效，请稍后重试",
+  "@appUpdateInvalidUrl": {"description": "Invalid update URL"},
+  "appUpdateOpenUrlFailed": "无法打开更新链接，请稍后重试",
+  "@appUpdateOpenUrlFailed": {"description": "Open update URL failure"},
+  "appUpdateDownloadInterrupted": "下载中断，请检查网络后重试",
+  "@appUpdateDownloadInterrupted": {"description": "Interrupted update download"},
+  "appUpdatePackageVerificationFailed": "安装包校验失败，请重新下载",
+  "@appUpdatePackageVerificationFailed": {"description": "Update package verification failure"},
+  "appUpdatePermissionDenied": "请在系统设置中允许{brand}安装更新",
+  "@appUpdatePermissionDenied": {"description": "Install permission denied", "placeholders": {"brand": {"type": "String"}}},
+  "appUpdateOpenInstallerFailed": "无法打开系统安装器，请检查安装权限",
+  "@appUpdateOpenInstallerFailed": {"description": "Open system installer failure"},
+  "appUpdateGenericFailure": "更新失败，请检查网络后重试",
+  "@appUpdateGenericFailure": {"description": "Generic update failure"},
+  "appUpdateUnavailable": "新版本暂不可下载，请稍后再试",
+  "@appUpdateUnavailable": {"description": "Update package unavailable"},
+  "appUpdateCheckFailed": "检查更新失败，请稍后重试",
+  "@appUpdateCheckFailed": {"description": "Update check failure"},
+  "appUpdateChecking": "检查中",
+  "@appUpdateChecking": {"description": "Checking for updates"},
+  "commonConfirm": "确定",
+  "@commonConfirm": {
+    "description": "Confirm button"
+  },
+  "commonCancel": "取消",
+  "@commonCancel": {
+    "description": "Cancel button"
+  },
+  "commonSave": "保存",
+  "@commonSave": {
+    "description": "Save button"
+  },
+  "commonEdit": "编辑",
+  "@commonEdit": {
+    "description": "Edit button"
+  },
+  "commonDelete": "删除",
+  "@commonDelete": {
+    "description": "Delete button"
+  },
+  "commonSearch": "搜索",
+  "@commonSearch": {
+    "description": "Search"
+  },
+  "commonLoading": "加载中，请稍候",
+  "@commonLoading": {
+    "description": "Loading"
+  },
+  "commonLoadFailed": "加载失败",
+  "@commonLoadFailed": {
+    "description": "Load failed"
+  },
+  "commonRetry": "重试",
+  "@commonRetry": {
+    "description": "Retry"
+  },
+  "commonEmpty": "暂无数据",
+  "@commonEmpty": {
+    "description": "Empty state"
+  },
+  "commonCopy": "复制",
+  "@commonCopy": {
+    "description": "Copy"
+  },
+  "commonForward": "转发",
+  "@commonForward": {
+    "description": "Forward"
+  },
+  "commonFavorite": "收藏",
+  "@commonFavorite": {
+    "description": "Favorite"
+  },
+  "commonClose": "关闭",
+  "@commonClose": {
+    "description": "Close"
+  },
+  "commonSend": "发送",
+  "@commonSend": {
+    "description": "Send"
+  },
+  "commonDone": "完成",
+  "@commonDone": {
+    "description": "Done"
+  },
+  "commonMore": "更多",
+  "@commonMore": {
+    "description": "More"
+  },
+  "commonSettings": "设置",
+  "@commonSettings": {
+    "description": "Settings"
+  },
+  "commonCopied": "已复制",
+  "@commonCopied": {
+    "description": "Copied"
+  },
+  "commonUnknown": "未知",
+  "@commonUnknown": {
+    "description": "Unknown"
+  },
+  "commonNotSet": "未设置",
+  "@commonNotSet": {
+    "description": "Not set"
+  },
+  "commonUnbound": "未绑定",
+  "@commonUnbound": {
+    "description": "Unbound"
+  },
+  "commonViewAll": "查看全部",
+  "@commonViewAll": {
+    "description": "View all"
+  },
+  "commonSubmit": "提交",
+  "@commonSubmit": {
+    "description": "Submit"
+  },
+  "commonAdd": "添加",
+  "@commonAdd": {
+    "description": "Add"
+  },
+  "commonRemove": "移除",
+  "@commonRemove": {
+    "description": "Remove"
+  },
+  "commonCreate": "创建",
+  "@commonCreate": {
+    "description": "Create"
+  },
+  "commonUpdate": "更新",
+  "@commonUpdate": {
+    "description": "Update"
+  },
+  "commonUpload": "上传",
+  "@commonUpload": {
+    "description": "Upload"
+  },
+  "commonShare": "分享",
+  "@commonShare": {
+    "description": "Share"
+  },
+  "commonBlock": "拉黑",
+  "@commonBlock": {
+    "description": "Block"
+  },
+  "commonUnblock": "取消拉黑",
+  "@commonUnblock": {
+    "description": "Unblock"
+  },
+  "commonMute": "免打扰",
+  "@commonMute": {
+    "description": "Mute"
+  },
+  "commonUnmute": "取消免打扰",
+  "@commonUnmute": {
+    "description": "Unmute"
+  },
+  "commonPin": "置顶",
+  "@commonPin": {
+    "description": "Pin"
+  },
+  "commonUnpin": "取消置顶",
+  "@commonUnpin": {
+    "description": "Unpin"
+  },
+  "commonMarkRead": "标为已读",
+  "@commonMarkRead": {
+    "description": "Mark as read"
+  },
+  "commonMarkUnread": "标为未读",
+  "@commonMarkUnread": {
+    "description": "Mark as unread"
+  },
+  "commonOnline": "在线",
+  "@commonOnline": {
+    "description": "Online"
+  },
+  "commonOffline": "离线",
+  "@commonOffline": {
+    "description": "Offline"
+  },
+  "commonOperationFailed": "操作失败，请重试",
+  "@commonOperationFailed": {
+    "description": "Operation failed"
+  },
+  "commonNetworkError": "网络错误，请检查网络连接",
+  "@commonNetworkError": {
+    "description": "Network error"
+  },
+  "navMessages": "消息",
+  "@navMessages": {
+    "description": "Bottom nav: Messages"
+  },
+  "navContacts": "通讯录",
+  "@navContacts": {
+    "description": "Bottom nav: Contacts"
+  },
+  "navMe": "我",
+  "@navMe": {
+    "description": "Bottom nav: Me"
+  },
+  "authLoginTitle": "登录微界",
+  "@authLoginTitle": {
+    "description": "Login page title"
+  },
+  "authTabMobile": "手机号",
+  "@authTabMobile": {
+    "description": "Login tab: mobile"
+  },
+  "authTabEmail": "邮箱",
+  "@authTabEmail": {
+    "description": "Login tab: email"
+  },
+  "authTabLoginName": "微界号",
+  "@authTabLoginName": {
+    "description": "Login tab: lpp id"
+  },
+  "authHintMobile": "请输入手机号",
+  "@authHintMobile": {
+    "description": "Mobile hint"
+  },
+  "authHintEmail": "请输入邮箱",
+  "@authHintEmail": {
+    "description": "Email hint"
+  },
+  "authHintPassword": "请输入密码",
+  "@authHintPassword": {
+    "description": "Password hint"
+  },
+  "authHintCode": "请输入验证码",
+  "@authHintCode": {
+    "description": "Code hint"
+  },
+  "authHintLoginName": "请输入微界号（lpp_xxxxxxxx）",
+  "@authHintLoginName": {
+    "description": "Login name hint"
+  },
+  "authLoginButton": "登录",
+  "@authLoginButton": {
+    "description": "Login button"
+  },
+  "authGetCode": "获取验证码",
+  "@authGetCode": {
+    "description": "Get verification code"
+  },
+  "authResendCode": "{seconds}s 后重发",
+  "@authResendCode": {
+    "description": "Resend code countdown",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "authUsePassword": "使用密码登录",
+  "@authUsePassword": {
+    "description": "Use password login"
+  },
+  "authUseCode": "使用验证码登录",
+  "@authUseCode": {
+    "description": "Use code login"
+  },
+  "authAgreementPrefix": "我已阅读并同意",
+  "@authAgreementPrefix": {
+    "description": "Agreement prefix"
+  },
+  "authAgreementAnd": "和",
+  "@authAgreementAnd": {
+    "description": "Agreement and"
+  },
+  "authTermsLink": "《用户协议》",
+  "@authTermsLink": {
+    "description": "Terms link"
+  },
+  "authPrivacyLink": "《隐私政策》",
+  "@authPrivacyLink": {
+    "description": "Privacy link"
+  },
+  "authCaptchaTitle": "安全验证",
+  "@authCaptchaTitle": {
+    "description": "Captcha title"
+  },
+  "authCaptchaHint": "请输入答案",
+  "@authCaptchaHint": {
+    "description": "Captcha hint"
+  },
+  "authCaptchaFailed": "获取验证码失败，请重试",
+  "@authCaptchaFailed": {
+    "description": "Captcha failed"
+  },
+  "authErrorEmptyCode": "请输入验证码",
+  "@authErrorEmptyCode": {
+    "description": "Empty code error"
+  },
+  "authErrorEmptyPassword": "请输入密码",
+  "@authErrorEmptyPassword": {
+    "description": "Empty password error"
+  },
+  "authErrorEmptyLoginName": "请输入微界号",
+  "@authErrorEmptyLoginName": {
+    "description": "Empty login name error"
+  },
+  "authErrorWrongCredentials": "账号或密码错误",
+  "@authErrorWrongCredentials": {
+    "description": "Wrong credentials"
+  },
+  "authDeactivatingTitle": "账号注销中",
+  "@authDeactivatingTitle": {
+    "description": "Deactivating title"
+  },
+  "authDeactivatingContent": "您的账号正处于注销冷静期（7天内）。\n\n如需撤销注销，请点击「撤销注销」；否则点击「继续使用」进入应用。",
+  "@authDeactivatingContent": {
+    "description": "Deactivating content"
+  },
+  "authContinueUse": "继续使用",
+  "@authContinueUse": {
+    "description": "Continue use"
+  },
+  "authCancelDeactivation": "撤销注销",
+  "@authCancelDeactivation": {
+    "description": "Cancel deactivation"
+  },
+  "authDeactivationCancelled": "注销已撤销，账号恢复正常",
+  "@authDeactivationCancelled": {
+    "description": "Deactivation cancelled"
+  },
+  "authDeactivationCancelFailed": "撤销失败，请重试",
+  "@authDeactivationCancelFailed": {
+    "description": "Deactivation cancel failed"
+  },
+  "authLogout": "退出登录",
+  "@authLogout": {
+    "description": "Logout"
+  },
+  "authLogoutConfirm": "确定要退出登录吗？",
+  "@authLogoutConfirm": {
+    "description": "Logout confirm"
+  },
+  "authSendingCode": "发送中...",
+  "@authSendingCode": {
+    "description": "Sending code"
+  },
+  "authCodeSent": "验证码已发送",
+  "@authCodeSent": {
+    "description": "Code sent"
+  },
+  "authLoginFailed": "登录失败，请重试",
+  "@authLoginFailed": {
+    "description": "Login failed"
+  },
+  "authRegisterFailed": "注册失败，请重试",
+  "@authRegisterFailed": {
+    "description": "Register failed"
+  },
+  "authEnterpriseCode": "企业码",
+  "@authEnterpriseCode": {
+    "description": "Enterprise code"
+  },
+  "authEnterpriseCodeHint": "请输入企业码",
+  "@authEnterpriseCodeHint": {
+    "description": "Enterprise code hint"
+  },
+  "authPendingApproval": "注册成功，加入企业申请已提交，等待审批",
+  "@authPendingApproval": {
+    "description": "Pending approval"
+  },
+  "authNoAccount": "没有账号？",
+  "@authNoAccount": {"description": "Login registration prompt"},
+  "authRegisterNow": "立即注册",
+  "@authRegisterNow": {"description": "Open registration"},
+  "authCountryPickerTitle": "选择国家/地区",
+  "@authCountryPickerTitle": {"description": "Country picker title"},
+  "authCountrySearchHint": "搜索国家/地区",
+  "@authCountrySearchHint": {"description": "Country picker search hint"},
+  "authCountryChinaMainland": "中国大陆",
+  "@authCountryChinaMainland": {"description": "Country name"},
+  "authCountryHongKong": "中国香港",
+  "@authCountryHongKong": {"description": "Country name"},
+  "authCountryMacau": "中国澳门",
+  "@authCountryMacau": {"description": "Country name"},
+  "authCountryTaiwan": "中国台湾",
+  "@authCountryTaiwan": {"description": "Country name"},
+  "authCountryUnitedStates": "美国",
+  "@authCountryUnitedStates": {"description": "Country name"},
+  "authCountryUnitedKingdom": "英国",
+  "@authCountryUnitedKingdom": {"description": "Country name"},
+  "authCountryJapan": "日本",
+  "@authCountryJapan": {"description": "Country name"},
+  "authCountrySouthKorea": "韩国",
+  "@authCountrySouthKorea": {"description": "Country name"},
+  "authCountrySingapore": "新加坡",
+  "@authCountrySingapore": {"description": "Country name"},
+  "authCountryMalaysia": "马来西亚",
+  "@authCountryMalaysia": {"description": "Country name"},
+  "authCountryAustralia": "澳大利亚",
+  "@authCountryAustralia": {"description": "Country name"},
+  "authCountryCanada": "加拿大",
+  "@authCountryCanada": {"description": "Country name"},
+  "authCountryGermany": "德国",
+  "@authCountryGermany": {"description": "Country name"},
+  "authCountryFrance": "法国",
+  "@authCountryFrance": {"description": "Country name"},
+  "authCountryIndia": "印度",
+  "@authCountryIndia": {"description": "Country name"},
+  "authCountryThailand": "泰国",
+  "@authCountryThailand": {"description": "Country name"},
+  "authCountryVietnam": "越南",
+  "@authCountryVietnam": {"description": "Country name"},
+  "authCountryIndonesia": "印度尼西亚",
+  "@authCountryIndonesia": {"description": "Country name"},
+  "authCountryPhilippines": "菲律宾",
+  "@authCountryPhilippines": {"description": "Country name"},
+  "authQuickLoginTitle": "快速登录",
+  "@authQuickLoginTitle": {"description": "Developer quick login title"},
+  "authQuickLoginSummary": "{count} 个快捷登录账号；凭证由宿主提供。",
+  "@authQuickLoginSummary": {"description": "Developer quick login summary", "placeholders": {"count": {"type": "int"}}},
+  "authQuickLoginProgress": "正在登录，请稍候",
+  "@authQuickLoginProgress": {"description": "Quick login progress"},
+  "authRoleOwner": "所有者",
+  "@authRoleOwner": {"description": "Owner role"},
+  "authRoleAdministrator": "管理员",
+  "@authRoleAdministrator": {"description": "Administrator role"},
+  "authRoleCustomerService": "客服",
+  "@authRoleCustomerService": {"description": "Customer service role"},
+  "authRoleTechnicalSupport": "技术支持",
+  "@authRoleTechnicalSupport": {"description": "Technical support role"},
+  "authRoleEmployee": "普通员工",
+  "@authRoleEmployee": {"description": "Employee role"},
+  "authRoleMember": "成员",
+  "@authRoleMember": {"description": "Member role"},
+  "authRoleEnterpriseCustomer": "企业空户",
+  "@authRoleEnterpriseCustomer": {"description": "Enterprise customer account role"},
+  "authUnavailablePrefix": "不可用 · ",
+  "@authUnavailablePrefix": {"description": "Unavailable account prefix"},
+  "authUnassignedService": "未分配客服",
+  "@authUnassignedService": {"description": "No assigned service staff"},
+  "authAssignedService": "归属{staff}",
+  "@authAssignedService": {"description": "Assigned service staff", "placeholders": {"staff": {"type": "String"}}},
+  "authCustomerIdentity": "客户 · {assignment}",
+  "@authCustomerIdentity": {"description": "Quick account customer identity", "placeholders": {"assignment": {"type": "String"}}},
+  "authEmployeeIdentity": "员工 · {tenant}",
+  "@authEmployeeIdentity": {"description": "Quick account employee identity", "placeholders": {"tenant": {"type": "String"}}},
+  "authUserCount": "{count} 个用户",
+  "@authUserCount": {"description": "User count", "placeholders": {"count": {"type": "int"}}},
+  "authMetaPhone": "电话",
+  "@authMetaPhone": {"description": "Phone metadata label"},
+  "authMetaIdentity": "身份",
+  "@authMetaIdentity": {"description": "Identity metadata label"},
+  "authRegisterTitle": "注册",
+  "@authRegisterTitle": {"description": "Registration page title"},
+  "authNickname": "昵称",
+  "@authNickname": {"description": "Nickname label"},
+  "authNicknameHint": "设置昵称",
+  "@authNicknameHint": {"description": "Nickname hint"},
+  "authPassword": "密码",
+  "@authPassword": {"description": "Password label"},
+  "authPasswordSetHint": "设置密码（至少6位）",
+  "@authPasswordSetHint": {"description": "Password setup hint"},
+  "authConfirmPassword": "确认密码",
+  "@authConfirmPassword": {"description": "Confirm password label"},
+  "authConfirmPasswordHint": "再次输入密码",
+  "@authConfirmPasswordHint": {"description": "Confirm password hint"},
+  "authVerificationCode": "验证码",
+  "@authVerificationCode": {"description": "Verification code label"},
+  "authRegisterAndLogin": "注册并登录",
+  "@authRegisterAndLogin": {"description": "Register and login button"},
+  "authHaveAccount": "已有账户？",
+  "@authHaveAccount": {"description": "Existing account prompt"},
+  "authGoLogin": "去登录",
+  "@authGoLogin": {"description": "Return to login"},
+  "authEmailVerificationUnavailable": "邮箱验证码服务暂不可用，请改用手机号注册",
+  "@authEmailVerificationUnavailable": {"description": "Email verification unavailable"},
+  "authSmsVerificationUnavailable": "短信验证码服务暂不可用，请改用邮箱注册",
+  "@authSmsVerificationUnavailable": {"description": "SMS verification unavailable"},
+  "authSendFailed": "发送失败，请重试",
+  "@authSendFailed": {"description": "Verification send failed"},
+  "authErrorEmptyNickname": "请输入昵称",
+  "@authErrorEmptyNickname": {"description": "Empty nickname error"},
+  "authErrorInvalidMobile": "手机号格式不正确",
+  "@authErrorInvalidMobile": {"description": "Invalid mobile error"},
+  "authErrorInvalidEmail": "邮箱格式不正确",
+  "@authErrorInvalidEmail": {"description": "Invalid email error"},
+  "authErrorPasswordTooShort": "密码至少6位",
+  "@authErrorPasswordTooShort": {"description": "Short password error"},
+  "authErrorPasswordMismatch": "两次密码不一致",
+  "@authErrorPasswordMismatch": {"description": "Password mismatch error"},
+  "authErrorVerificationRequired": "请先获取并填写验证码",
+  "@authErrorVerificationRequired": {"description": "Verification required error"},
+  "authRegisterErrorTitle": "注册失败",
+  "@authRegisterErrorTitle": {"description": "Registration error title"},
+  "authGotIt": "知道了",
+  "@authGotIt": {"description": "Dismiss registration error"},
+  "authJoinCredentialHint": "请输入邀请码",
+  "@authJoinCredentialHint": {"description": "Tenant or invitation code hint"},
+  "authTenantNotFound": "未找到企业「{code}」，请确认企业码是否正确",
+  "@authTenantNotFound": {"description": "Tenant code not found", "placeholders": {"code": {"type": "String"}}},
+  "authTenantSearchFailed": "搜索失败，请重试",
+  "@authTenantSearchFailed": {"description": "Tenant search failed"},
+  "authInvitationInvalid": "邀请码无效，请确认后重试",
+  "@authInvitationInvalid": {"description": "Invitation invalid"},
+  "authCollapseJoin": "收起加入信息",
+  "@authCollapseJoin": {"description": "Collapse join section"},
+  "authExpandJoin": "加入企业？输入邀请码（可选）",
+  "@authExpandJoin": {"description": "Expand optional join section"},
+  "authInvitationValid": "邀请码有效：{name}",
+  "@authInvitationValid": {"description": "Invitation preview success", "placeholders": {"name": {"type": "String"}}},
+  "authTenantFound": "找到企业：{name}",
+  "@authTenantFound": {"description": "Tenant preview success", "placeholders": {"name": {"type": "String"}}},
+  "authJoinNotFound": "邀请码无效或不存在",
+  "@authJoinNotFound": {"description": "Join credential not found"},
+  "authJoinHelp": "输入企业提供的邀请码，可在注册后加入对应企业",
+  "@authJoinHelp": {"description": "Join credential help"},
+  "authSelectOrganization": "选择组织",
+  "@authSelectOrganization": {"description": "Tenant selection title"},
+  "authNoOrganization": "暂无可用组织",
+  "@authNoOrganization": {"description": "No organization"},
+  "authNoOrganizationHint": "请联系管理员邀请您加入组织",
+  "@authNoOrganizationHint": {"description": "No organization guidance"},
+  "authPersonalSpace": "个人空间",
+  "@authPersonalSpace": {"description": "Personal space entry"},
+  "authPersonalSpaceSubtitle": "好友聊天、个人收藏",
+  "@authPersonalSpaceSubtitle": {"description": "Personal space description"},
+  "authSpaceIdentityValidationFailed": "空间身份校验失败，请重试",
+  "@authSpaceIdentityValidationFailed": {"description": "Space identity validation failure"},
+  "authPersonalSpaceRestoreFailed": "个人空间恢复失败，请重试",
+  "@authPersonalSpaceRestoreFailed": {"description": "Personal space restore failure"},
+  "authJoinEnterpriseFailed": "加入企业失败，请稍后重试",
+  "@authJoinEnterpriseFailed": {"description": "Join enterprise failure"},
+  "homeTitle": "消息",
+  "@homeTitle": {
+    "description": "Home page title"
+  },
+  "homeGatewayConnectingTitle": "连接中",
+  "@homeGatewayConnectingTitle": {
+    "description": "Home title shown while chat gateway is connecting or reconnecting"
+  },
+  "homePersonalSpace": "个人空间",
+  "@homePersonalSpace": {
+    "description": "Personal space"
+  },
+  "homeOfficialService": "官方服务空间",
+  "@homeOfficialService": {
+    "description": "Official service space"
+  },
+  "homeSwitchSpace": "切换空间",
+  "@homeSwitchSpace": {
+    "description": "Switch space"
+  },
+  "homeSpaceSubtitle": "个人空间 · 企业空间",
+  "@homeSpaceSubtitle": {
+    "description": "Space subtitle"
+  },
+  "homeJoinEnterprise": "加入企业",
+  "@homeJoinEnterprise": {
+    "description": "Join enterprise"
+  },
+  "homeCreateGroup": "发起群聊",
+  "@homeCreateGroup": {
+    "description": "Create group"
+  },
+  "homeAddFriend": "添加朋友",
+  "@homeAddFriend": {
+    "description": "Add friend"
+  },
+  "homeScan": "扫一扫",
+  "@homeScan": {
+    "description": "Scan"
+  },
+  "homeJoinNewSpace": "加入新空间",
+  "@homeJoinNewSpace": {
+    "description": "Join new space"
+  },
+  "homeSearchConversation": "搜索对话",
+  "@homeSearchConversation": {
+    "description": "Search conversation"
+  },
+  "homeNoMessages": "暂无消息",
+  "@homeNoMessages": {
+    "description": "No messages"
+  },
+  "homeDeleteConversation": "删除会话",
+  "@homeDeleteConversation": {
+    "description": "Delete conversation"
+  },
+  "homeDeleteConversationConfirm": "确定要删除该会话吗？聊天记录将被清空。",
+  "@homeDeleteConversationConfirm": {
+    "description": "Delete conversation confirm"
+  },
+  "homePersonalNote": "我（个人笔记）",
+  "@homePersonalNote": {
+    "description": "Personal note"
+  },
+  "homeWorkNote": "我（工作笔记）",
+  "@homeWorkNote": {
+    "description": "Work note"
+  },
+  "homeConversationCount": "{count} 条会话",
+  "@homeConversationCount": {
+    "description": "Conversation count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeUnreadCount": "{count} 条未读",
+  "@homeUnreadCount": {
+    "description": "Unread count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatInputHint": "输入消息...",
+  "@chatInputHint": {
+    "description": "chatInputHint"
+  },
+  "chatVoiceHint": "按住说话",
+  "@chatVoiceHint": {
+    "description": "Voice hint"
+  },
+  "chatVoiceRelease": "松开发送",
+  "@chatVoiceRelease": {
+    "description": "Voice release"
+  },
+  "chatVoiceCancel": "上滑取消",
+  "@chatVoiceCancel": {
+    "description": "Voice cancel"
+  },
+  "chatMenuCopy": "复制",
+  "@chatMenuCopy": {
+    "description": "Chat menu copy"
+  },
+  "chatMenuForward": "转发",
+  "@chatMenuForward": {
+    "description": "Chat menu forward"
+  },
+  "chatMenuRecall": "撤回",
+  "@chatMenuRecall": {
+    "description": "Chat menu recall"
+  },
+  "chatMenuDelete": "删除",
+  "@chatMenuDelete": {
+    "description": "Chat menu delete"
+  },
+  "chatMenuFavorite": "收藏",
+  "@chatMenuFavorite": {
+    "description": "Chat menu favorite"
+  },
+  "chatMenuReply": "引用",
+  "@chatMenuReply": {
+    "description": "Chat menu reply"
+  },
+  "chatMenuMultiSelect": "多选",
+  "@chatMenuMultiSelect": {
+    "description": "Chat menu multi select"
+  },
+  "chatMenuTranslate": "翻译",
+  "@chatMenuTranslate": {
+    "description": "Chat menu translate"
+  },
+  "chatMenuVoiceToText": "转文字",
+  "@chatMenuVoiceToText": {
+    "description": "Chat menu voice to text"
+  },
+  "chatMenuTextToSpeech": "朗读",
+  "@chatMenuTextToSpeech": {
+    "description": "Chat menu text to speech"
+  },
+  "chatStatusRecalled": "消息已撤回",
+  "@chatStatusRecalled": {
+    "description": "Message recalled"
+  },
+  "chatRecallSuccess": "已撤回",
+  "@chatRecallSuccess": {
+    "description": "Recall success"
+  },
+  "chatRecallFailed": "撤回失败",
+  "@chatRecallFailed": {
+    "description": "Recall failed"
+  },
+  "chatRecallTimeout": "超过2分钟的消息无法撤回",
+  "@chatRecallTimeout": {
+    "description": "Recall timeout"
+  },
+  "chatTranslateFailed": "翻译失败，请重试",
+  "@chatTranslateFailed": {
+    "description": "Translate failed"
+  },
+  "chatTranslateNotConfigured": "翻译服务暂未开放",
+  "@chatTranslateNotConfigured": {
+    "description": "Translate not configured"
+  },
+  "chatVoiceToTextFailed": "转文字失败，请重试",
+  "chatTextToSpeechFailed": "朗读失败，请重试",
+  "chatVoiceToText": "转文字",
+  "@chatVoiceToTextFailed": {
+    "description": "Voice to text failed"
+  },
+  "@chatTextToSpeechFailed": {
+    "description": "Text to speech failed"
+  },
+  "chatForwardSuccess": "已转发",
+  "@chatForwardSuccess": {
+    "description": "Forward success"
+  },
+  "chatForwardFailed": "转发失败，请重试",
+  "@chatForwardFailed": {
+    "description": "Forward failed"
+  },
+  "chatNoConversations": "没有可转发的会话",
+  "@chatNoConversations": {
+    "description": "No conversations to forward"
+  },
+  "chatSendFailed": "发送失败",
+  "@chatSendFailed": {
+    "description": "Send failed"
+  },
+  "chatResend": "重新发送",
+  "@chatResend": {
+    "description": "Resend"
+  },
+  "chatNotFriend": "对方不是你的好友",
+  "@chatNotFriend": {
+    "description": "Not friend"
+  },
+  "chatNotFriendHint": "你还不是对方的好友，暂时无法发送消息",
+  "@chatNotFriendHint": {
+    "description": "Not friend hint"
+  },
+  "chatMutedHint": "全员禁言中",
+  "@chatMutedHint": {
+    "description": "Muted hint"
+  },
+  "chatFileUploadFailed": "文件上传失败，请重试",
+  "@chatFileUploadFailed": {
+    "description": "File upload failed"
+  },
+  "chatFileStatusNotDownloaded": "未下载",
+  "@chatFileStatusNotDownloaded": {
+    "description": "File message status when the attachment has not been downloaded"
+  },
+  "chatFileStatusDownloaded": "已下载",
+  "@chatFileStatusDownloaded": {
+    "description": "File message status when the attachment is available locally"
+  },
+  "chatFileStatusUploading": "上传中",
+  "@chatFileStatusUploading": {
+    "description": "File message status while upload is in progress"
+  },
+  "chatFileStatusUploadFailed": "上传失败",
+  "@chatFileStatusUploadFailed": {
+    "description": "File message status when upload failed"
+  },
+  "chatCardSendFailed": "名片发送失败",
+  "@chatCardSendFailed": {
+    "description": "Card send failed"
+  },
+  "chatFavoriteSuccess": "已收藏",
+  "@chatFavoriteSuccess": {
+    "description": "Favorite success"
+  },
+  "chatFavoriteFailed": "收藏失败",
+  "@chatFavoriteFailed": {
+    "description": "Favorite failed"
+  },
+  "chatLoadFailed": "加载失败",
+  "@chatLoadFailed": {
+    "description": "Chat load failed"
+  },
+  "chatImageMessage": "[图片]",
+  "@chatImageMessage": {
+    "description": "Image message preview"
+  },
+  "chatVoiceMessage": "[语音]",
+  "@chatVoiceMessage": {
+    "description": "Voice message preview"
+  },
+  "chatVideoMessage": "[视频]",
+  "@chatVideoMessage": {
+    "description": "Video message preview"
+  },
+  "chatFileMessage": "[文件]",
+  "@chatFileMessage": {
+    "description": "File message preview"
+  },
+  "chatLocationMessage": "[位置]",
+  "@chatLocationMessage": {
+    "description": "Location message preview"
+  },
+  "chatContactCardMessage": "[名片]",
+  "@chatContactCardMessage": {
+    "description": "Contact card message preview"
+  },
+  "chatCallLogMessage": "[通话记录]",
+  "@chatCallLogMessage": {
+    "description": "Call log message preview"
+  },
+  "chatGroupMemberCount": "({count})",
+  "@chatGroupMemberCount": {
+    "description": "Group member count in title",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatReadCount": "已读 {count} 人",
+  "@chatReadCount": {
+    "description": "Chat read count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatUnread": "未读",
+  "@chatUnread": {
+    "description": "chatUnread"
+  },
+  "chatRecalledSelf": "你撤回了一条消息",
+  "@chatRecalledSelf": {
+    "description": "chatRecalledSelf"
+  },
+  "chatRecalledPeer": "{sender}撤回了一条消息",
+  "@chatRecalledPeer": {
+    "description": "Peer recalled message",
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTranslationPrefix": "翻译：{translation}",
+  "@chatTranslationPrefix": {
+    "description": "Translation prefix",
+    "placeholders": {
+      "translation": {
+        "type": "String"
+      }
+    }
+  },
+  "chatMessageDeleted": "消息已被删除",
+  "@chatMessageDeleted": {
+    "description": "chatMessageDeleted"
+  },
+  "chatPeer": "对方",
+  "@chatPeer": {
+    "description": "chatPeer"
+  },
+  "chatSelf": "我",
+  "@chatSelf": {
+    "description": "chatSelf"
+  },
+  "chatGenericMessage": "[消息]",
+  "@chatGenericMessage": {
+    "description": "chatGenericMessage"
+  },
+  "chatVoiceHideText": "隐藏文字",
+  "@chatVoiceHideText": {
+    "description": "chatVoiceHideText"
+  },
+  "chatVoiceShowText": "转文字",
+  "@chatVoiceShowText": {
+    "description": "chatVoiceShowText"
+  },
+  "chatFileDefaultName": "文件",
+  "@chatFileDefaultName": {
+    "description": "chatFileDefaultName"
+  },
+  "chatContactDefaultName": "联系人",
+  "@chatContactDefaultName": {
+    "description": "chatContactDefaultName"
+  },
+  "chatContactCardTitle": "个人名片",
+  "@chatContactCardTitle": {
+    "description": "chatContactCardTitle"
+  },
+  "chatCallMissed": "未接听",
+  "@chatCallMissed": {
+    "description": "chatCallMissed"
+  },
+  "chatCallCancelled": "已取消",
+  "@chatCallCancelled": {
+    "description": "chatCallCancelled"
+  },
+  "chatCallRejected": "已拒接",
+  "@chatCallRejected": {
+    "description": "chatCallRejected"
+  },
+  "chatCallDisconnected": "连接中断",
+  "@chatCallDisconnected": {
+    "description": "chatCallDisconnected"
+  },
+  "chatCallEnded": "通话已结束",
+  "@chatCallEnded": {
+    "description": "chatCallEnded"
+  },
+  "chatCallFailed": "通话失败",
+  "@chatCallFailed": {
+    "description": "chatCallFailed"
+  },
+  "chatCallDuration": "通话时长 {duration}",
+  "@chatCallDuration": {
+    "description": "Call duration text",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "chatVideoCallTitle": "视频通话",
+  "@chatVideoCallTitle": {
+    "description": "chatVideoCallTitle"
+  },
+  "chatVoiceCallTitle": "语音通话",
+  "@chatVoiceCallTitle": {
+    "description": "chatVoiceCallTitle"
+  },
+  "chatToolPhotos": "照片",
+  "@chatToolPhotos": {
+    "description": "chatToolPhotos"
+  },
+  "chatToolCamera": "拍摄",
+  "@chatToolCamera": {
+    "description": "chatToolCamera"
+  },
+  "chatToolFile": "文件",
+  "@chatToolFile": {
+    "description": "chatToolFile"
+  },
+  "chatToolLocation": "位置",
+  "@chatToolLocation": {
+    "description": "chatToolLocation"
+  },
+  "chatToolContactCard": "名片",
+  "@chatToolContactCard": {
+    "description": "chatToolContactCard"
+  },
+  "chatToolVoiceCall": "语音通话",
+  "@chatToolVoiceCall": {
+    "description": "chatToolVoiceCall"
+  },
+  "chatToolVideoCall": "视频通话",
+  "@chatToolVideoCall": {
+    "description": "chatToolVideoCall"
+  },
+  "chatToolFavorites": "收藏",
+  "@chatToolFavorites": {
+    "description": "chatToolFavorites"
+  },
+  "chatToolTranslate": "翻译",
+  "chatTranslationChooseLanguage": "选择翻译语言",
+  "chatTranslationEnterText": "请先输入文字",
+  "chatTranslationMentionsUnsupported": "暂不支持翻译带有 @ 的消息",
+  "chatTranslationScheduledUnsupported": "暂不支持翻译定时消息",
+  "chatTranslationFailed": "翻译失败，请重试",
+  "chatTranslationEmpty": "未获得译文，请重试",
+  "chatTranslationTranslating": "翻译中…",
+  "chatTranslationSend": "发送译文",
+  "chatTranslationSending": "发送中…",
+  "chatTranslationExpand": "展开译文",
+  "chatTranslationCollapse": "收起译文",
+  "chatFileTooLarge": "文件大小超过限制（100 MB）",
+  "@chatFileTooLarge": {
+    "description": "chatFileTooLarge"
+  },
+  "chatInputMutedAdminOnly": "已开启仅群主或特定成员可发言",
+  "@chatInputMutedAdminOnly": {
+    "description": "chatInputMutedAdminOnly"
+  },
+  "chatImageUploadUnsupported": "图片上传失败，服务端暂不支持，请联系管理员",
+  "@chatImageUploadUnsupported": {
+    "description": "chatImageUploadUnsupported"
+  },
+  "chatFavoriteLongPressHint": "请长按消息进行收藏",
+  "@chatFavoriteLongPressHint": {
+    "description": "chatFavoriteLongPressHint"
+  },
+  "chatSelectedCount": "已选择 {count} 条",
+  "@chatSelectedCount": {
+    "description": "Selected message count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatLocationSheetTitle": "发送位置",
+  "@chatLocationSheetTitle": {
+    "description": "chatLocationSheetTitle"
+  },
+  "chatLocationNameLabel": "地点名称",
+  "@chatLocationNameLabel": {
+    "description": "chatLocationNameLabel"
+  },
+  "chatLocationNameHint": "例如：公司、客户地址",
+  "@chatLocationNameHint": {
+    "description": "chatLocationNameHint"
+  },
+  "chatLocationAddressLabel": "详细地址",
+  "@chatLocationAddressLabel": {
+    "description": "chatLocationAddressLabel"
+  },
+  "chatLocationOptionalHint": "选填",
+  "@chatLocationOptionalHint": {
+    "description": "chatLocationOptionalHint"
+  },
+  "chatLocationLatitudeLabel": "纬度",
+  "@chatLocationLatitudeLabel": {
+    "description": "chatLocationLatitudeLabel"
+  },
+  "chatLocationLatitudeHint": "-90 到 90",
+  "@chatLocationLatitudeHint": {
+    "description": "chatLocationLatitudeHint"
+  },
+  "chatLocationLongitudeLabel": "经度",
+  "@chatLocationLongitudeLabel": {
+    "description": "chatLocationLongitudeLabel"
+  },
+  "chatLocationLongitudeHint": "-180 到 180",
+  "@chatLocationLongitudeHint": {
+    "description": "chatLocationLongitudeHint"
+  },
+  "chatLocationValidationRequired": "请输入{label}",
+  "@chatLocationValidationRequired": {
+    "description": "Location coordinate required",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "chatLocationValidationRange": "{label}范围不正确",
+  "@chatLocationValidationRange": {
+    "description": "Location coordinate invalid range",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "chatLocationDefaultTitle": "位置",
+  "@chatLocationDefaultTitle": {
+    "description": "chatLocationDefaultTitle"
+  },
+  "chatMutedFullNotice": "该群已开启已开启仅群主或特定成员可发言",
+  "@chatMutedFullNotice": {
+    "description": "chatMutedFullNotice"
+  },
+  "chatNotFriendSendBlocked": "你已不是对方好友，无法发送消息",
+  "@chatNotFriendSendBlocked": {
+    "description": "chatNotFriendSendBlocked"
+  },
+  "chatPersonalNotesTitle": "个人笔记",
+  "@chatPersonalNotesTitle": {
+    "description": "chatPersonalNotesTitle"
+  },
+  "chatWorkNotesTitle": "工作笔记",
+  "@chatWorkNotesTitle": {
+    "description": "chatWorkNotesTitle"
+  },
+  "chatPersonalNotesDescription": "在这里记录个人想法、保存重要信息\n跨设备同步，随时随地访问",
+  "@chatPersonalNotesDescription": {
+    "description": "chatPersonalNotesDescription"
+  },
+  "chatWorkNotesDescription": "在这里记录工作事项、保存工作资料\n团队空间独立，信息安全隔离",
+  "@chatWorkNotesDescription": {
+    "description": "chatWorkNotesDescription"
+  },
+  "chatNoMessages": "暂无消息",
+  "@chatNoMessages": {
+    "description": "chatNoMessages"
+  },
+  "chatReplyTo": "回复 {sender}",
+  "@chatReplyTo": {
+    "description": "Reply preview sender",
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
+  },
+  "chatFeatureComingSoon": "{feature} 功能即将上线",
+  "@chatFeatureComingSoon": {
+    "description": "Feature coming soon",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "chatForwardSelectTitle": "选择聊天",
+  "@chatForwardSelectTitle": {
+    "description": "chatForwardSelectTitle"
+  },
+  "chatContactSelectTitle": "选择联系人",
+  "@chatContactSelectTitle": {
+    "description": "chatContactSelectTitle"
+  },
+  "chatNoContacts": "暂无联系人",
+  "@chatNoContacts": {
+    "description": "chatNoContacts"
+  },
+  "contactsTitle": "通讯录",
+  "@contactsTitle": {
+    "description": "Contacts title"
+  },
+  "contactsSearch": "搜索联系人",
+  "@contactsSearch": {
+    "description": "Search contacts"
+  },
+  "contactsNewFriends": "新的朋友",
+  "@contactsNewFriends": {
+    "description": "New friends"
+  },
+  "contactsGroups": "群聊",
+  "@contactsGroups": {
+    "description": "Groups"
+  },
+  "contactsFavorites": "收藏",
+  "@contactsFavorites": {
+    "description": "Favorites"
+  },
+  "contactsRecent": "最近联系",
+  "@contactsRecent": {
+    "description": "Recent contacts"
+  },
+  "contactsOrganization": "组织架构",
+  "@contactsOrganization": {
+    "description": "Organization"
+  },
+  "contactsAnnouncement": "企业公告",
+  "@contactsAnnouncement": {
+    "description": "Announcement"
+  },
+  "contactsNewApplications": "新的申请",
+  "@contactsNewApplications": {
+    "description": "New applications"
+  },
+  "contactsCustomerGroups": "客户群组",
+  "@contactsCustomerGroups": {
+    "description": "Customer groups"
+  },
+  "contactsAllCustomers": "所有客户",
+  "@contactsAllCustomers": {
+    "description": "All customers"
+  },
+  "contactsMyCustomers": "我的客户",
+  "@contactsMyCustomers": {
+    "description": "My customers"
+  },
+  "contactsViewAll": "查看全部",
+  "@contactsViewAll": {
+    "description": "View all"
+  },
+  "contactsMyContacts": "我的联系人",
+  "@contactsMyContacts": {
+    "description": "My contacts"
+  },
+  "contactsMyAdvisor": "我的专属顾问",
+  "@contactsMyAdvisor": {
+    "description": "My advisor"
+  },
+  "contactsNoAdvisor": "暂未分配专属顾问",
+  "@contactsNoAdvisor": {
+    "description": "No advisor"
+  },
+  "contactsAdvisorLoading": "加载中，请稍候",
+  "@contactsAdvisorLoading": {
+    "description": "Advisor loading"
+  },
+  "contactsNavigateFailed": "跳转失败，请重试",
+  "@contactsNavigateFailed": {
+    "description": "Navigate failed"
+  },
+  "contactsEmpty": "暂无联系人",
+  "@contactsEmpty": {
+    "description": "No contacts"
+  },
+  "contactsNoAnnouncement": "暂无公告",
+  "@contactsNoAnnouncement": {
+    "description": "No announcement"
+  },
+  "contactsOfficialBadge": "官方",
+  "@contactsOfficialBadge": {
+    "description": "Official badge"
+  },
+  "contactsCustomerBadge": "客户",
+  "@contactsCustomerBadge": {
+    "description": "Customer badge"
+  },
+  "contactsEmptyCustomers": "暂无客户",
+  "@contactsEmptyCustomers": {
+    "description": "No customers"
+  },
+  "myTitle": "我",
+  "@myTitle": {
+    "description": "My page title"
+  },
+  "myEnterpriseInfo": "企业信息",
+  "@myEnterpriseInfo": {
+    "description": "Enterprise info"
+  },
+  "myEnterpriseManage": "企业管理",
+  "@myEnterpriseManage": {
+    "description": "Enterprise management"
+  },
+  "myQrCode": "二维码名片",
+  "@myQrCode": {
+    "description": "QR code card"
+  },
+  "myFavorites": "收藏",
+  "@myFavorites": {
+    "description": "Favorites"
+  },
+  "myLanguage": "系统语言",
+  "@myLanguage": {
+    "description": "System language"
+  },
+  "myTimezone": "时区",
+  "@myTimezone": {
+    "description": "Timezone"
+  },
+  "myAutoTranslate": "自动翻译",
+  "@myAutoTranslate": {
+    "description": "Auto translate"
+  },
+  "myNetworkSwitch": "线路切换",
+  "@myNetworkSwitch": {
+    "description": "Network switch"
+  },
+  "mySettings": "设置",
+  "@mySettings": {
+    "description": "Settings"
+  },
+  "myLogout": "退出登录",
+  "@myLogout": {
+    "description": "Logout"
+  },
+  "myLogoutConfirm": "确定要退出登录吗？",
+  "@myLogoutConfirm": {
+    "description": "Logout confirm"
+  },
+  "myLeaveEnterprise": "退出企业",
+  "@myLeaveEnterprise": {
+    "description": "Leave enterprise"
+  },
+  "myLeaveEnterpriseConfirm": "确定要退出该企业吗？退出后将无法访问企业数据。",
+  "@myLeaveEnterpriseConfirm": {
+    "description": "Leave enterprise confirm"
+  },
+  "myLeaveEnterpriseSuccess": "已退出企业",
+  "@myLeaveEnterpriseSuccess": {
+    "description": "Leave enterprise success"
+  },
+  "myLeaveEnterpriseFailed": "退出失败，请重试",
+  "@myLeaveEnterpriseFailed": {
+    "description": "Leave enterprise failed"
+  },
+  "myLppIdCopied": "微界号已复制",
+  "@myLppIdCopied": {
+    "description": "StartLink ID copied"
+  },
+  "myLppIdLabel": "微界号：{lppId}",
+  "@myLppIdLabel": {
+    "description": "StartLink ID label",
+    "placeholders": {
+      "lppId": {
+        "type": "String"
+      }
+    }
+  },
+  "myFriendCount": "{count} 个朋友",
+  "@myFriendCount": {
+    "description": "Friend count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "myAutoSelect": "自动选择",
+  "@myAutoSelect": {
+    "description": "Auto select"
+  },
+  "myPresenceStatus": "在线状态",
+  "@myPresenceStatus": {
+    "description": "Presence status"
+  },
+  "myPresenceStatusTitle": "设置在线状态",
+  "@myPresenceStatusTitle": {
+    "description": "Set presence status title"
+  },
+  "myPresenceOnline": "在线",
+  "@myPresenceOnline": {
+    "description": "Presence online"
+  },
+  "myPresenceBusy": "忙碌",
+  "@myPresenceBusy": {
+    "description": "Presence busy"
+  },
+  "myPresenceAway": "离开",
+  "@myPresenceAway": {
+    "description": "Presence away"
+  },
+  "myPresenceInvisible": "隐身",
+  "@myPresenceInvisible": {
+    "description": "Presence invisible"
+  },
+  "profileTitle": "个人资料",
+  "@profileTitle": {
+    "description": "Profile title"
+  },
+  "profileName": "名字",
+  "@profileName": {
+    "description": "Name field"
+  },
+  "profileGender": "性别",
+  "@profileGender": {
+    "description": "Gender field"
+  },
+  "profileBirthday": "生日",
+  "@profileBirthday": {
+    "description": "Birthday field"
+  },
+  "profileRegion": "地区",
+  "@profileRegion": {
+    "description": "Region field"
+  },
+  "profileSignature": "签名",
+  "@profileSignature": {
+    "description": "Signature field"
+  },
+  "profileSignatureHint": "介绍一下自己",
+  "@profileSignatureHint": {
+    "description": "Signature hint"
+  },
+  "profileTapTapText": "拍一拍",
+  "@profileTapTapText": {
+    "description": "Tap tap text field"
+  },
+  "profileTapTapHint": "拍一拍时显示的文案（最多20字）",
+  "@profileTapTapHint": {
+    "description": "Tap tap hint"
+  },
+  "profileAccountSection": "账号",
+  "@profileAccountSection": {
+    "description": "Account section"
+  },
+  "profileBasicSection": "基本信息",
+  "@profileBasicSection": {
+    "description": "Basic info section"
+  },
+  "profileLppId": "微界号",
+  "@profileLppId": {
+    "description": "StartLink ID field"
+  },
+  "profileLppIdNotSet": "未设置",
+  "@profileLppIdNotSet": {
+    "description": "StartLink ID not set"
+  },
+  "profileMobile": "手机号",
+  "@profileMobile": {
+    "description": "Mobile field"
+  },
+  "profileMobileUnbound": "未绑定",
+  "@profileMobileUnbound": {
+    "description": "Mobile unbound"
+  },
+  "profileEmail": "邮箱",
+  "@profileEmail": {
+    "description": "Email field"
+  },
+  "profileEmailUnbound": "未绑定",
+  "@profileEmailUnbound": {
+    "description": "Email unbound"
+  },
+  "profileQrCode": "我的二维码",
+  "@profileQrCode": {
+    "description": "My QR code"
+  },
+  "profileChangePassword": "修改密码",
+  "@profileChangePassword": {
+    "description": "Change password"
+  },
+  "profileGenderMale": "男",
+  "@profileGenderMale": {
+    "description": "Male"
+  },
+  "profileGenderFemale": "女",
+  "@profileGenderFemale": {
+    "description": "Female"
+  },
+  "profileGenderOther": "其他",
+  "@profileGenderOther": {
+    "description": "Other gender"
+  },
+  "profileGenderUnset": "未设置",
+  "@profileGenderUnset": {
+    "description": "Gender unset"
+  },
+  "profileSaveFailed": "保存失败，请重试",
+  "@profileSaveFailed": {
+    "description": "Save failed"
+  },
+  "profileLppIdTitle": "微界号",
+  "@profileLppIdTitle": {
+    "description": "StartLink ID page title"
+  },
+  "profileLppIdSetOnce": "微界号设置后只能修改一次，请谨慎填写",
+  "@profileLppIdSetOnce": {
+    "description": "StartLink ID set once warning"
+  },
+  "profileLppIdChangeFailed": "修改失败（微界号只能修改一次）",
+  "@profileLppIdChangeFailed": {
+    "description": "StartLink ID change failed"
+  },
+  "profileChangePasswordOld": "旧密码",
+  "@profileChangePasswordOld": {
+    "description": "Old password"
+  },
+  "profileChangePasswordNew": "新密码",
+  "@profileChangePasswordNew": {
+    "description": "New password"
+  },
+  "profileChangePasswordConfirm": "确认新密码",
+  "@profileChangePasswordConfirm": {
+    "description": "Confirm new password"
+  },
+  "profileChangePasswordMismatch": "两次密码不一致",
+  "@profileChangePasswordMismatch": {
+    "description": "Password mismatch"
+  },
+  "profileChangePasswordSuccess": "密码修改成功，请重新登录",
+  "@profileChangePasswordSuccess": {
+    "description": "Password changed"
+  },
+  "profileChangePasswordFailed": "密码修改失败，请重试",
+  "@profileChangePasswordFailed": {
+    "description": "Password change failed"
+  },
+  "settingsTitle": "设置",
+  "@settingsTitle": {
+    "description": "Settings title"
+  },
+  "settingsSectionEnterprise": "企业",
+  "@settingsSectionEnterprise": {
+    "description": "Enterprise section"
+  },
+  "settingsSectionAccount": "账号",
+  "@settingsSectionAccount": {
+    "description": "Account section"
+  },
+  "settingsSectionGeneral": "通用",
+  "@settingsSectionGeneral": {
+    "description": "General section"
+  },
+  "settingsSectionFeatures": "功能",
+  "@settingsSectionFeatures": {
+    "description": "Features section"
+  },
+  "settingsSectionAbout": "关于",
+  "@settingsSectionAbout": {
+    "description": "About section"
+  },
+  "settingsEnterpriseInfo": "企业信息",
+  "@settingsEnterpriseInfo": {
+    "description": "Enterprise info"
+  },
+  "settingsProfile": "个人资料",
+  "@settingsProfile": {
+    "description": "Profile"
+  },
+  "settingsAccountSecurity": "账号安全",
+  "@settingsAccountSecurity": {
+    "description": "Account security"
+  },
+  "settingsNotification": "通知",
+  "@settingsNotification": {
+    "description": "Notification"
+  },
+  "settingsDisplay": "界面与显示",
+  "@settingsDisplay": {
+    "description": "Display"
+  },
+  "settingsFriendPrivacy": "朋友权限",
+  "@settingsFriendPrivacy": {
+    "description": "Friend privacy"
+  },
+  "settingsChat": "聊天",
+  "@settingsChat": {
+    "description": "Chat settings"
+  },
+  "settingsChatHistory": "聊天记录管理",
+  "@settingsChatHistory": {
+    "description": "Chat history"
+  },
+  "settingsAbout": "关于微界",
+  "@settingsAbout": {
+    "description": "About"
+  },
+  "settingsLanguage": "系统语言",
+  "@settingsLanguage": {
+    "description": "Language"
+  },
+  "settingsTimezone": "时区",
+  "@settingsTimezone": {
+    "description": "Timezone"
+  },
+  "settingsAutoTranslate": "自动翻译",
+  "@settingsAutoTranslate": {
+    "description": "Auto translate"
+  },
+  "settingsNetworkSwitch": "线路切换",
+  "@settingsNetworkSwitch": {
+    "description": "Network switch"
+  },
+  "enterpriseInfoTitle": "企业信息",
+  "@enterpriseInfoTitle": {
+    "description": "Enterprise info title"
+  },
+  "enterpriseName": "企业名称",
+  "@enterpriseName": {
+    "description": "Enterprise name"
+  },
+  "enterpriseDescription": "企业简介",
+  "@enterpriseDescription": {
+    "description": "Enterprise description"
+  },
+  "enterpriseUpdateSuccess": "更新成功",
+  "@enterpriseUpdateSuccess": {
+    "description": "Update success"
+  },
+  "enterpriseUpdateFailed": "更新失败，请重试",
+  "@enterpriseUpdateFailed": {
+    "description": "Update failed"
+  },
+  "enterpriseLeave": "退出企业",
+  "@enterpriseLeave": {
+    "description": "Leave enterprise"
+  },
+  "enterpriseLeaveConfirm": "确定要退出该企业吗？",
+  "@enterpriseLeaveConfirm": {
+    "description": "Leave enterprise confirm"
+  },
+  "enterpriseLeaveSuccess": "已退出企业",
+  "@enterpriseLeaveSuccess": {
+    "description": "Leave enterprise success"
+  },
+  "enterpriseLeaveFailed": "退出失败，请重试",
+  "@enterpriseLeaveFailed": {
+    "description": "Leave enterprise failed"
+  },
+  "enterpriseLeaveOwnerError": "所有者不能直接退出，请先转让所有者权限",
+  "@enterpriseLeaveOwnerError": {
+    "description": "Owner cannot leave"
+  },
+  "enterpriseMemberCount": "成员数",
+  "@enterpriseMemberCount": {
+    "description": "Member count"
+  },
+  "enterpriseCreatedAt": "创建时间",
+  "@enterpriseCreatedAt": {
+    "description": "Created at"
+  },
+  "enterpriseCode": "企业码",
+  "@enterpriseCode": {
+    "description": "Enterprise code"
+  },
+  "enterpriseInviteMembers": "邀请成员",
+  "@enterpriseInviteMembers": {
+    "description": "Invite members"
+  },
+  "enterpriseCopyInviteCode": "复制邀请码",
+  "@enterpriseCopyInviteCode": {
+    "description": "Copy invite code"
+  },
+  "enterpriseInviteCodeCopied": "邀请码已复制",
+  "@enterpriseInviteCodeCopied": {
+    "description": "Invite code copied"
+  },
+  "groupCreateTitle": "发起群聊",
+  "@groupCreateTitle": {
+    "description": "Create group title"
+  },
+  "groupNameHint": "请输入群名称",
+  "@groupNameHint": {
+    "description": "Group name hint"
+  },
+  "groupCreateSuccess": "群聊创建成功",
+  "@groupCreateSuccess": {
+    "description": "Group create success"
+  },
+  "groupCreateFailed": "群聊创建失败",
+  "@groupCreateFailed": {
+    "description": "Group create failed"
+  },
+  "groupSettings": "群聊设置",
+  "@groupSettings": {
+    "description": "Group settings"
+  },
+  "groupName": "群名称",
+  "@groupName": {
+    "description": "Group name"
+  },
+  "groupAvatar": "群头像",
+  "@groupAvatar": {
+    "description": "Group avatar"
+  },
+  "groupAnnouncement": "群公告",
+  "@groupAnnouncement": {
+    "description": "Group announcement"
+  },
+  "groupMembers": "群成员",
+  "@groupMembers": {
+    "description": "Group members"
+  },
+  "groupAddMember": "添加成员",
+  "@groupAddMember": {
+    "description": "Add member"
+  },
+  "groupRemoveMember": "移除成员",
+  "@groupRemoveMember": {
+    "description": "Remove member"
+  },
+  "groupRemoveMemberConfirm": "确定要移除该成员吗？",
+  "@groupRemoveMemberConfirm": {
+    "description": "Remove member confirm"
+  },
+  "groupSetAdmin": "设为管理员",
+  "@groupSetAdmin": {
+    "description": "Set admin"
+  },
+  "groupRemoveAdmin": "取消管理员",
+  "@groupRemoveAdmin": {
+    "description": "Remove admin"
+  },
+  "groupTransferOwner": "转让群主",
+  "@groupTransferOwner": {
+    "description": "Transfer owner"
+  },
+  "groupTransferOwnerConfirm": "确定要将群主转让给该成员吗？",
+  "@groupTransferOwnerConfirm": {
+    "description": "Transfer owner confirm"
+  },
+  "groupTransferOwnerSuccess": "群主已转让",
+  "@groupTransferOwnerSuccess": {
+    "description": "Transfer owner success"
+  },
+  "groupTransferOwnerFailed": "转让失败，请重试",
+  "@groupTransferOwnerFailed": {
+    "description": "Transfer owner failed"
+  },
+  "groupLeave": "退出群聊",
+  "@groupLeave": {
+    "description": "Leave group"
+  },
+  "groupLeaveConfirm": "确定要退出该群聊吗？",
+  "@groupLeaveConfirm": {
+    "description": "Leave group confirm"
+  },
+  "groupLeaveSuccess": "已退出群聊",
+  "@groupLeaveSuccess": {
+    "description": "Leave group success"
+  },
+  "groupLeaveFailed": "退出失败，请重试",
+  "@groupLeaveFailed": {
+    "description": "Leave group failed"
+  },
+  "groupDissolve": "解散群聊",
+  "@groupDissolve": {
+    "description": "Dissolve group"
+  },
+  "groupDissolveConfirm": "确定要解散该群聊吗？解散后所有成员将被移除。",
+  "@groupDissolveConfirm": {
+    "description": "Dissolve group confirm"
+  },
+  "groupDissolveSuccess": "群聊已解散",
+  "@groupDissolveSuccess": {
+    "description": "Dissolve group success"
+  },
+  "groupDissolveFailed": "解散失败，请重试",
+  "@groupDissolveFailed": {
+    "description": "Dissolve group failed"
+  },
+  "groupQrCode": "群二维码",
+  "@groupQrCode": {
+    "description": "Group QR code"
+  },
+  "groupMuteAll": "全员禁言",
+  "@groupMuteAll": {
+    "description": "Mute all"
+  },
+  "groupMuteAllOn": "开启全员禁言",
+  "@groupMuteAllOn": {
+    "description": "Mute all on"
+  },
+  "groupMuteAllOff": "关闭全员禁言",
+  "@groupMuteAllOff": {
+    "description": "Mute all off"
+  },
+  "groupAllowMemberInvite": "允许成员邀请",
+  "@groupAllowMemberInvite": {
+    "description": "Allow member invite"
+  },
+  "groupAllowMemberModifyTitle": "允许成员修改群名",
+  "@groupAllowMemberModifyTitle": {
+    "description": "Allow member modify title"
+  },
+  "groupAllowMemberAtAll": "允许成员@所有人",
+  "@groupAllowMemberAtAll": {
+    "description": "Allow member at all"
+  },
+  "groupAllowMemberViewMemberList": "允许成员查看成员列表",
+  "@groupAllowMemberViewMemberList": {
+    "description": "Allow member view member list"
+  },
+  "groupAllowQrCodeJoin": "允许二维码加入",
+  "@groupAllowQrCodeJoin": {
+    "description": "Allow QR code join"
+  },
+  "groupRequireApproval": "加群需要审批",
+  "@groupRequireApproval": {
+    "description": "Require approval"
+  },
+  "groupAllowMemberAddFriend": "允许群成员互加好友",
+  "@groupAllowMemberAddFriend": {
+    "description": "Allow member add friend"
+  },
+  "groupRoleOwner": "群主",
+  "@groupRoleOwner": {
+    "description": "Group owner"
+  },
+  "groupRoleAdmin": "管理员",
+  "@groupRoleAdmin": {
+    "description": "Group admin"
+  },
+  "groupRoleMember": "成员",
+  "@groupRoleMember": {
+    "description": "Group member"
+  },
+  "groupNoMembers": "暂无成员",
+  "@groupNoMembers": {
+    "description": "No members"
+  },
+  "groupNoAnnouncements": "暂无公告",
+  "@groupNoAnnouncements": {
+    "description": "No announcements"
+  },
+  "groupCreateAnnouncement": "发布公告",
+  "@groupCreateAnnouncement": {
+    "description": "Create announcement"
+  },
+  "groupEditAnnouncement": "编辑公告",
+  "@groupEditAnnouncement": {
+    "description": "Edit announcement"
+  },
+  "groupDeleteAnnouncement": "删除公告",
+  "@groupDeleteAnnouncement": {
+    "description": "Delete announcement"
+  },
+  "groupDeleteAnnouncementConfirm": "确定要删除该公告吗？",
+  "@groupDeleteAnnouncementConfirm": {
+    "description": "Delete announcement confirm"
+  },
+  "groupAnnouncementTitle": "公告标题",
+  "@groupAnnouncementTitle": {
+    "description": "Announcement title"
+  },
+  "groupAnnouncementContent": "公告内容",
+  "@groupAnnouncementContent": {
+    "description": "Announcement content"
+  },
+  "groupAnnouncementPin": "置顶公告",
+  "@groupAnnouncementPin": {
+    "description": "Pin announcement"
+  },
+  "groupMemberCount": "{count} 人",
+  "@groupMemberCount": {
+    "description": "Group member count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSelectedCount": "已选 {count} 人",
+  "@groupSelectedCount": {
+    "description": "Selected count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupJoinRequestApprove": "同意",
+  "@groupJoinRequestApprove": {
+    "description": "Approve join request"
+  },
+  "groupJoinRequestReject": "拒绝",
+  "@groupJoinRequestReject": {
+    "description": "Reject join request"
+  },
+  "groupJoinRequests": "入群申请",
+  "@groupJoinRequests": {
+    "description": "Join requests"
+  },
+  "groupNoJoinRequests": "暂无入群申请",
+  "@groupNoJoinRequests": {
+    "description": "No join requests"
+  },
+  "groupReadReceipts": "消息已读回执",
+  "@groupReadReceipts": {
+    "description": "Read receipts"
+  },
+  "groupReadCount": "{count} 人已读",
+  "@groupReadCount": {
+    "description": "Read count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupUnreadCount": "{count} 人未读",
+  "@groupUnreadCount": {
+    "description": "Unread count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendAddTitle": "添加朋友",
+  "@friendAddTitle": {
+    "description": "Add friend title"
+  },
+  "friendSearchHint": "手机号 / 邮箱 / 微界号",
+  "@friendSearchHint": {
+    "description": "Friend search hint"
+  },
+  "friendRequestSent": "已发送好友申请",
+  "@friendRequestSent": {
+    "description": "Friend request sent"
+  },
+  "friendRequestFailed": "发送失败，请重试",
+  "@friendRequestFailed": {
+    "description": "Friend request failed"
+  },
+  "friendAlreadyFriend": "你们已经是好友了",
+  "@friendAlreadyFriend": {
+    "description": "Already friend"
+  },
+  "friendNewFriendsTitle": "新的朋友",
+  "@friendNewFriendsTitle": {
+    "description": "New friends title"
+  },
+  "friendNoRequests": "暂无好友申请",
+  "@friendNoRequests": {
+    "description": "No friend requests"
+  },
+  "friendAccept": "接受",
+  "@friendAccept": {
+    "description": "Accept friend request"
+  },
+  "friendReject": "拒绝",
+  "@friendReject": {
+    "description": "Reject friend request"
+  },
+  "friendAccepted": "已接受",
+  "@friendAccepted": {
+    "description": "Friend request accepted"
+  },
+  "friendRejected": "已拒绝",
+  "@friendRejected": {
+    "description": "Friend request rejected"
+  },
+  "friendDeleteConfirm": "确定要删除该好友吗？",
+  "@friendDeleteConfirm": {
+    "description": "Delete friend confirm"
+  },
+  "friendDeleteSuccess": "已删除好友",
+  "@friendDeleteSuccess": {
+    "description": "Delete friend success"
+  },
+  "friendDeleteFailed": "删除失败，请重试",
+  "@friendDeleteFailed": {
+    "description": "Delete friend failed"
+  },
+  "friendRemarkName": "备注名",
+  "@friendRemarkName": {
+    "description": "Remark name"
+  },
+  "friendGroupName": "分组",
+  "@friendGroupName": {
+    "description": "Friend group name"
+  },
+  "friendSendMessage": "发消息",
+  "@friendSendMessage": {
+    "description": "Send message"
+  },
+  "friendMatchTypeLppId": "微界号匹配",
+  "@friendMatchTypeLppId": {
+    "description": "Match by lpp id"
+  },
+  "friendMatchTypeMobile": "手机号匹配",
+  "@friendMatchTypeMobile": {
+    "description": "Match by mobile"
+  },
+  "friendMatchTypeEmail": "邮箱匹配",
+  "@friendMatchTypeEmail": {
+    "description": "Match by email"
+  },
+  "friendSearchEmpty": "未找到相关用户",
+  "@friendSearchEmpty": {
+    "description": "Search empty"
+  },
+  "friendAddMessage": "请求添加你为好友",
+  "@friendAddMessage": {
+    "description": "Add friend message"
+  },
+  "friendBlockConfirm": "确定要拉黑该用户吗？",
+  "@friendBlockConfirm": {
+    "description": "Block confirm"
+  },
+  "friendUnblockConfirm": "确定要取消拉黑吗？",
+  "@friendUnblockConfirm": {
+    "description": "Unblock confirm"
+  },
+  "friendBlockSuccess": "已拉黑",
+  "@friendBlockSuccess": {
+    "description": "Block success"
+  },
+  "friendUnblockSuccess": "已取消拉黑",
+  "@friendUnblockSuccess": {
+    "description": "Unblock success"
+  },
+  "profilePageTitle": "个人信息",
+  "@profilePageTitle": {
+    "description": "Profile page title"
+  },
+  "profilePageSendMessage": "发消息",
+  "@profilePageSendMessage": {
+    "description": "Send message"
+  },
+  "profilePageAddFriend": "加好友",
+  "@profilePageAddFriend": {
+    "description": "Add friend"
+  },
+  "profilePageAlreadyFriend": "已是好友",
+  "@profilePageAlreadyFriend": {
+    "description": "Already friend"
+  },
+  "profilePageBlocked": "已拉黑",
+  "@profilePageBlocked": {
+    "description": "Blocked"
+  },
+  "profilePageBlock": "拉黑",
+  "@profilePageBlock": {
+    "description": "Block"
+  },
+  "profilePageUnblock": "取消拉黑",
+  "@profilePageUnblock": {
+    "description": "Unblock"
+  },
+  "profilePageHidden": "该用户已设置不对外展示资料",
+  "@profilePageHidden": {
+    "description": "Profile hidden"
+  },
+  "profilePageFriendsOnly": "该用户仅对好友展示资料",
+  "@profilePageFriendsOnly": {
+    "description": "Profile friends only"
+  },
+  "profilePageLppId": "微界号",
+  "@profilePageLppId": {
+    "description": "StartLink ID"
+  },
+  "profilePageRemarkName": "备注",
+  "@profilePageRemarkName": {
+    "description": "Remark name"
+  },
+  "profilePageEditRemark": "修改备注",
+  "@profilePageEditRemark": {
+    "description": "Edit remark"
+  },
+  "profilePageSaveRemarkSuccess": "备注已保存",
+  "@profilePageSaveRemarkSuccess": {
+    "description": "Remark saved"
+  },
+  "profilePageSaveRemarkFailed": "保存失败，请重试",
+  "@profilePageSaveRemarkFailed": {
+    "description": "Save remark failed"
+  },
+  "searchTitle": "搜索",
+  "@searchTitle": {
+    "description": "Search title"
+  },
+  "searchHint": "输入完整手机号、邮箱或微界号搜索",
+  "@searchHint": {
+    "description": "Search hint"
+  },
+  "searchNoResults": "未找到相关结果",
+  "@searchNoResults": {
+    "description": "No search results"
+  },
+  "searchMessages": "消息",
+  "@searchMessages": {
+    "description": "Search messages"
+  },
+  "searchUsers": "用户",
+  "@searchUsers": {
+    "description": "Search users"
+  },
+  "searchFailed": "搜索失败，请重试",
+  "@searchFailed": {
+    "description": "Search failed"
+  },
+  "scanTitle": "扫一扫",
+  "@scanTitle": {
+    "description": "Scan title"
+  },
+  "scanFailed": "识别失败，请重试",
+  "@scanFailed": {
+    "description": "Scan failed"
+  },
+  "scanInvalidQrCode": "无效的二维码",
+  "@scanInvalidQrCode": {
+    "description": "Invalid QR code"
+  },
+  "scanFlashOn": "打开手电筒",
+  "@scanFlashOn": {
+    "description": "Flash on"
+  },
+  "scanFlashOff": "关闭手电筒",
+  "@scanFlashOff": {
+    "description": "Flash off"
+  },
+  "scanAlbum": "从相册选择",
+  "@scanAlbum": {
+    "description": "Scan from album"
+  },
+  "favoritesTitle": "收藏",
+  "@favoritesTitle": {
+    "description": "Favorites title"
+  },
+  "favoritesEmpty": "暂无收藏",
+  "@favoritesEmpty": {
+    "description": "No favorites"
+  },
+  "favoritesAll": "全部",
+  "@favoritesAll": {
+    "description": "All favorites"
+  },
+  "favoritesText": "文字",
+  "@favoritesText": {
+    "description": "Text favorites"
+  },
+  "favoritesImage": "图片",
+  "@favoritesImage": {
+    "description": "Image favorites"
+  },
+  "favoritesVideo": "视频",
+  "@favoritesVideo": {
+    "description": "Video favorites"
+  },
+  "favoritesVoice": "语音",
+  "@favoritesVoice": {
+    "description": "Voice favorites"
+  },
+  "favoritesFile": "文件",
+  "@favoritesFile": {
+    "description": "File favorites"
+  },
+  "favoritesOther": "其他",
+  "@favoritesOther": {
+    "description": "Other favorites"
+  },
+  "favoritesDeleteConfirm": "确定要取消收藏吗？",
+  "@favoritesDeleteConfirm": {
+    "description": "Delete favorite confirm"
+  },
+  "favoritesDeleteSuccess": "已取消收藏",
+  "@favoritesDeleteSuccess": {
+    "description": "Delete favorite success"
+  },
+  "favoritesDeleteFailed": "取消收藏失败",
+  "@favoritesDeleteFailed": {
+    "description": "Delete favorite failed"
+  },
+  "favoritesOriginalRecalled": "消息已撤回",
+  "@favoritesOriginalRecalled": {
+    "description": "Original recalled"
+  },
+  "favoritesViewOriginal": "查看原消息",
+  "@favoritesViewOriginal": {
+    "description": "View original"
+  },
+  "favoritesSearchHint": "搜索收藏内容",
+  "@favoritesSearchHint": {
+    "description": "Search favorites hint"
+  },
+  "favoritesNoResults": "没有找到相关收藏",
+  "@favoritesNoResults": {
+    "description": "No favorites results"
+  },
+  "noticeTitle": "企业公告",
+  "@noticeTitle": {
+    "description": "Notice title"
+  },
+  "noticeEmpty": "暂无公告",
+  "@noticeEmpty": {
+    "description": "No notices"
+  },
+  "noticeDetail": "公告详情",
+  "@noticeDetail": {
+    "description": "Notice detail"
+  },
+  "noticePublishedAt": "发布时间",
+  "@noticePublishedAt": {
+    "description": "Published at"
+  },
+  "noticePriorityNormal": "普通",
+  "@noticePriorityNormal": {
+    "description": "Normal priority"
+  },
+  "noticePriorityImportant": "重要",
+  "@noticePriorityImportant": {
+    "description": "Important priority"
+  },
+  "noticePriorityUrgent": "紧急",
+  "@noticePriorityUrgent": {
+    "description": "Urgent priority"
+  },
+  "organizationTitle": "组织架构",
+  "@organizationTitle": {
+    "description": "Organization title"
+  },
+  "organizationEmpty": "暂无部门信息",
+  "@organizationEmpty": {
+    "description": "No organization"
+  },
+  "organizationMembers": "成员",
+  "@organizationMembers": {
+    "description": "Organization members"
+  },
+  "organizationDepartment": "部门",
+  "@organizationDepartment": {
+    "description": "Department"
+  },
+  "organizationPosition": "职位",
+  "@organizationPosition": {
+    "description": "Position"
+  },
+  "organizationLeader": "负责人",
+  "@organizationLeader": {
+    "description": "Leader"
+  },
+  "qrCodeTitle": "我的二维码",
+  "@qrCodeTitle": {
+    "description": "QR code title"
+  },
+  "qrCodeSave": "保存到相册",
+  "@qrCodeSave": {
+    "description": "Save QR code"
+  },
+  "qrCodeShare": "分享",
+  "@qrCodeShare": {
+    "description": "Share QR code"
+  },
+  "qrCodeSaveSuccess": "已保存到相册",
+  "@qrCodeSaveSuccess": {
+    "description": "QR code saved"
+  },
+  "qrCodeSaveFailed": "保存失败，请重试",
+  "@qrCodeSaveFailed": {
+    "description": "QR code save failed"
+  },
+  "qrCodeRefresh": "刷新二维码",
+  "@qrCodeRefresh": {
+    "description": "Refresh QR code"
+  },
+  "qrCodeExpired": "二维码已过期，请刷新",
+  "@qrCodeExpired": {
+    "description": "QR code expired"
+  },
+  "qrCodeScanToAdd": "扫一扫上面的二维码，添加我为好友",
+  "@qrCodeScanToAdd": {
+    "description": "Scan to add friend"
+  },
+  "spacePersonal": "个人空间",
+  "@spacePersonal": {
+    "description": "Personal space"
+  },
+  "spaceEnterprise": "企业空间",
+  "@spaceEnterprise": {
+    "description": "Enterprise space"
+  },
+  "spaceJoinByCode": "通过企业码加入",
+  "@spaceJoinByCode": {
+    "description": "Join by code"
+  },
+  "spaceJoinByInvite": "通过邀请码加入",
+  "@spaceJoinByInvite": {
+    "description": "Join by invite"
+  },
+  "spaceEnterCode": "请输入企业码",
+  "@spaceEnterCode": {
+    "description": "Enter enterprise code"
+  },
+  "spaceEnterInviteCode": "请输入邀请码",
+  "@spaceEnterInviteCode": {
+    "description": "Enter invite code"
+  },
+  "spaceSearchEnterprise": "搜索企业",
+  "@spaceSearchEnterprise": {
+    "description": "Search enterprise"
+  },
+  "spaceJoinRequestSent": "申请已提交，等待审批",
+  "@spaceJoinRequestSent": {
+    "description": "Join request sent"
+  },
+  "spaceJoinRequestPending": "申请审批中",
+  "@spaceJoinRequestPending": {
+    "description": "Join request pending"
+  },
+  "spaceJoinRequestApproved": "申请已通过",
+  "@spaceJoinRequestApproved": {
+    "description": "Join request approved"
+  },
+  "spaceJoinRequestRejected": "申请已拒绝",
+  "@spaceJoinRequestRejected": {
+    "description": "Join request rejected"
+  },
+  "spaceAlreadyMember": "你已经是该企业成员",
+  "@spaceAlreadyMember": {
+    "description": "Already member"
+  },
+  "spaceAutoApproved": "已自动通过，欢迎加入",
+  "@spaceAutoApproved": {
+    "description": "Auto approved"
+  },
+  "spacePendingApprovalHint": "注册成功，加入企业申请已提交，等待审批",
+  "@spacePendingApprovalHint": {
+    "description": "Pending approval hint"
+  },
+  "spaceNoSpaces": "暂无空间",
+  "@spaceNoSpaces": {
+    "description": "No spaces"
+  },
+  "spaceInviteExpired": "邀请码已过期",
+  "@spaceInviteExpired": {
+    "description": "Invite expired"
+  },
+  "spaceInviteTargetMismatch": "该邀请码不适用于你的账号",
+  "@spaceInviteTargetMismatch": {
+    "description": "Invite target mismatch"
+  },
+  "spaceAcceptInviteSuccess": "已成功加入企业",
+  "@spaceAcceptInviteSuccess": {
+    "description": "Accept invite success"
+  },
+  "spaceAcceptInviteFailed": "加入失败，请重试",
+  "@spaceAcceptInviteFailed": {
+    "description": "Accept invite failed"
+  },
+  "spaceTenantSelectTitle": "选择空间",
+  "@spaceTenantSelectTitle": {
+    "description": "Tenant select title"
+  },
+  "spaceTenantSelectHint": "请选择要进入的空间",
+  "@spaceTenantSelectHint": {
+    "description": "Tenant select hint"
+  },
+  "spaceEnterPersonal": "进入个人空间",
+  "@spaceEnterPersonal": {
+    "description": "Enter personal space"
+  },
+  "spaceEnterEnterprise": "进入企业空间",
+  "@spaceEnterEnterprise": {
+    "description": "Enter enterprise space"
+  },
+  "aboutTitle": "关于微界",
+  "@aboutTitle": {
+    "description": "About title"
+  },
+  "aboutVersion": "版本",
+  "@aboutVersion": {
+    "description": "Version"
+  },
+  "aboutTerms": "用户协议",
+  "@aboutTerms": {
+    "description": "Terms"
+  },
+  "aboutPrivacy": "隐私政策",
+  "@aboutPrivacy": {
+    "description": "Privacy"
+  },
+  "aboutOpenSource": "开源许可",
+  "@aboutOpenSource": {
+    "description": "Open source"
+  },
+  "aboutCheckUpdate": "检查更新",
+  "@aboutCheckUpdate": {
+    "description": "Check update"
+  },
+  "aboutLatestVersion": "已是最新版本",
+  "@aboutLatestVersion": {
+    "description": "Latest version"
+  },
+  "aboutUpdateAvailable": "发现新版本",
+  "@aboutUpdateAvailable": {
+    "description": "Update available"
+  },
+  "aboutUpdateNow": "立即更新",
+  "@aboutUpdateNow": {
+    "description": "Update now"
+  },
+  "aboutUpdateLater": "稍后再说",
+  "@aboutUpdateLater": {
+    "description": "Update later"
+  },
+  "notificationTitle": "通知",
+  "@notificationTitle": {
+    "description": "Notification title"
+  },
+  "notificationGlobalMute": "全局静音",
+  "@notificationGlobalMute": {
+    "description": "Global mute"
+  },
+  "notificationSound": "声音",
+  "@notificationSound": {
+    "description": "Sound"
+  },
+  "notificationVibration": "振动",
+  "@notificationVibration": {
+    "description": "Vibration"
+  },
+  "notificationPreview": "通知预览",
+  "@notificationPreview": {
+    "description": "Notification preview"
+  },
+  "notificationDndStart": "免打扰开始时间",
+  "@notificationDndStart": {
+    "description": "DND start"
+  },
+  "notificationDndEnd": "免打扰结束时间",
+  "@notificationDndEnd": {
+    "description": "DND end"
+  },
+  "blacklistTitle": "黑名单",
+  "@blacklistTitle": {
+    "description": "Blacklist title"
+  },
+  "blacklistEmpty": "黑名单为空",
+  "@blacklistEmpty": {
+    "description": "Blacklist empty"
+  },
+  "blacklistRemove": "移出黑名单",
+  "@blacklistRemove": {
+    "description": "Remove from blacklist"
+  },
+  "blacklistRemoveConfirm": "确定要将该用户移出黑名单吗？",
+  "@blacklistRemoveConfirm": {
+    "description": "Remove from blacklist confirm"
+  },
+  "feedbackTitle": "意见反馈",
+  "@feedbackTitle": {
+    "description": "Feedback title"
+  },
+  "feedbackTypeComplaint": "投诉",
+  "@feedbackTypeComplaint": {
+    "description": "Complaint"
+  },
+  "feedbackTypeSuggestion": "建议",
+  "@feedbackTypeSuggestion": {
+    "description": "Suggestion"
+  },
+  "feedbackTypeBug": "Bug 报告",
+  "@feedbackTypeBug": {
+    "description": "Bug report"
+  },
+  "feedbackContent": "反馈内容",
+  "@feedbackContent": {
+    "description": "Feedback content"
+  },
+  "feedbackContentHint": "请详细描述您的问题或建议",
+  "@feedbackContentHint": {
+    "description": "Feedback content hint"
+  },
+  "feedbackContact": "联系方式（选填）",
+  "@feedbackContact": {
+    "description": "Feedback contact"
+  },
+  "feedbackSubmit": "提交",
+  "@feedbackSubmit": {
+    "description": "Submit feedback"
+  },
+  "feedbackSuccess": "反馈已提交，感谢您的建议",
+  "@feedbackSuccess": {
+    "description": "Feedback success"
+  },
+  "feedbackFailed": "提交失败，请重试",
+  "@feedbackFailed": {
+    "description": "Feedback failed"
+  },
+  "networkTitle": "线路切换",
+  "@networkTitle": {
+    "description": "Network title"
+  },
+  "networkAutoSelect": "自动选择",
+  "@networkAutoSelect": {
+    "description": "Auto select"
+  },
+  "networkManual": "手动选择",
+  "@networkManual": {
+    "description": "Manual select"
+  },
+  "timezoneTitle": "时区",
+  "@timezoneTitle": {
+    "description": "Timezone title"
+  },
+  "timezoneAuto": "跟随系统",
+  "@timezoneAuto": {
+    "description": "Auto timezone"
+  },
+  "autoTranslateTitle": "自动翻译",
+  "@autoTranslateTitle": {
+    "description": "Auto translate title"
+  },
+  "autoTranslateEnabled": "开启自动翻译",
+  "@autoTranslateEnabled": {
+    "description": "Auto translate enabled"
+  },
+  "autoTranslateLanguage": "翻译目标语言",
+  "@autoTranslateLanguage": {
+    "description": "Auto translate language"
+  },
+  "displayTitle": "界面与显示",
+  "@displayTitle": {
+    "description": "Display title"
+  },
+  "displayFontSize": "字体大小",
+  "@displayFontSize": {
+    "description": "Font size"
+  },
+  "displayChatBackground": "聊天背景",
+  "@displayChatBackground": {
+    "description": "Chat background"
+  },
+  "displayDarkMode": "深色模式",
+  "@displayDarkMode": {
+    "description": "Dark mode"
+  },
+  "displayDarkModeSystem": "跟随系统",
+  "@displayDarkModeSystem": {
+    "description": "Dark mode system"
+  },
+  "displayDarkModeSystemHint": "根据系统设置自动切换",
+  "@displayDarkModeSystemHint": {
+    "description": "Dark mode system hint"
+  },
+  "displayDarkModeOff": "浅色模式",
+  "@displayDarkModeOff": {
+    "description": "Light mode"
+  },
+  "displayDarkModeOffHint": "始终使用浅色主题",
+  "@displayDarkModeOffHint": {
+    "description": "Light mode hint"
+  },
+  "displayDarkModeOn": "深色模式",
+  "@displayDarkModeOn": {
+    "description": "Dark mode on"
+  },
+  "displayDarkModeOnHint": "始终使用深色主题",
+  "@displayDarkModeOnHint": {
+    "description": "Dark mode on hint"
+  },
+  "chatSettingsTitle": "聊天",
+  "@chatSettingsTitle": {
+    "description": "Chat settings title"
+  },
+  "chatHistoryTitle": "聊天记录管理",
+  "@chatHistoryTitle": {
+    "description": "Chat history title"
+  },
+  "chatHistoryClear": "清空聊天记录",
+  "@chatHistoryClear": {
+    "description": "Clear chat history"
+  },
+  "chatHistoryClearConfirm": "确定要清空所有聊天记录吗？此操作不可恢复。",
+  "@chatHistoryClearConfirm": {
+    "description": "Clear chat history confirm"
+  },
+  "chatHistoryClearSuccess": "聊天记录已清空",
+  "@chatHistoryClearSuccess": {
+    "description": "Clear chat history success"
+  },
+  "accountSecurityTitle": "账号安全",
+  "@accountSecurityTitle": {
+    "description": "Account security title"
+  },
+  "accountSecurityChangePassword": "修改密码",
+  "@accountSecurityChangePassword": {
+    "description": "Change password"
+  },
+  "accountSecurityChangeMobile": "更换手机号",
+  "@accountSecurityChangeMobile": {
+    "description": "Change mobile"
+  },
+  "accountSecurityChangeEmail": "更换邮箱",
+  "@accountSecurityChangeEmail": {
+    "description": "Change email"
+  },
+  "accountSecurityLoggedDevices": "已登录设备",
+  "@accountSecurityLoggedDevices": {
+    "description": "Logged devices"
+  },
+  "accountSecurityDeactivate": "注销账号",
+  "@accountSecurityDeactivate": {
+    "description": "Deactivate account"
+  },
+  "accountSecurityDeactivateConfirm": "注销账号后，所有数据将在7天后永久删除，确定要注销吗？",
+  "@accountSecurityDeactivateConfirm": {
+    "description": "Deactivate confirm"
+  },
+  "loggedDevicesTitle": "已登录设备",
+  "@loggedDevicesTitle": {
+    "description": "Logged devices title"
+  },
+  "loggedDevicesCurrent": "当前设备",
+  "@loggedDevicesCurrent": {
+    "description": "Current device"
+  },
+  "loggedDevicesRevoke": "退出该设备",
+  "@loggedDevicesRevoke": {
+    "description": "Revoke device"
+  },
+  "loggedDevicesRevokeConfirm": "确定要退出该设备吗？",
+  "@loggedDevicesRevokeConfirm": {
+    "description": "Revoke device confirm"
+  },
+  "loggedDevicesRevokeSuccess": "已退出该设备",
+  "@loggedDevicesRevokeSuccess": {
+    "description": "Revoke device success"
+  },
+  "loggedDevicesRevokeFailed": "退出失败，请重试",
+  "@loggedDevicesRevokeFailed": {
+    "description": "Revoke device failed"
+  },
+  "loggedDevicesLastActive": "最后活跃",
+  "@loggedDevicesLastActive": {
+    "description": "Last active"
+  },
+  "loggedDevicesTypeIos": "iOS",
+  "@loggedDevicesTypeIos": {
+    "description": "iOS device"
+  },
+  "loggedDevicesTypeAndroid": "Android",
+  "@loggedDevicesTypeAndroid": {
+    "description": "Android device"
+  },
+  "loggedDevicesTypeWeb": "网页端",
+  "@loggedDevicesTypeWeb": {
+    "description": "Web device"
+  },
+  "loggedDevicesTypeDesktop": "桌面端",
+  "@loggedDevicesTypeDesktop": {
+    "description": "Desktop device"
+  },
+  "loggedDevicesTypeUnknown": "未知设备",
+  "@loggedDevicesTypeUnknown": {
+    "description": "Unknown device"
+  },
+  "privacySettingsTitle": "朋友权限",
+  "@privacySettingsTitle": {
+    "description": "Privacy settings title"
+  },
+  "privacySearchableByMobile": "允许通过手机号搜索",
+  "@privacySearchableByMobile": {
+    "description": "Searchable by mobile"
+  },
+  "privacySearchableByLppId": "允许通过微界号搜索",
+  "@privacySearchableByLppId": {
+    "description": "Searchable by lpp id"
+  },
+  "privacyAllowFriendRequest": "加我为好友",
+  "@privacyAllowFriendRequest": {
+    "description": "Allow friend request"
+  },
+  "privacyProfileVisibility": "个人资料可见性",
+  "@privacyProfileVisibility": {
+    "description": "Profile visibility"
+  },
+  "privacyEveryone": "所有人",
+  "@privacyEveryone": {
+    "description": "Everyone"
+  },
+  "privacyFriendsOfFriends": "有共同好友的人",
+  "@privacyFriendsOfFriends": {
+    "description": "Friends of friends"
+  },
+  "privacyNobody": "不允许",
+  "@privacyNobody": {
+    "description": "Nobody"
+  },
+  "privacyFriendsOnly": "仅好友",
+  "@privacyFriendsOnly": {
+    "description": "Friends only"
+  },
+  "privacySaveSuccess": "设置已保存",
+  "@privacySaveSuccess": {
+    "description": "Privacy save success"
+  },
+  "privacySaveFailed": "保存失败，请重试",
+  "@privacySaveFailed": {
+    "description": "Privacy save failed"
+  },
+  "fontSizeTitle": "字体大小",
+  "@fontSizeTitle": {
+    "description": "Font size title"
+  },
+  "fontSizeSmall": "小",
+  "@fontSizeSmall": {
+    "description": "Small font"
+  },
+  "fontSizeNormal": "标准",
+  "@fontSizeNormal": {
+    "description": "Normal font"
+  },
+  "fontSizeLarge": "大",
+  "@fontSizeLarge": {
+    "description": "Large font"
+  },
+  "fontSizeExtraLarge": "超大",
+  "@fontSizeExtraLarge": {
+    "description": "Extra large font"
+  },
+  "fontSizePreview": "字体预览",
+  "@fontSizePreview": {
+    "description": "Font size preview"
+  },
+  "chatBackgroundTitle": "聊天背景",
+  "@chatBackgroundTitle": {
+    "description": "Chat background title"
+  },
+  "chatBackgroundDefault": "默认",
+  "@chatBackgroundDefault": {
+    "description": "Default background"
+  },
+  "chatBackgroundCustom": "自定义",
+  "@chatBackgroundCustom": {
+    "description": "Custom background"
+  },
+  "chatBackgroundReset": "恢复默认",
+  "@chatBackgroundReset": {
+    "description": "Reset background"
+  },
+  "termsTitle": "用户协议",
+  "@termsTitle": {
+    "description": "Terms title"
+  },
+  "privacyPolicyTitle": "隐私政策",
+  "@privacyPolicyTitle": {
+    "description": "Privacy policy title"
+  },
+  "recentContactsTitle": "最近联系",
+  "@recentContactsTitle": {
+    "description": "Recent contacts title"
+  },
+  "recentContactsEmpty": "暂无最近联系人",
+  "@recentContactsEmpty": {
+    "description": "No recent contacts"
+  },
+  "inviteFriendsTitle": "邀请朋友",
+  "@inviteFriendsTitle": {
+    "description": "Invite friends title"
+  },
+  "inviteFriendsCopyLink": "复制邀请链接",
+  "@inviteFriendsCopyLink": {
+    "description": "Copy invite link"
+  },
+  "inviteFriendsLinkCopied": "邀请链接已复制",
+  "@inviteFriendsLinkCopied": {
+    "description": "Invite link copied"
+  },
+  "imageViewerTitle": "图片",
+  "@imageViewerTitle": {
+    "description": "Image viewer title"
+  },
+  "imageViewerSave": "保存到相册",
+  "@imageViewerSave": {
+    "description": "Save image"
+  },
+  "imageViewerSaveSuccess": "已保存到相册",
+  "@imageViewerSaveSuccess": {
+    "description": "Image saved"
+  },
+  "imageViewerSaveFailed": "保存失败，请重试",
+  "@imageViewerSaveFailed": {
+    "description": "Image save failed"
+  },
+  "customerServiceTitle": "客服工作台",
+  "@customerServiceTitle": {
+    "description": "Customer service title"
+  },
+  "customerServiceQueue": "排队中",
+  "@customerServiceQueue": {
+    "description": "Queue"
+  },
+  "customerServiceActive": "服务中",
+  "@customerServiceActive": {
+    "description": "Active"
+  },
+  "customerServiceClaim": "接入",
+  "@customerServiceClaim": {
+    "description": "Claim"
+  },
+  "customerServiceTakeover": "接管",
+  "@customerServiceTakeover": {
+    "description": "Takeover"
+  },
+  "customerServiceClose": "结束服务",
+  "@customerServiceClose": {
+    "description": "Close service"
+  },
+  "customerServiceCloseConfirm": "确定要结束该服务吗？",
+  "@customerServiceCloseConfirm": {
+    "description": "Close service confirm"
+  },
+  "customerServiceNoQueue": "暂无排队",
+  "@customerServiceNoQueue": {
+    "description": "No queue"
+  },
+  "customerServiceNoActive": "暂无进行中的服务",
+  "@customerServiceNoActive": {
+    "description": "No active service"
+  },
+  "customerServiceVisitor": "访客",
+  "@customerServiceVisitor": {
+    "description": "Visitor"
+  },
+  "customerServiceCustomer": "客户",
+  "@customerServiceCustomer": {
+    "description": "Customer"
+  },
+  "customerServiceAssignedTo": "负责客服",
+  "@customerServiceAssignedTo": {
+    "description": "Assigned to"
+  },
+  "customerServiceTransferConversation": "转交会话",
+  "@customerServiceTransferConversation": {
+    "description": "Transfer conversation"
+  },
+  "marketingToolbar": "营销工具",
+  "@marketingToolbar": {
+    "description": "Marketing toolbar"
+  },
+  "callIncoming": "来电",
+  "@callIncoming": {
+    "description": "Incoming call"
+  },
+  "callOutgoing": "去电",
+  "@callOutgoing": {
+    "description": "Outgoing call"
+  },
+  "callAccept": "接听",
+  "@callAccept": {
+    "description": "Accept call"
+  },
+  "callReject": "拒绝",
+  "@callReject": {
+    "description": "Reject call"
+  },
+  "callHangup": "挂断",
+  "@callHangup": {
+    "description": "Hangup"
+  },
+  "callMissed": "未接来电",
+  "@callMissed": {
+    "description": "Missed call"
+  },
+  "callDuration": "通话时长",
+  "@callDuration": {
+    "description": "Call duration"
+  },
+  "callAudio": "语音通话",
+  "@callAudio": {
+    "description": "Audio call"
+  },
+  "callGeneric": "通话",
+  "@callGeneric": {
+    "description": "Generic call label used when media mode is unavailable"
+  },
+  "callVideo": "视频通话",
+  "@callVideo": {
+    "description": "Video call"
+  },
+  "callConnecting": "连接中...",
+  "@callConnecting": {
+    "description": "Connecting"
+  },
+  "callRinging": "等待接听...",
+  "@callRinging": {
+    "description": "Ringing"
+  },
+  "callEnded": "通话已结束",
+  "@callEnded": {
+    "description": "Call ended"
+  },
+  "callFailed": "通话失败",
+  "@callFailed": {
+    "description": "Call failed"
+  },
+  "callRejected": "对方已拒绝",
+  "@callRejected": {
+    "description": "Call rejected"
+  },
+  "callTimeout": "对方无应答",
+  "@callTimeout": {
+    "description": "Call timeout"
+  },
+  "callCancelled": "已取消",
+  "@callCancelled": {
+    "description": "Call cancelled"
+  },
+  "callUnknownPeer": "未知",
+  "@callUnknownPeer": {"description": "Unknown call peer"},
+  "callVideoInvitation": "视频通话邀请",
+  "@callVideoInvitation": {"description": "Video call invitation"},
+  "callAudioInvitation": "语音通话邀请",
+  "@callAudioInvitation": {"description": "Audio call invitation"},
+  "callAnswerAudio": "语音接听",
+  "@callAnswerAudio": {"description": "Answer without video"},
+  "callAnswerVideo": "视频接听",
+  "@callAnswerVideo": {"description": "Answer with video"},
+  "callViewProfile": "看他的近况",
+  "@callViewProfile": {"description": "View peer profile"},
+  "callOpeningCamera": "正在打开摄像头...",
+  "@callOpeningCamera": {"description": "Opening camera"},
+  "callWaitingRemoteVideo": "等待远端视频...",
+  "@callWaitingRemoteVideo": {"description": "Waiting for remote video"},
+  "callCameraOff": "摄像头已关闭",
+  "@callCameraOff": {"description": "Camera is off"},
+  "callCameraOn": "摄像头已开",
+  "@callCameraOn": {"description": "Camera is on"},
+  "callMicrophoneOff": "麦克风已关",
+  "@callMicrophoneOff": {"description": "Microphone is off"},
+  "callMicrophoneOn": "麦克风已开",
+  "@callMicrophoneOn": {"description": "Microphone is on"},
+  "callSpeakerOff": "扬声器已关",
+  "@callSpeakerOff": {"description": "Speaker is off"},
+  "callSpeakerOn": "扬声器已开",
+  "@callSpeakerOn": {"description": "Speaker is on"},
+  "callVideoPermissionFailure": "视频通话无法建立，请检查摄像头或麦克风权限后重试",
+  "@callVideoPermissionFailure": {"description": "Video media permission failure"},
+  "callAudioPermissionFailure": "语音通话无法建立，请检查麦克风权限后重试",
+  "@callAudioPermissionFailure": {"description": "Audio media permission failure"},
+  "callIncompleteIncoming": "来电信息不完整，无法接听",
+  "@callIncompleteIncoming": {"description": "Incomplete incoming call"},
+  "callInProgress": "通话中",
+  "@callInProgress": {"description": "Call in progress"},
+  "callCalling": "呼叫中...",
+  "@callCalling": {"description": "Calling status"},
+  "callEndedMedia": "{media}已结束",
+  "@callEndedMedia": {"description": "Ended call title", "placeholders": {"media": {"type": "String"}}},
+  "callRejectedMedia": "{media}已被拒绝",
+  "@callRejectedMedia": {"description": "Rejected call title", "placeholders": {"media": {"type": "String"}}},
+  "callUnansweredMedia": "{media}无人接听",
+  "@callUnansweredMedia": {"description": "Unanswered call title", "placeholders": {"media": {"type": "String"}}},
+  "callCancelledMedia": "{media}已取消",
+  "@callCancelledMedia": {"description": "Cancelled call title", "placeholders": {"media": {"type": "String"}}},
+  "callConnectionLost": "通话连接中断",
+  "@callConnectionLost": {"description": "Call connection lost"},
+  "callAdminEnded": "通话已被结束",
+  "@callAdminEnded": {"description": "Call ended by administrator"},
+  "callFailedMedia": "{media}失败",
+  "@callFailedMedia": {"description": "Failed call title", "placeholders": {"media": {"type": "String"}}},
+  "callBusy": "对方忙线中",
+  "@callBusy": {"description": "Peer is busy"},
+  "callDurationValue": "通话时长 {duration}",
+  "@callDurationValue": {"description": "Call duration value", "placeholders": {"duration": {"type": "String"}}},
+  "callNotConnected": "未接通",
+  "callDialed": "已拨出",
+  "callAnswered": "已接听",
+  "callRejectedByPeer": "对方已拒绝",
+  "callRejectedBySelf": "已拒绝",
+  "callPeerDidNotAnswer": "对方未接听",
+  "callMissedIncoming": "未接来电",
+  "callPeerCancelled": "对方已取消",
+  "notificationNewMessageTitle": "微界新消息",
+  "notificationOnlineServiceTitle": "在线客服新消息",
+  "notificationNewMessageBody": "你收到一条新消息",
+  "notificationImagePreview": "发来了一张图片",
+  "notificationVideoPreview": "发来了一段视频",
+  "notificationVoicePreview": "发来了一条语音消息",
+  "notificationFilePreview": "发来了一个文件",
+  "notificationContactPreview": "发来了一张名片",
+  "notificationCallLogPreview": "发来了一条通话记录",
+  "notificationLocationPreview": "分享了一个位置",
+  "notificationLinkPreview": "分享了一个链接",
+  "notificationMentionMe": "@了你：{body}",
+  "notificationMentionMeBy": "{sender} @了你：{body}",
+  "notificationMentionAll": "@所有人：{body}",
+  "notificationMentionAllBy": "{sender} @所有人：{body}",
+  "notificationSecurityTitle": "账号安全提醒",
+  "notificationSecurityBody": "你的微界账号出现安全变更，请及时查看。",
+  "notificationFriendAcceptedTitle": "好友申请已通过",
+  "notificationFriendRejectedTitle": "好友申请已被拒绝",
+  "notificationFriendAcceptedBody": "对方已通过你的好友申请",
+  "notificationFriendRejectedBody": "对方拒绝了你的好友申请",
+  "notificationVideoCallTitle": "视频通话邀请",
+  "notificationAudioCallTitle": "语音通话邀请",
+  "notificationVideoCallBody": "{caller}邀请你进行视频通话",
+  "notificationAudioCallBody": "{caller}邀请你进行语音通话",
+  "notificationMessageChannelName": "消息通知",
+  "notificationMessageChannelDescription": "聊天消息、通话记录和系统消息提醒",
+  "notificationCallChannelName": "通话通知",
+  "notificationCallChannelDescription": "语音和视频来电提醒",
+  "notificationSecurityChannelName": "账号安全通知",
+  "notificationSecurityChannelDescription": "账号登录、密码和手机号变更提醒",
+  "notificationUnknownCaller": "未知来电人",
+  "@notificationMentionMe": {"placeholders": {"body": {"type": "String"}}},
+  "@notificationMentionMeBy": {"placeholders": {"sender": {"type": "String"}, "body": {"type": "String"}}},
+  "@notificationMentionAll": {"placeholders": {"body": {"type": "String"}}},
+  "@notificationMentionAllBy": {"placeholders": {"sender": {"type": "String"}, "body": {"type": "String"}}},
+  "@notificationVideoCallBody": {"placeholders": {"caller": {"type": "String"}}},
+  "@notificationAudioCallBody": {"placeholders": {"caller": {"type": "String"}}},
+  "@callNotConnected": {"description": "Call did not connect"},
+  "pendingJoinRequestsTitle": "新的申请",
+  "@pendingJoinRequestsTitle": {
+    "description": "Pending join requests title"
+  },
+  "pendingJoinRequestsEmpty": "暂无申请",
+  "@pendingJoinRequestsEmpty": {
+    "description": "No pending requests"
+  },
+  "pendingJoinRequestApprove": "同意",
+  "@pendingJoinRequestApprove": {
+    "description": "Approve request"
+  },
+  "pendingJoinRequestReject": "拒绝",
+  "@pendingJoinRequestReject": {
+    "description": "Reject request"
+  },
+  "pendingJoinRequestApproveSuccess": "已同意申请",
+  "@pendingJoinRequestApproveSuccess": {
+    "description": "Approve success"
+  },
+  "pendingJoinRequestRejectSuccess": "已拒绝申请",
+  "@pendingJoinRequestRejectSuccess": {
+    "description": "Reject success"
+  },
+  "pendingJoinRequestFailed": "操作失败，请重试",
+  "@pendingJoinRequestFailed": {
+    "description": "Request operation failed"
+  },
+  "myCustomersTitle": "我的客户",
+  "@myCustomersTitle": {
+    "description": "My customers title"
+  },
+  "myCustomersEmpty": "暂无客户",
+  "@myCustomersEmpty": {
+    "description": "No customers"
+  },
+  "groupListTitle": "群聊列表",
+  "@groupListTitle": {
+    "description": "Group list title"
+  },
+  "groupListEmpty": "暂无群聊",
+  "@groupListEmpty": {
+    "description": "No groups"
+  },
+  "addFriendTitle": "添加朋友",
+  "@addFriendTitle": {
+    "description": "Add friend page title"
+  },
+  "addFriendSearchHint": "手机号 / 邮箱 / 微界号",
+  "@addFriendSearchHint": {
+    "description": "Add friend search hint"
+  },
+  "addFriendLppIdLabel": "微界号：{lppId}",
+  "@addFriendLppIdLabel": {
+    "description": "StartLink ID label in search result",
+    "placeholders": {
+      "lppId": {
+        "type": "String"
+      }
+    }
+  },
+  "addFriendButton": "加好友",
+  "@addFriendButton": {
+    "description": "Add friend button"
+  },
+  "addFriendCannotAddSelf": "不能添加自己",
+  "@addFriendCannotAddSelf": {
+    "description": "Cannot add yourself as a friend"
+  },
+  "addFriendUnsupportedUser": "当前用户不支持添加好友，可直接发消息",
+  "@addFriendUnsupportedUser": {
+    "description": "Target user cannot be added as a friend"
+  },
+  "addFriendMessageHint": "请输入验证消息",
+  "@addFriendMessageHint": {
+    "description": "Add friend message hint"
+  },
+  "addFriendSendRequest": "发送申请",
+  "@addFriendSendRequest": {
+    "description": "Send friend request"
+  },
+  "joinCompanyTitle": "加入企业",
+  "@joinCompanyTitle": {
+    "description": "Join company title"
+  },
+  "joinCompanyCodeHint": "请输入企业码",
+  "@joinCompanyCodeHint": {
+    "description": "Join company code hint"
+  },
+  "joinCompanySearchHint": "搜索企业名称",
+  "@joinCompanySearchHint": {
+    "description": "Join company search hint"
+  },
+  "joinCompanyApply": "申请加入",
+  "@joinCompanyApply": {
+    "description": "Apply to join"
+  },
+  "joinCompanyApplySuccess": "申请已提交",
+  "@joinCompanyApplySuccess": {
+    "description": "Apply success"
+  },
+  "joinCompanyApplyFailed": "申请失败，请重试",
+  "@joinCompanyApplyFailed": {
+    "description": "Apply failed"
+  },
+  "joinCompanyAutoApproved": "已自动通过，欢迎加入",
+  "@joinCompanyAutoApproved": {
+    "description": "Auto approved"
+  },
+  "joinCompanyPending": "申请已提交，等待审批",
+  "@joinCompanyPending": {
+    "description": "Join company pending"
+  },
+  "joinCompanyInviteCodeHint": "请输入邀请码",
+  "@joinCompanyInviteCodeHint": {
+    "description": "Invite code hint"
+  },
+  "joinCompanyAcceptInvite": "接受邀请",
+  "@joinCompanyAcceptInvite": {
+    "description": "Accept invite"
+  },
+  "joinCompanyNoResults": "未找到相关企业",
+  "@joinCompanyNoResults": {
+    "description": "No company results"
+  },
+  "joinCompanyMemberCount": "{count} 名成员",
+  "@joinCompanyMemberCount": {
+    "description": "Member count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timezoneNameHawaii": "夏威夷",
+  "timezoneNameAlaska": "阿拉斯加",
+  "timezoneNamePacificTime": "太平洋时间",
+  "timezoneNameMountainTime": "山地时间",
+  "timezoneNameCentralTime": "中部时间",
+  "timezoneNameEasternTime": "东部时间",
+  "timezoneNameAtlanticTime": "大西洋时间",
+  "timezoneNameBrasilia": "巴西利亚",
+  "timezoneNameAzores": "亚速尔群岛",
+  "timezoneNameLondonDublin": "伦敦/都柏林",
+  "timezoneNameBerlinParisRome": "柏林/巴黎/罗马",
+  "timezoneNameCairoHelsinki": "开罗/赫尔辛基",
+  "timezoneNameMoscowRiyadh": "莫斯科/利雅得",
+  "timezoneNameTehran": "德黑兰",
+  "timezoneNameDubaiBaku": "迪拜/巴库",
+  "timezoneNameKabul": "喀布尔",
+  "timezoneNameKarachiTashkent": "卡拉奇/塔什干",
+  "timezoneNameMumbaiNewDelhi": "孟买/新德里",
+  "timezoneNameKathmandu": "加德满都",
+  "timezoneNameDhakaAlmaty": "达卡/阿拉木图",
+  "timezoneNameYangon": "仰光",
+  "timezoneNameBangkokHanoiJakarta": "曼谷/河内/雅加达",
+  "timezoneNameBeijingShanghaiHongKongTaipei": "北京/上海/香港/台北",
+  "timezoneNameTokyoSeoul": "东京/首尔",
+  "timezoneNameAdelaide": "阿德莱德",
+  "timezoneNameSydneyMelbourne": "悉尼/墨尔本",
+  "timezoneNameSolomonIslands": "所罗门群岛",
+  "timezoneNameAucklandFiji": "奥克兰/斐济",
+  "networkSmartSelectBestRoute": "智能选择最优线路",
+  "networkTesting": "测试中...",
+  "networkTestingShort": "测试中",
+  "networkLatencyMs": "延迟 {ms}ms",
+  "@networkLatencyMs": {
+    "description": "Network latency in milliseconds",
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "networkConnectionMode": "连接模式",
+  "networkDirectMode": "直连模式",
+  "networkProxyMode": "代理模式",
+  "networkDirectModeDesc": "直接连接服务器",
+  "networkProxyModeDesc": "通过代理服务器连接",
+  "networkDirectRoutes": "直连线路",
+  "networkProxyRoutes": "代理线路",
+  "networkTestAll": "测试全部",
+  "networkChinaTelecom": "中国电信",
+  "networkChinaUnicom": "中国联通",
+  "networkChinaMobile": "中国移动",
+  "networkHongKongNode": "香港节点",
+  "networkSingaporeNode": "新加坡节点",
+  "networkJapanNode": "日本节点",
+  "networkUnitedStatesNode": "美国节点",
+  "networkHint": "提示：\n• 直连模式：速度快，适合国内使用\n• 代理模式：稳定性高，适合跨境通信\n• 点击刷新图标可测试单个线路延迟",
+  "teenModeTitle": "青少年模式",
+  "teenModeStatusOn": "已开启",
+  "teenModeStatusOff": "未开启",
+  "teenModeStatusLoading": "获取中",
+  "teenModeUnavailable": "暂时无法获取青少年模式状态",
+  "teenModeInvalidResponse": "青少年模式服务返回了无效响应",
+  "teenModeEnableDescription": "开启后将按平台规则限制使用时长和部分功能。",
+  "teenModePasscode": "口令",
+  "teenModeCurrentPasscode": "当前口令",
+  "teenModeNewPasscode": "新口令",
+  "teenModePasscodeHint": "请输入 4–6 位数字",
+  "teenModeEnable": "开启青少年模式",
+  "teenModeDisable": "关闭青少年模式",
+  "teenModeChangePasscode": "修改口令",
+  "teenModeSource": "开启来源",
+  "teenModeDailyUsage": "今日已使用",
+  "teenModeRemaining": "剩余时间",
+  "teenModeMinutesUnit": "分钟",
+  "teenModeUnlimited": "不限时",
+  "teenModeRequestExtension": "申请加时",
+  "teenModeExtensionSubmitted": "加时申请已提交给监护人",
+  "teenModeTimeLimitReached": "今日使用时长已用完",
+  "teenModeCurfewActive": "当前处于限制使用时段",
+  "teenModeReliefHint": "仍可查看历史消息、联系官方客服和提交举报。",
+  "teenModeRestrictedNotice": "青少年模式当前限制发送消息",
+  "teenModeActionBlocked": "青少年模式当前限制此操作",
+  "teenModeMyRequests": "我的申请",
+  "guardianCenterTitle": "监护中心",
+  "guardianRelationships": "监护关系",
+  "guardianMinors": "我监护的孩子",
+  "guardianApprovals": "待我审批",
+  "guardianBind": "输入绑定码",
+  "guardianCreateMinorCode": "我是孩子，生成绑定码",
+  "guardianCreateGuardianCode": "我是监护人，生成绑定码",
+  "guardianRelation": "称谓或关系",
+  "guardianPrimary": "主要监护人",
+  "guardianCode": "6 位绑定码",
+  "guardianCodeHint": "请输入对方提供的绑定码",
+  "guardianCodeCreated": "绑定码已生成，请在过期前交给对方",
+  "guardianEmpty": "暂无监护关系",
+  "guardianNoMinors": "暂无受监护人",
+  "guardianUnbind": "解除监护关系",
+  "guardianExtend": "为孩子加时",
+  "guardianPolicyTitle": "使用规则",
+  "guardianPolicyLocked": "平台已锁定",
+  "approvalEmpty": "暂无申请",
+  "approvalApprove": "同意",
+  "approvalReject": "拒绝",
+  "approvalPending": "待审批",
+  "approvalApproved": "已同意",
+  "approvalRejected": "已拒绝",
+  "approvalExpired": "已过期",
+  "approvalCancelled": "已撤销",
+  "approvalReplayFailed": "原操作执行失败，请重新发起",
+  "requestCancelled": "申请已撤销",
+  "kycTitle": "实名认证",
+  "kycNotRequired": "当前无需实名认证",
+  "kycVerified": "已实名认证",
+  "kycDeclared": "实名信息已提交",
+  "kycPending": "审核中",
+  "kycRejected": "审核未通过",
+  "kycNone": "尚未提交实名信息",
+  "kycRealName": "真实姓名",
+  "kycIdNumber": "证件号码",
+  "kycIdType": "证件类型",
+  "kycApplicability": "请按证件类型填写真实信息；当前受理证件以列表为准。",
+  "kycCamera": "拍照",
+  "kycGallery": "从相册选择",
+  "kycPhotoLimit": "单张照片上限",
+  "kycSelectPhoto": "选择照片",
+  "kycPhotoSelected": "已选择",
+  "kycViewPhoto": "点击查看照片",
+  "kycReplacePhoto": "重选照片",
+  "kycDisclosure": "平台将使用姓名、证件号码和证件照片审核身份；不提供将无法提交，受实名门槛限制的功能可能不可用。",
+  "kycConsent": "我单独同意本次实名信息处理",
+  "kycConsentRequired": "请先单独同意实名信息处理",
+  "kycResubmitTitle": "重新提交实名信息",
+  "kycResubmitWarning": "重新提交会作废当前待审申请，是否继续？",
+  "kycSubmitting": "提交中",
+  "kycSubmitFailed": "提交失败，请重试",
+  "kycSubmitUnavailable": "当前无法提交实名信息",
+  "kycResubmitNotAllowed": "驳回后暂不允许重新提交，如有疑问请联系客服",
+  "kycDailyLimit": "今日提交次数已用完，请明天再试",
+  "kycTypeUnavailable": "暂无可用证件类型，请稍后重试",
+  "kycNameInvalid": "真实姓名需为 2–64 个字符",
+  "kycNumberRequired": "请输入证件号码",
+  "kycFrontRequired": "请上传证件正面照片",
+  "kycBackRequired": "请上传证件背面照片",
+  "kycPhotoTooLarge": "照片超过单张上限，请压缩后重试",
+  "kycAccountChanged": "账号或空间已切换，请重新进入实名页",
+  "kycPhotoInvalid": "请选择有效的图片",
+  "kycPortraitSide": "人像面",
+  "kycEmblemSide": "国徽面",
+  "kycPassportDataPage": "护照资料页",
+  "kycPassportOtherPage": "护照签证页／备用页",
+  "kycFront": "证件正面",
+  "kycBack": "证件背面",
+  "kycRequired": "创建群聊前需先完成实名认证",
+  "kycGoVerify": "去实名",
+  "kycStatusUnknown": "实名状态暂不可用，请稍后刷新",
+  "kycSuperseded": "这次申请已被后续提交替代，请查看最新实名状态",
+  "kycMediaNotFound": "当前空间找不到证件照，请重新选择后提交",
+  "customerServiceBroadcastDirectTitle": "客户群发",
+  "officialAccountBadge": "官方",
+  "officialAccountOpenConversation": "进入会话",
+  "officialAccountJoinHint": "添加后将以客户身份加入该企业，无需好友验证。",
+  "officialAccountJoinDisabled": "该企业暂未开放添加，请联系客服",
+  "officialAccountRemoved": "你已被该企业移除，需要企业重新邀请",
+  "officialAccountBanned": "你的账号在该企业已被停用",
+  "officialAccountUnavailable": "该官方号暂不可用",
+  "officialAccountJoinBindingDisabled": "当前模式不允许加入企业",
+  "officialAccountPlatformRequired": "请使用平台账号添加该官方号",
+  "officialAccountOpenFailed": "打开会话失败，请重试",
+  "officialAccountAccountChanged": "账号或空间已切换，请重新打开",
+  "officialAccountDirectoryUnavailable": "企业目录暂未更新，请稍后重试",
+  "officialAccountInboxSyncFailed": "官方号消息同步失败，已保留本地内容",
+  "officialAccountInboxSyncing": "正在同步官方号消息",
+  "diagnosticsTitle": "问题诊断",
+  "diagnosticsExplanation": "日志已脱敏，仅包含运行和错误信息。默认导出当前账号、当前空间及公共启动记录，不包含聊天正文或登录凭证。",
+  "diagnosticsHour": "最近1小时",
+  "diagnosticsDay": "最近24小时",
+  "diagnosticsWeek": "最近7天",
+  "diagnosticsEventCount": "可用记录：{count}条",
+  "diagnosticsPersistent": "日志已保存在本机，重启后可继续导出。",
+  "diagnosticsNotPersistent": "部分日志尚未持久化，请稍后刷新。",
+  "diagnosticsExport": "导出并分享",
+  "diagnosticsRefresh": "刷新",
+  "diagnosticsClear": "清除当前空间日志",
+  "diagnosticsClearConfirm": "清除当前空间的诊断日志？此操作不会删除聊天记录。",
+  "diagnosticsShared": "已完成系统分享操作，请在目标应用确认文件。",
+  "diagnosticsCancelled": "已取消分享，可再次导出。",
+  "diagnosticsUnconfirmed": "无法确认分享结果，请在目标应用检查。",
+  "diagnosticsFailed": "操作失败，请重试。",
+  "@diagnosticsEventCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
