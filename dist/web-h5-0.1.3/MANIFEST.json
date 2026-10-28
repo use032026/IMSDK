@@ -1,0 +1,124 @@
+{
+  "product": "IM SDK Web / H5",
+  "sdkVersion": "0.1.3",
+  "documentationRevision": "2026-10-28",
+  "npmPackage": "npm/imsdk-web-0.1.3.tgz",
+  "browserEntry": "sdk/im-sdk.js",
+  "bundleSha256": "5cd770ba33cafb9b08e7c9d99901cda8165ebdc8055d4f3ced3ae14dd80d9031",
+  "runtimeBinaryChangedByHandoff": false,
+  "validatedOn": "2026-10-28",
+  "validation": {
+    "status": "passed",
+    "version": "0.1.3",
+    "sdkVersion": "0.1.3",
+    "validatedAt": "2026-10-28T03:09:45.852448+00:00",
+    "bundleSha256": "5cd770ba33cafb9b08e7c9d99901cda8165ebdc8055d4f3ced3ae14dd80d9031",
+    "runtimeSourceSha256": "45706bb15df8675ef467288262b047477f7c80860bd1e5d22a46e7071496edc2",
+    "checks": {
+      "typecheck": true,
+      "build": true,
+      "unitTests": true,
+      "browserContract": true,
+      "standaloneOfficialNpmConsumers": true,
+      "sameBundleAsRealService": true,
+      "privacyScan": true
+    },
+    "tests": {
+      "unitTotal": 50,
+      "unitPassed": 50,
+      "unitFailed": 0
+    },
+    "browserContract": {
+      "passed": true,
+      "fixtureOnly": true,
+      "liveBackend": false,
+      "viewports": [
+        1280,
+        390
+      ],
+      "report": "logs/unification-release-20261028/web-browser-contract/browser-report.json"
+    },
+    "consumer": {
+      "status": "passed",
+      "sdkVersion": "0.1.3",
+      "artifactSha256": "1442602e6af199062ae2549508272813e158432be424d31633254a70d0e3c8a9",
+      "bundleSha256": "5cd770ba33cafb9b08e7c9d99901cda8165ebdc8055d4f3ced3ae14dd80d9031",
+      "standaloneExtractedOfficialPackage": true,
+      "dependencyInstalls": 0,
+      "checks": {
+        "packageExportManifest": true,
+        "officialRuntimeAndTypesMatchCurrentBuild": true,
+        "sameBundleAsActualRealServiceValidation": true,
+        "noKnownPrivateAccountsTokensOrConfiguredServiceValues": true,
+        "esmStandaloneRuntime": true,
+        "commonjsStandaloneRuntime": true,
+        "standalonePublicTypeConsumer": true,
+        "standaloneBrowserIifeMount": true,
+        "noOriginalSourceOrExternalRuntimeRequests": true
+      },
+      "errors": [],
+      "browserVersion": "156.0.8078.73",
+      "finishedAt": "2026-10-28T03:08:22.770Z"
+    },
+    "officialNpmPackage": "dist/web/imsdk-web-0.1.3.tgz",
+    "officialNpmSha256": "1442602e6af199062ae2549508272813e158432be424d31633254a70d0e3c8a9",
+    "realServiceBinding": {
+      "passed": true,
+      "bundleIdentical": true,
+      "evidenceChain": "logs/unification-web-live-20261028-6576f4b0-r2/evidence-chain.json",
+      "newLiveWritesDuringReleaseValidation": 0
+    }
+  },
+  "realServiceValidation": {
+    "passed": true,
+    "realBackend": true,
+    "mockedResponses": false,
+    "businessFlowPassed": true,
+    "checks": {
+      "registration": true,
+      "login": true,
+      "friendRequestAccepted": true,
+      "conversationList": true,
+      "directRoundTrip": true,
+      "groupCreateRoundTrip": true,
+      "singleActiveSpace": true,
+      "logoutDisposeClean": true
+    },
+    "verificationCodeRequiredByService": false,
+    "verificationMessagesSent": 0,
+    "testOnlyDedicatedAccounts": true,
+    "actualNewAccountSpaceKind": "personal",
+    "actualEnterpriseAssignment": "not_observed; contract_regression_only",
+    "mobileSurface": "current Flutter SDK in dedicated iOS26.5 simulator; separate final lifecycle acceptance",
+    "webSurface": "actual Chrome browser UI with independent peer persistence readbacks",
+    "mobileSdkRegressionTests": 92,
+    "bugsFixedDuringValidation": [
+      "cold_start_persisted_activation_replacement",
+      "logout_cleanup_drain_before_sdk_disposal",
+      "settings_async_completion_after_disposal"
+    ],
+    "evidence": [
+      {
+        "report": "unification-live-20261028-6576f4b0-r2-mobile.json",
+        "sha256": "8c647b0c36685f50c5277dc4e464053d2c300c2d641a1fe1f87200bf9d09dfe6"
+      },
+      {
+        "report": "unification-live-20261028-6576f4b0-r2-mobile-lifecycle.json",
+        "sha256": "0e787100f49c815273c666fa731c9c54f9041d3be28966f721ace9d205e74119"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/evidence-chain.json",
+        "sha256": "df16a03a5a060e21245f58ff794fab563e920b5a83330d1e99aeced1ecae73ce"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/peer-report.json",
+        "sha256": "7ca64ca32b5bc761e22fec407c8f7bc5ef1fda94ec3e7b43df9dc605d3ca8bbd"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/roundtrip-report.json",
+        "sha256": "1d8b3ad17046bf04304a0d987de415f6876fe2309fa07ddc2df34a2a5dad2949"
+      }
+    ]
+  },
+  "registrationSpacePolicy": "no chooser; personal default; use actual authenticated enterprise response; one active space"
+}
