@@ -1,0 +1,27 @@
+name: im_sdk_flutter_host
+description: Flutter host sample using only the IM SDK public API.
+publish_to: none
+version: 0.1.1+2
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  im_sdk:
+    path: ../../packages/im_sdk
+
+dependency_overrides:
+  record_linux: 1.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  path_provider: 2.1.6
+  flutter_lints: 3.0.2
+
+flutter:
+  uses-material-design: true

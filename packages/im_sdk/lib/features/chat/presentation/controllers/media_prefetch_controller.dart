@@ -1,0 +1,104 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:im_sdk/features/chat/domain/entities/media_local_file.dart';
+import 'package:im_sdk/features/chat/domain/entities/message.dart';
+import 'package:im_sdk/features/chat/presentation/controllers/media_open_controller.dart';
+
+final mediaPrefetchControllerProvider =
+    Provider.family<MediaPrefetchController, String>((ref, spaceId) {
+  return MediaPrefetchController(
+    opener: ref.watch(mediaOpenControllerProvider(spaceId)),
+  );
+}, dependencies: [mediaOpenControllerProvider]);
+
+class MediaPrefetchRequest {
+  final Message message;
+  final MediaKind mediaKind;
+  final MediaVariant variant;
+  final MediaResource resource;
+  final bool generatePoster;
+  final String fallbackName;
+
+  const MediaPrefetchRequest({
+    required this.message,
+    required this.mediaKind,
+    required this.variant,
+    required this.resource,
+    required this.fallbackName,
+    this.generatePoster = false,
+  });
+}
+
+List<MediaPrefetchRequest> mediaPrefetchRequestsForMessage(
+  Message message,
+) {
+  switch (message.type) {
+    case MessageType.image:
+      final image = message.body.image;
+      final thumbnailUrl = image?.thumbnailUrl?.trim();
+      if (image == null || thumbnailUrl == null || thumbnailUrl.isEmpty) {
+        return const [];
+      }
+      return [
+        MediaPrefetchRequest(
+          message: message,
+          mediaKind: MediaKind.image,
+          variant: MediaVariant.thumbnail,
+          resource: image.copyWith(url: thumbnailUrl),
+          fallbackName: image.fileName ?? 'image_thumb.jpg',
+        ),
+      ];
+    case MessageType.video:
+      final video = message.body.video;
+      if (video == null) return const [];
+      final thumbnailUrl = video.thumbnailUrl?.trim();
+      if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+        return [
+          MediaPrefetchRequest(
+            message: message,
+            mediaKind: MediaKind.video,
+            variant: MediaVariant.videoPoster,
+            resource: video.copyWith(url: thumbnailUrl),
+            fallbackName: 'video_poster.jpg',
+          ),
+        ];
+      }
+      return const [];
+    default:
+      return const [];
+  }
+}
+
+class MediaPrefetchController {
+  final MediaOpenController opener;
+
+  const MediaPrefetchController({
+    required this.opener,
+  });
+
+  void prefetchMessages(Iterable<Message> messages) {
+    for (final message in messages) {
+      unawaited(prefetchMessage(message));
+    }
+  }
+
+  Future<void> prefetchMessage(Message message) async {
+    final requests = mediaPrefetchRequestsForMessage(message);
+    for (final request in requests) {
+      try {
+        await opener.localPathFor(
+          MediaOpenRequest.fromResource(
+            message: request.message,
+            mediaKind: request.mediaKind,
+            variant: request.variant,
+            resource: request.resource,
+            fallbackName: request.fallbackName,
+          ),
+        );
+      } catch (_) {
+        // Prefetch is opportunistic; visible message state must not depend on it.
+      }
+    }
+  }
+}
