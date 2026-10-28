@@ -1,0 +1,19 @@
+{
+  "product": "IM SDK Web / H5",
+  "sdkVersion": "0.1.2",
+  "documentationRevision": "2026-10-28",
+  "npmPackage": "npm/imsdk-web-0.1.2.tgz",
+  "browserEntry": "sdk/im-sdk.js",
+  "bundleSha256": "ebc80d3ff4c2e725823f3ac92d81287c58b97d4171b8e14283c14b446c7e48af",
+  "runtimeBinaryChangedByHandoff": false,
+  "validatedOn": "2026-10-27",
+  "validation": {
+    "ChromePersonalLoginDirectGroupRealBackend": "passed",
+    "macOSSafari26_6_2PersonalLoginDirectGroupRealBackend": "passed",
+    "interfaceRegressionTests": 31,
+    "WeChat": "not_tested_deferred_by_scope",
+    "iPhoneSafariAndSoftKeyboard": "not_tested",
+    "ProductionH5Origin": "integration_acceptance_required",
+    "FrameworkSamples": "templates_for_host_integration"
+  }
+}

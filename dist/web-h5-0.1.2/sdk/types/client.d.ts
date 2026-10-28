@@ -1,0 +1,56 @@
+import { type ImSdkConfig, type ImSdkCredentials, type ImSdkEvent, type LoginRequest, type CaptchaChallenge, type Conversation, type ConversationPage, type ConversationTarget, type Message, type PageOptions, type MessagePageOptions, type CustomerServiceRequest, type CustomerServiceSession, type Contact } from './types.js';
+/** One account per instance. No global state, persistent credentials or automatic sends. */
+export declare class ImSdkClient {
+    private settings?;
+    private credentials?;
+    private disposed;
+    private revision;
+    private listeners;
+    private requests;
+    private refreshTask?;
+    private gateway?;
+    private stopping;
+    get isInitialized(): boolean;
+    get isAuthenticated(): boolean;
+    get sessionRevision(): number;
+    get config(): ImSdkConfig | undefined;
+    get currentUser(): {
+        userId: string;
+        platformUserId: string;
+        spaceId: string;
+    } | undefined;
+    on(listener: (event: ImSdkEvent) => void): () => void;
+    private emit;
+    initialize(config: ImSdkConfig): void;
+    requestLoginCaptcha(): Promise<CaptchaChallenge>;
+    loginWithPassword(request: LoginRequest): Promise<void>;
+    authenticate(credentials: ImSdkCredentials): Promise<void>;
+    listConversations(options?: PageOptions): Promise<ConversationPage>;
+    getConversation(id: string): Promise<Conversation>;
+    listMessages(target: ConversationTarget, options?: MessagePageOptions): Promise<Message[]>;
+    sendText(target: ConversationTarget, text: string, options?: {
+        clientMessageId?: string;
+    }): Promise<Message>;
+    markRead(target: ConversationTarget, seq: number): Promise<void>;
+    createDirectConversation(peerUserId: string): Promise<Conversation>;
+    listContacts(): Promise<Contact[]>;
+    requestCustomerService(request: CustomerServiceRequest): Promise<CustomerServiceSession>;
+    logout(): Promise<void>;
+    shutdown(): Promise<void>;
+    private retireSession;
+    private activate;
+    private expireSession;
+    private verifyIdentity;
+    private parseCredentials;
+    private refresh;
+    private accessToken;
+    private authorized;
+    private raw;
+    private requireInitialized;
+    private requireSession;
+    private checkEpoch;
+    private targetPath;
+    private validateSeq;
+    private limit;
+    private failure;
+}
