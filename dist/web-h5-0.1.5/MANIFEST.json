@@ -1,0 +1,178 @@
+{
+  "product": "IM SDK Web / H5",
+  "sdkVersion": "0.1.5",
+  "documentationRevision": "2026-10-28",
+  "npmPackage": "npm/imsdk-web-0.1.5.tgz",
+  "browserEntry": "sdk/im-sdk.js",
+  "defaultUserEntry": "index.html",
+  "messengerDocument": "examples/plain-html/index.html",
+  "defaultEntryBehavior": "bundled real-service connection; open directly to register/login without editing configuration; authenticated client opens conversation list",
+  "bundleSha256": "364e479c80a8bc38a9d0560851d3a2e9e657b6ae6ab9ac195f8eeef09a00f841",
+  "runtimeBinaryChangedByHandoff": false,
+  "validatedOn": "2026-10-28",
+  "validation": {
+    "status": "passed",
+    "version": "0.1.5",
+    "sdkVersion": "0.1.5",
+    "bundleSha256": "364e479c80a8bc38a9d0560851d3a2e9e657b6ae6ab9ac195f8eeef09a00f841",
+    "runtimeSourceSha256": "6057d3e211c70e0991ca3e6c318356d1b38433a50047e01a68121576d7cbebab",
+    "checks": {
+      "typecheck": true,
+      "build": true,
+      "unitTests": true,
+      "browserContract": true,
+      "preconfiguredDefaultEntry": true,
+      "newRealRegistrationFriendshipAndChats": true,
+      "standaloneOfficialNpmConsumers": true,
+      "privacyScan": true,
+      "independentReview": true
+    },
+    "tests": {
+      "unitTotal": 50,
+      "unitPassed": 50,
+      "unitFailed": 0
+    },
+    "defaultEntry": {
+      "status": "passed",
+      "bundledRealService": true,
+      "sourceSha256": {
+        "index.html": "abde320b82b8ec449c002107cba77b1d560d504a2d638bc755b3c2c28c5f820b",
+        "host-config.js": "b3a5927df9e9b06fc1eec3f7e5a854d6ef2ec0c23280fa945d49167c50f01b19"
+      },
+      "rootEntrySha256": "8398e497d016292e0238fea2debf0da3886f033798049c03ed4fe50169645524",
+      "rootEntry": "index.html",
+      "chatDocument": "examples/plain-html/index.html",
+      "configurationEditingRequired": false,
+      "configurationInjectionUsedByRealValidation": false,
+      "technicalConfigurationForm": false,
+      "rootEntryStaticReview": "passed; final actual delivery browser smoke follows assembly",
+      "realFileEntryReport": "logs/web-connected-20261028/source-default-entry-live.json",
+      "fullRealBusinessFlowReport": "logs/web-connected-20261028/report.json",
+      "fixtureReport": "logs/web-connected-20261028/entry-browser-report.json"
+    },
+    "browserContract": {
+      "passed": true,
+      "fixtureOnly": true,
+      "liveBackend": false,
+      "viewports": [
+        1280,
+        390
+      ],
+      "report": "logs/web-connected-20261028/browser-contract/browser-report.json"
+    },
+    "consumer": {
+      "status": "passed",
+      "sdkVersion": "0.1.5",
+      "artifactSha256": "fcd7d31f78aa0397c8a4cc4162a406fbe987ff1125c90f82d378cd0a7b6e004b",
+      "standaloneExtractedOfficialPackage": true,
+      "dependencyInstalls": 0,
+      "checks": {
+        "sameBundleAsActualRealServiceValidation": true,
+        "officialRuntimeAndTypesMatchCurrentBuild": true,
+        "packageExportManifest": true,
+        "esmStandaloneRuntime": true,
+        "commonjsStandaloneRuntime": true,
+        "standalonePublicTypeConsumer": true,
+        "noKnownPrivateAccountsTokensOrUnapprovedConnectionValues": true,
+        "onlyAuthorizedPublicConnectionProfileBundled": true,
+        "noOriginalSourceOrExternalRuntimeRequests": true,
+        "standaloneBrowserIifeDefaultEntry": true
+      },
+      "errors": [],
+      "bundleSha256": "364e479c80a8bc38a9d0560851d3a2e9e657b6ae6ab9ac195f8eeef09a00f841",
+      "consumerBrowserConfigurationOverride": "explicit null; prevents real writes in rendering-only checks",
+      "browserVersion": "156.0.8078.73",
+      "finishedAt": "2026-10-28T04:54:49.953Z"
+    },
+    "officialNpmPackage": "dist/web/imsdk-web-0.1.5.tgz",
+    "officialNpmSha256": "fcd7d31f78aa0397c8a4cc4162a406fbe987ff1125c90f82d378cd0a7b6e004b",
+    "realServiceBinding": {
+      "passed": true,
+      "bundleIdentical": true,
+      "entryAndHostConfigIdentical": true,
+      "allNewBusinessFlowThisRun": true
+    }
+  },
+  "realServiceValidation": {
+    "passed": true,
+    "realBackend": true,
+    "mockedResponses": false,
+    "businessFlowPassed": true,
+    "checks": {
+      "registration": true,
+      "login": true,
+      "friendRequestAccepted": true,
+      "conversationList": true,
+      "directRoundTrip": true,
+      "groupCreateRoundTrip": true,
+      "singleActiveSpace": true,
+      "logoutDisposeClean": true
+    },
+    "runId": "20261028-7ca5f21f39",
+    "sdkVersion": "0.1.5",
+    "defaultEntryProtocol": "file:",
+    "bundledConnectionUsedWithoutEditing": true,
+    "configurationDynamicallyInjected": false,
+    "dedicatedAccountsCreatedThisRun": 2,
+    "newFriendshipAcceptedThisRun": 1,
+    "newTwoMemberGroupCreatedThisRun": 1,
+    "newMessagesPersistedThisRun": 4,
+    "newMessagesPerConversation": {
+      "direct": 2,
+      "group": 2
+    },
+    "independentIdentitiesReadback": true,
+    "exactTwoMembersVerified": true,
+    "verificationCodeRequiredByService": false,
+    "verificationMessagesSent": 0,
+    "actualNewAccountSpaceKind": "personal",
+    "actualEnterpriseAssignment": "not observed; contract regression only",
+    "testOnlyDedicatedAccounts": true,
+    "webSurface": "Chrome; two isolated contexts open file:// default HTML and the bundled connection profile; all business writes through UI; independent authenticated reads confirm persistence",
+    "workflowAttempts": {
+      "ids": [
+        "20261028044429017",
+        "20261028045216132"
+      ],
+      "reasonForResume": "local disk ENOSPC; same new pair and run; prior accepted writes preserved without duplicate registration, group creation or sends",
+      "firstAttempt": {
+        "report": "logs/web-connected-20261028/first-attempt-interruption.json",
+        "sha256": "b7e3a1d0afd2cda9e073deebf809a4d159267a7ec5db3efa450ddc6a634ac403",
+        "newRegistrations": 2,
+        "newDirectMessages": 2,
+        "newGroupCreated": true,
+        "newGroupMessages": 0
+      },
+      "continuation": {
+        "report": "logs/web-connected-20261028/report.json",
+        "sha256": "852f5961af846659b5ca23b5aa481fec2dca2f5a41c85af91f52406b4edf76d2",
+        "newRegistrations": 0,
+        "newMessages": 2
+      },
+      "olderReleaseBusinessEvidenceReused": false
+    },
+    "evidence": [
+      {
+        "report": "web-connected-20261028/first-attempt-interruption.json",
+        "sha256": "b7e3a1d0afd2cda9e073deebf809a4d159267a7ec5db3efa450ddc6a634ac403"
+      },
+      {
+        "report": "web-connected-20261028/report.json",
+        "sha256": "852f5961af846659b5ca23b5aa481fec2dca2f5a41c85af91f52406b4edf76d2"
+      },
+      {
+        "report": "web-connected-20261028/source-default-entry-live.json",
+        "sha256": "719175dfae7fbf7747a5d9850cf0796c785e2b647f46680667ac0db47d4ba211"
+      },
+      {
+        "report": "web-connected-20261028/visual-and-privacy-review.json",
+        "sha256": "dccc65487915fd73f535426b24d455e538483e3153452d4c73a475a5c7a4d624"
+      },
+      {
+        "report": "web-connected-20261028/independent-review.json",
+        "sha256": "90d109e231da23e5526412e0b40d634a2d803721b936477310641611f56d1d1b"
+      }
+    ]
+  },
+  "registrationSpacePolicy": "no chooser; personal default; use actual authenticated enterprise response; one active space"
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>apiBaseUrl</key>
+	<string>https://chat.hearteasechat.com</string>
+	<key>serviceRealmId</key>
+	<string>im-sdk-personal-validation</string>
+	<key>passwordLogin</key>
+	<dict>
+		<key>space</key>
+		<string>personal</string>
+		<key>loginType</key>
+		<string>lpp_id</string>
+	</dict>
+	<key>privacyConsentGranted</key>
+	<true/>
+	<key>storageNamespace</key>
+	<string>native_ios_handoff</string>
+</dict>
+</plist>

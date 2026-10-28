@@ -1,0 +1,264 @@
+{
+  "product": "IM SDK Android",
+  "sdkVersion": "0.1.2",
+  "documentationRevision": "2026-10-28",
+  "deliveryKind": "binary-sdk-with-native-host-source",
+  "binaryTreeSha256": "627c658ac7e5debd0530f4b6cc847cb33d1ce49eb1e89a07b24ee2e1e5d75f5a",
+  "preconfiguredServiceEnvironment": true,
+  "preconfiguredAccountsOrCredentials": false,
+  "defaultEntryBehavior": "native sample initializes and opens registration/login automatically using the bundled authorized real service; active session opens conversations",
+  "validation": {
+    "status": "passed",
+    "sdkVersion": "0.1.2",
+    "validatedOn": "2026-10-28",
+    "binaryTreeSha256": "627c658ac7e5debd0530f4b6cc847cb33d1ce49eb1e89a07b24ee2e1e5d75f5a",
+    "defaultEntry": {
+      "status": "passed",
+      "bundledRealService": true,
+      "configurationEditingRequired": false,
+      "configurationInjected": false,
+      "configurationSha256": "560949155b7d819b7f9d5790a3e0da8974b00b413f49dbe079cf1ec355bf7d1c",
+      "configurationCanonicalSha256": "81ed24bf80ec92eb73d6c5b33a2f66a805c15db3237889ab359c90bb9f54c163",
+      "sampleHostTreeSha256": "b333b803cba72c38100d49ca2f0f1ca43a2340733fb8fde0e8855859c7c10c67",
+      "behavior": "initial native launch automatically opens login/registration; authenticated reopen opens conversation list"
+    },
+    "nativeBusinessFlow": {
+      "status": "passed",
+      "checks": {
+        "registration": true,
+        "login": true,
+        "friendRequestSent": true,
+        "friendRequestAccepted": true,
+        "conversationList": true,
+        "directRoundTrip": true,
+        "groupCreated": true,
+        "groupRoundTrip": true,
+        "logoutDisposeClean": true
+      },
+      "physicalDeviceTested": false,
+      "report": "logs/native-connected-20261028/android/android-connected-live.json",
+      "reportSha256": "d91b8af6804b966c329d1813d21689a6241938407875229d128e73e78b795de1",
+      "independentReadbackReport": "logs/native-connected-20261028/peer/verify.json",
+      "independentReadbackSha256": "55c4502ffb1b5896db5c834e4ed62e46357ec3009b9a0e1193acdbdead992436",
+      "uiCoverage": {
+        "defaultConfiguredEntry": true,
+        "registered": true,
+        "passwordReloginPassed": true,
+        "nativeSearchPassed": true,
+        "nativeFriendRequestPassed": true,
+        "nativeFriendAcceptPassed": true,
+        "nativeContactsPassed": true,
+        "conversationListPassed": true,
+        "directBothMessagesVisible": true,
+        "iosGroupBothMessagesVisible": true,
+        "androidGroupBothMessagesVisible": true,
+        "closeReopenPassed": true,
+        "logoutShutdownPassed": true
+      }
+    },
+    "checks": {
+      "rebuiltMatchingSdk": true,
+      "defaultBundledService": true,
+      "nativeUiFullWorkflow": true,
+      "independentBackendPersistence": true,
+      "nativeLanguageConsumers": true,
+      "actualPreparedSampleConsumer": true
+    },
+    "sharedSdkUnitTests": {
+      "passed": 92,
+      "failed": 0
+    },
+    "sdkMode": "Release",
+    "hostMode": "Debug",
+    "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.2",
+    "moduleCoordinate": "com.startlink.im_sdk_module:flutter_release:0.1.2",
+    "moduleAbis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86_64"
+    ],
+    "aarCount": 27,
+    "consumer": {
+      "passed": true,
+      "sdkVersion": "0.1.2",
+      "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.2",
+      "hostMode": "Debug",
+      "sdkMode": "Release",
+      "actualPackage": "/Users/starburst/Desktop/IMSDK/dist/android-native-0.1.2",
+      "javaHostAssembleDebug": "passed",
+      "packagedJavaSnippetCompile": "passed",
+      "packagedKotlinSnippetCompile": "passed",
+      "kotlinCompilerVersion": "2.2.20",
+      "jvmTarget": "17",
+      "sourceProjectSdkDependency": false,
+      "packageSourcesUnchanged": true,
+      "packageBuildCachesAbsent": true,
+      "binaryTreeSha256": "627c658ac7e5debd0530f4b6cc847cb33d1ce49eb1e89a07b24ee2e1e5d75f5a",
+      "apkSha256": "b30b4e734520a58c28d98a697d78ea7f1482432b26f595806292c9f8ca341c9b",
+      "apkFile": "logs/native-connected-20261028/android/IMSDKNativeConnected-0.1.2-debug.apk",
+      "publicConfigurationSha256": "560949155b7d819b7f9d5790a3e0da8974b00b413f49dbe079cf1ec355bf7d1c",
+      "publicConfigurationMatchesInstalledApk": true,
+      "apkArm64AppLibraryMatchesNewReleaseModule": true,
+      "apkArm64AppLibrarySha256": "e0658fb63216a3a1703b05b33d6f558692758a165475fa8aeeca6fc281aa7f85",
+      "aarInputs": {
+        "maven/com/cloudwebrtc/webrtc/flutter_webrtc_release/0.1.2/flutter_webrtc_release-0.1.2.aar": "b9cd9281307ee281f053f89dd86ecc0a24f162a59f8cb9a673b8df0bebcf66b0",
+        "maven/com/crazecoder/openfile/open_filex_release/0.1.2/open_filex_release-0.1.2.aar": "a0c56a318661414cb5fc261d27f13c87c9d2742cdb140cbb8e8ea331f24b8e51",
+        "maven/com/csdcorp/speech_to_text/speech_to_text_release/0.1.2/speech_to_text_release-0.1.2.aar": "38a6608103cbbeba50dcffa2a49074f3ae9a8f9bce9f6fb46e613e279b29c5f4",
+        "maven/com/dexterous/flutterlocalnotifications/flutter_local_notifications_release/0.1.2/flutter_local_notifications_release-0.1.2.aar": "7638df59713b18678dad48d2d3836c2dcd82cba29ccc0db7dc167e1774f6c174",
+        "maven/com/github/dart_lang/jni/jni_release/0.1.2/jni_release-0.1.2.aar": "9d0e5b69dfbd8b6323060cd40014a2f0e2592cafdd16ea2f4f8102e31b1b5392",
+        "maven/com/github/dart_lang/jni_flutter/jni_flutter_release/0.1.2/jni_flutter_release-0.1.2.aar": "07ffd2a06e1ac0c56d2b9fdd4137e92465e0d36dcefc3a7767fc814363476f13",
+        "maven/com/imsdk/flutter/im_sdk_release/0.1.2/im_sdk_release-0.1.2.aar": "6fb11ef3cf69676cae5325dca9a09d39cfb3b0dd1a14ab760b3c50e29471ca7f",
+        "maven/com/imsdk/im-sdk-native/0.1.2/im-sdk-native-0.1.2.aar": "a51e833d5eafd8c38cfe8e3cfea97d764a8bc65b69d60fc4fbe0113423cca0cf",
+        "maven/com/it_nomads/fluttersecurestorage/flutter_secure_storage_release/0.1.2/flutter_secure_storage_release-0.1.2.aar": "1459f986e5ec6fabcc523369156a841ecec866f81004577fc11783b7dfcd4ec5",
+        "maven/com/llfbandit/record/record_android_release/0.1.2/record_android_release-0.1.2.aar": "ea966bdc3fec267282f0f4aede9f27b1865f416340647d38a16c2ea439ef4a1f",
+        "maven/com/mr/flutter/plugin/filepicker/file_picker_release/0.1.2/file_picker_release-0.1.2.aar": "3e9fe25e9cdfcc7abd5da1a11013f898c2d707562461656f78a5ae1f5ce15a76",
+        "maven/com/ryanheise/audio_session/audio_session_release/0.1.2/audio_session_release-0.1.2.aar": "5b312e8e54654df25772305312efe5b113ddccfc0a4fdddd85224fd9380526dc",
+        "maven/com/ryanheise/just_audio/just_audio_release/0.1.2/just_audio_release-0.1.2.aar": "d9d1082dced186b76d40c0c0f14afdf7ebe559e9931a0aa1e76655289ab7c230",
+        "maven/com/startlink/im_sdk_module/flutter_release/0.1.2/flutter_release-0.1.2.aar": "0745a636130657e72036b362a68cfed9a8c674e09666777f1a2233203addebb8",
+        "maven/com/tekartik/sqflite/sqflite_android_release/0.1.2/sqflite_android_release-0.1.2.aar": "4796e19b1f068db0547ddc47f83ed52dc9156e76f90efca4420209c83560e903",
+        "maven/dev/fluttercommunity/plus/connectivity/connectivity_plus_release/0.1.2/connectivity_plus_release-0.1.2.aar": "32ffce9236ccc0e46f30e736e569e776bc1366c392c96a4047fe87825aa0bb4f",
+        "maven/dev/fluttercommunity/plus/packageinfo/package_info_plus_release/0.1.2/package_info_plus_release-0.1.2.aar": "88a724ab3a0f7f3435ff94ec6e2ab516cee597421913b6d0b1839f77286e048f",
+        "maven/dev/fluttercommunity/plus/share/share_plus_release/0.1.2/share_plus_release-0.1.2.aar": "a0d89ee3c5bf59670069b5166d167bf6f53e73017b031670b485d09cab66528b",
+        "maven/dev/steenbakker/mobile_scanner/mobile_scanner_release/0.1.2/mobile_scanner_release-0.1.2.aar": "07bc7c30ee94be0177033dd2daeeeea10e085f6c916364fb59ec549a17f6bca4",
+        "maven/io/flutter/plugins/camerax/camera_android_camerax_release/0.1.2/camera_android_camerax_release-0.1.2.aar": "37b10eea64b769c85749d396682d9d539454af24153a14fa277195e87ec4748c",
+        "maven/io/flutter/plugins/flutter_plugin_android_lifecycle/flutter_plugin_android_lifecycle_release/0.1.2/flutter_plugin_android_lifecycle_release-0.1.2.aar": "afe9e81604b156680b73efa46e82b81cf7b505fd4044633b9ea4d80e8acef200",
+        "maven/io/flutter/plugins/imagepicker/image_picker_android_release/0.1.2/image_picker_android_release-0.1.2.aar": "568dd3d5825d531f0f2d7aba6955a127c301e7f51e267629b1cb385ad919faec",
+        "maven/io/flutter/plugins/urllauncher/url_launcher_android_release/0.1.2/url_launcher_android_release-0.1.2.aar": "d9a204b6c1296eb919a6e8b8a4cca46bf927767f9300d0fee506390fef8b6eb3",
+        "maven/io/flutter/plugins/videoplayer/video_player_android_release/0.1.2/video_player_android_release-0.1.2.aar": "0e9b811b058fdfe32712226d36e58763adea5b8010527bb9be0353221b5a7b12",
+        "maven/me/liolin/app_badge_plus/app_badge_plus_release/0.1.2/app_badge_plus_release-0.1.2.aar": "549d4a831259e06a230b78c3bf76738a1f1210811a2a2e8ab29af104b453d18d",
+        "maven/xyz/justsoft/video_thumbnail/video_thumbnail_release/0.1.2/video_thumbnail_release-0.1.2.aar": "7f9d6dd119f4c979633063d480674a8c1ec6c1fcc70fae3bb8a90baa1c16106f",
+        "maven/xyz/luan/audioplayers/audioplayers_android_release/0.1.2/audioplayers_android_release-0.1.2.aar": "7a07e46bde0dbecbf6a52b71f2c5012d33b30879a573348b08f86d02974086bb"
+      },
+      "sampleHostTreeSha256": "b333b803cba72c38100d49ca2f0f1ca43a2340733fb8fde0e8855859c7c10c67",
+      "sourceHashes": {
+        "sample-host/README.md": "7b9af804935a622180e3a479cafabbeb461a51666ed3806c9b401b7e706618f8",
+        "sample-host/gradlew": "ec56c02543666d92d9ac5ae7fcc48f88ce4de0deb8b7f9b39928ca46f68c1b2b",
+        "sample-host/settings.gradle.kts": "13387694e3f26be3bb771cb2d964d94dd4799d9994e90a809721185b1b013b31",
+        "sample-host/gradle.properties": "858c2b8f6ce36e56bb8f50642411c175459aec77175820fe97392e559c7973a4",
+        "sample-host/gradlew.bat": "c13c6e91b9a517783976de213d46398c661ea9e17651376d7301e839eaedcc62",
+        "sample-host/app/build.gradle.kts": "cea409c27895ecda054938e677f25773a0ead0a5552f683f7ce1ea94dca50173",
+        "sample-host/app/src/main/AndroidManifest.xml": "24bbb39b968f7ef01f9686182bab8abbd3e44b54e2c272346b4f082fcef5f255",
+        "sample-host/app/src/main/java/com/example/imsdkhost/MainActivity.java": "34237cf1b61721a4625851bf5869c792b5b266e09495f414f31d0ce9602023dd",
+        "sample-host/app/src/main/assets/im_sdk_configuration.json": "560949155b7d819b7f9d5790a3e0da8974b00b413f49dbe079cf1ec355bf7d1c",
+        "sample-host/gradle/wrapper/gradle-wrapper.jar": "16caeaf66d57a0d1d2087fef6a97efa62de8da69afa5b908f40db35afc4342da",
+        "sample-host/gradle/wrapper/gradle-wrapper.properties": "297c9e63b6fa6e7e8b221900fa1787c1a0e38869d8957da66389fd0f6b00f78e",
+        "examples/HostIntegration.java": "2e68e25a1bc2ca166d7cb975d8420e422a828d69a4a375d0f321664843f92e8e",
+        "examples/HostIntegration.kt": "d470dfaed2bfc3efbaa7f1dd259f5e0b044627793ec5f765fee38b6f19a05e8e",
+        "config/im_sdk_configuration.example.json": "560949155b7d819b7f9d5790a3e0da8974b00b413f49dbe079cf1ec355bf7d1c"
+      },
+      "retainedApk": "dist/android/example/im-sdk-native-host-0.1.2-debug.apk",
+      "compiledSnippetClassSha256": {
+        "java-snippet/com/example/imsdkhost/HostIntegration$1.class": "a58374d28d857c02d1a79e0c3aa5199516c58689ff0e7190ae7012849433d39b",
+        "java-snippet/com/example/imsdkhost/HostIntegration$2.class": "43dd2d54359618748e82d172b58c4fd83952111a080197a43ab2e057b029ad8d",
+        "java-snippet/com/example/imsdkhost/HostIntegration.class": "24bd4b2dee0c9a57ce834adcafbd24057a88c50befda1bf464af8995d6539c05",
+        "kotlin-snippet/com/example/imsdkhost/HostIntegration$authenticateAndOpen$1.class": "dcbc31c746f029cc145c8cc9f14411886afb80f6086d7a57c669c061b28ef43b",
+        "kotlin-snippet/com/example/imsdkhost/HostIntegration$initializeAndOpen$2.class": "ef5a963d321b7acc8f238f5777ac994a982b2a6d32ed678871ff330c41202f55",
+        "kotlin-snippet/com/example/imsdkhost/HostIntegration.class": "4f4ccbc41a6e32220df079123a9e366910335ab97961e7345a938319eed8f197"
+      }
+    },
+    "installedApkMatchesVerifiedPackage": true,
+    "apkArm64AppLibraryMatchesNewReleaseModule": true,
+    "retainedDemoApk": "dist/android/example/im-sdk-native-host-0.1.2-debug.apk"
+  },
+  "realServiceValidation": {
+    "passed": true,
+    "realBackend": true,
+    "mockedResponses": false,
+    "businessFlowPassed": true,
+    "runId": "native-20261028-7e3db4ddb2",
+    "checks": {
+      "registration": true,
+      "login": true,
+      "friendRequestAccepted": true,
+      "conversationList": true,
+      "directRoundTrip": true,
+      "groupCreateRoundTrip": true,
+      "singleActiveSpace": true,
+      "logoutDisposeClean": true
+    },
+    "primaryNativeAccountsCreated": 2,
+    "additionalInitialIosDiagnosticAccountCreated": 1,
+    "totalNativeRegistrationsAcceptedByService": 3,
+    "existingDedicatedHelperAccounts": 1,
+    "primaryIosGeneration": 2,
+    "oldDiagnosticIosAccountUsedForFriendshipOrMessages": false,
+    "newFriendshipEdgesVerified": 3,
+    "nativeUiFriendRequestsSent": 2,
+    "nativeUiFriendRequestsAccepted": 2,
+    "helperFriendshipWrites": 2,
+    "helperPrimaryRegistrationGroupOrMessageWrites": 0,
+    "newTwoMemberGroupsCreatedByNativeUi": 2,
+    "newUniquePrimaryMessagesPersisted": 6,
+    "messagesPerConversation": {
+      "direct": 2,
+      "iosCreatedGroup": 2,
+      "androidCreatedGroup": 2
+    },
+    "messageSequences": {
+      "direct": {
+        "ios": 1,
+        "android": 2
+      },
+      "iosGroup": {
+        "ios": 1,
+        "android": 2
+      },
+      "androidGroup": {
+        "ios": 2,
+        "android": 1
+      }
+    },
+    "bothIndependentIdentityReadbacks": true,
+    "exactGroupOwnersAndTwoMembersVerified": true,
+    "actualNewPrimaryAccountSpaceKind": "personal",
+    "actualEnterpriseAssignment": "not observed; contract regression only",
+    "verificationCodeRequiredByService": false,
+    "verificationMessagesSent": 0,
+    "publicDefaultServiceConfigurationUsedWithoutInjection": true,
+    "nativeBinariesAndSampleSourcesTested": true,
+    "physicalDevicesTested": false,
+    "surfaces": {
+      "ios": "Signed UIKit binary consumer, iOS26.5 simulator, Debug SDK frameworks; actual prepared public Xcode App separately cold-launched and password-authenticated",
+      "android": "Actual prepared Java sample-host APK, API35 arm64 emulator, Release SDK AAR"
+    },
+    "diagnostics": {
+      "iosKeychain": "Initial native account server creation succeeded but local autoentry failed; own-App Keychain entitlement added to both public projects/generators. A different new primary I2 then completed native UI registration automatic entry and all business flows. Old account kept diagnostic only.",
+      "iosReadonlyHarnessOverlap": "Read-only UI attempts were briefly overlapped; failures retained, per-device lock added and serial direct/group verification passed. No business writes repeated.",
+      "androidGroupInput": "First Ga composer focus attempt wrote no message per both-identity authoritative GET. Same new group reused, focused text verified and exactly one A marker submitted; no duplicate group or messages."
+    },
+    "evidence": [
+      {
+        "report": "native-connected-20261028/ios/ios-connected-live.json",
+        "sha256": "0e5877cc546112ee72463fd9989fe8b6c90cb4131d4017d6452b760cae8fabdb"
+      },
+      {
+        "report": "native-connected-20261028/android/android-connected-live.json",
+        "sha256": "d91b8af6804b966c329d1813d21689a6241938407875229d128e73e78b795de1"
+      },
+      {
+        "report": "native-connected-20261028/peer/verify.json",
+        "sha256": "55c4502ffb1b5896db5c834e4ed62e46357ec3009b9a0e1193acdbdead992436"
+      },
+      {
+        "report": "native-connected-20261028/peer/helper-friends.json",
+        "sha256": "f339eb47f0a52623793160ccbb8571f551fb9d1232022d642a768160abb8ef78"
+      },
+      {
+        "report": "native-connected-20261028/ios/register-latest.json",
+        "sha256": "0d6e69d4560bf60bf1152f700cda8d2815e18ce2925c8e4e69a259b7f473842e"
+      },
+      {
+        "report": "native-connected-20261028/ios/handoff-smoke-latest.json",
+        "sha256": "c658701536be4eb71c5e127366b58dddd26069d8ddb55416fc3a53c2b0ecb9e5"
+      },
+      {
+        "report": "native-connected-20261028/independent-review.json",
+        "sha256": "1dac068646016ca6dd30c5c71ba048bcb61b7fa8d61bad5db137dec351c98502"
+      }
+    ]
+  },
+  "registrationSpacePolicy": "no chooser; personal default; use actual authenticated enterprise response; one active space",
+  "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.2",
+  "sdkRebuiltOn": "2026-10-28",
+  "publicTransitiveDependenciesRequired": true
+}

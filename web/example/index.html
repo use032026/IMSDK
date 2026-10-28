@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>聊天</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: #f5f7fb; color: #303b52; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    [hidden] { display: none !important; }
+    main { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+    #messenger { flex: 1; min-height: 420px; }
+    #host-message { padding: 10px 16px; background: #fff1ed; color: #a23c25; }
+    #closed-panel { flex: 1; display: grid; place-content: center; justify-items: center; gap: 16px; }
+    button { border: 0; border-radius: 10px; background: #3569e8; color: white; padding: 12px 24px; font: inherit; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <div id="host-message" role="alert" hidden></div>
+    <section id="messenger" aria-label="聊天模块"></section>
+    <section id="closed-panel" hidden><p>聊天已关闭</p><button id="reopen" type="button">打开聊天</button></section>
+  </main>
+  <script src="./host-config.js"></script>
+  <script src="../dist/im-sdk.js"></script>
+  <script>
+    (() => {
+      const container = document.getElementById('messenger');
+      const closedPanel = document.getElementById('closed-panel');
+      const hostMessage = document.getElementById('host-message');
+      const externalClient = window.IMSDK_HOST_CLIENT;
+      const client = externalClient || new IMSDK.ImSdkClient();
+      let view;
+      let leaving = false;
+
+      const mount = () => {
+        view?.close();
+        closedPanel.hidden = true;
+        container.hidden = false;
+        try {
+          view = IMSDK.mountMessenger(client, container);
+        } catch (_) {
+          hostMessage.textContent = '聊天服务暂未就绪，请稍后重试';
+          hostMessage.hidden = false;
+          container.hidden = true;
+          closedPanel.querySelector('p').textContent = '聊天暂不可用';
+          closedPanel.hidden = false;
+        }
+      };
+      const configure = (configuration) => {
+        if (client.isInitialized) return true;
+        try {
+          client.initialize(configuration);
+          hostMessage.hidden = true;
+          hostMessage.textContent = '';
+          return true;
+        } catch (_) {
+          hostMessage.textContent = '聊天服务暂未就绪，请稍后重试';
+          hostMessage.hidden = false;
+          return false;
+        }
+      };
+      let unsubscribeReady;
+      try {
+        unsubscribeReady = client.on((event) => {
+          if (event.type === 'ready') {
+            hostMessage.textContent = '';
+            hostMessage.hidden = true;
+          }
+        });
+      } catch (_) { /* mount renders the unavailable state for a released client. */ }
+      const observer = new MutationObserver(() => {
+        if (!leaving && container.childElementCount === 0) {
+          container.hidden = true;
+          closedPanel.hidden = false;
+        }
+      });
+      observer.observe(container, { childList: true });
+      window.IMSDK_HOST = { client, configure, open: mount, close: () => view?.close() };
+      document.getElementById('reopen').addEventListener('click', mount);
+      mount();
+      if (!client.isInitialized && window.IMSDK_HOST_CONFIG) configure(window.IMSDK_HOST_CONFIG);
+      window.addEventListener('pagehide', (event) => {
+        if (event.persisted) return;
+        leaving = true;
+        observer.disconnect();
+        unsubscribeReady?.();
+        view?.close();
+        if (!externalClient) void client.shutdown().catch(() => {});
+      });
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted && client.isInitialized) document.dispatchEvent(new Event('visibilitychange'));
+      });
+    })();
+  </script>
+</body>
+</html>

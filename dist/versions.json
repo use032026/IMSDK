@@ -1,0 +1,36 @@
+{
+  "defaultBranch": "main",
+  "latest": [
+    {
+      "platform": "ios",
+      "version": "0.1.2",
+      "branch": "ios/v0.1.2",
+      "releaseTag": "ios-v0.1.2",
+      "download": "https://github.com/use032026/IMSDK/releases/download/ios-v0.1.2/IMSDK-iOS-0.1.2.zip",
+      "sha256": "cdb6a7512d4295521dda6c4dd01cc788b0625bce61632a9bb0eeeb6412b94a41"
+    },
+    {
+      "platform": "android",
+      "version": "0.1.2",
+      "branch": "android/v0.1.2",
+      "releaseTag": "android-v0.1.2",
+      "download": "https://github.com/use032026/IMSDK/releases/download/android-v0.1.2/IMSDK-Android-0.1.2.zip",
+      "sha256": "2c9158eb40f1acc3e28e3acd55f61ef0fe1dc00d6b0ec7e6521e3e804ca854a4"
+    },
+    {
+      "platform": "web",
+      "version": "0.1.5",
+      "branch": "web/v0.1.5",
+      "releaseTag": "web-v0.1.5",
+      "download": "https://github.com/use032026/IMSDK/releases/download/web-v0.1.5/IMSDK-Web-H5-0.1.5.zip",
+      "sha256": "bc13b12cc6034c7f3fca441b0ac6159071d4d55a98c97659c5fd9fc811738555"
+    },
+    {
+      "platform": "flutter",
+      "version": "0.1.2",
+      "branch": "flutter/v0.1.2",
+      "releaseTag": "flutter-v0.1.2",
+      "download": "https://github.com/use032026/IMSDK/releases/download/flutter-v0.1.2/IMSDK-Flutter-0.1.2.tar.gz"
+    }
+  ]
+}
