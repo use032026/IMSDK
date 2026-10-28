@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>IM SDK · H5 接入示例</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #233047; background: #eef2f8; font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .layout { max-width: 1080px; margin: 34px auto; display: grid; grid-template-columns: 330px 1fr; gap: 28px; padding: 0 20px; }
+    h1 { margin: 0 0 8px; font-size: 25px; }
+    p { color: #738096; font-size: 13px; }
+    .badge { display: inline-block; color: #3464d1; font-size: 12px; letter-spacing: .08em; margin-bottom: 15px; }
+    label { display: block; font-size: 13px; margin-top: 15px; }
+    input, select { display: block; width: 100%; min-height: 43px; padding: 10px; border: 1px solid #d3dce9; border-radius: 9px; margin-top: 5px; font: inherit; color: inherit; background: white; }
+    .consent { display: flex; align-items: flex-start; gap: 8px; }
+    .consent input { width: 17px; min-height: 17px; margin: 3px 0 0; flex: none; }
+    button { margin-top: 16px; background: #3569e8; color: white; padding: 11px 16px; border: 0; border-radius: 10px; cursor: pointer; font: inherit; }
+    button.secondary { background: white; color: #56657a; }
+    button:disabled { opacity: .5; cursor: default; }
+    #messenger { height: min(790px, calc(100dvh - 68px)); min-height: 540px; background: white; border-radius: 18px; box-shadow: 0 15px 45px #253d7210; overflow: hidden; }
+    #placeholder { display: grid; height: 100%; place-content: center; text-align: center; padding: 30px; color: #8c98ac; }
+    #message { color: #aa3b32; min-height: 24px; overflow-wrap: anywhere; font-size: 13px; }
+    #tenant-row[hidden] { display: none; }
+    .note { margin-top: 20px; padding-top: 15px; border-top: 1px solid #dce3ee; }
+    @media (max-width: 720px) { .layout { margin: 20px auto; grid-template-columns: 1fr; gap: 18px; padding: 0 13px; } #messenger { height: 78dvh; min-height: 480px; } }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <aside>
+      <span class="badge">IM SDK / WEB</span>
+      <h1>把聊天接入 H5</h1>
+      <p>这是接入方开发示例。服务配置由宿主提供，用户只需在聊天界面输入账号和密码。</p>
+      <form id="configuration">
+        <label>IM API 服务地址<input id="api" type="url" placeholder="https://your-im-api.example.com" required autocomplete="off"></label>
+        <label>Gateway 服务地址（选填）<input id="gateway" type="url" placeholder="https://your-im-gateway.example.com" autocomplete="off"></label>
+        <label>服务环境标识<input id="realm" placeholder="由接入方分配的稳定环境标识" required autocomplete="off"></label>
+        <label>聊天空间<select id="space"><option value="personal">个人空间</option><option value="tenant">企业空间</option></select></label>
+        <label id="tenant-row" hidden>企业码<input id="tenant" placeholder="接入企业的固定企业码" autocomplete="off"></label>
+        <label class="consent"><input id="consent" type="checkbox" required><span>宿主已向用户说明并取得使用聊天服务所需的同意。</span></label>
+        <button id="open" type="submit">初始化并打开聊天</button>
+        <button id="reopen" class="secondary" type="button" disabled>重新打开</button>
+        <button id="logout" class="secondary" type="button" disabled>退出账号</button>
+        <button id="shutdown" class="secondary" type="button" disabled>释放 SDK</button>
+      </form>
+      <p id="message" role="alert"></p>
+      <p class="note">请通过 HTTP 本地服务打开本页，并为正式 H5 域名配置 API 与 Gateway 的跨域访问。此示例不保存账号、密码和凭证。SDK 代码来自本地构建文件。</p>
+    </aside>
+    <section id="messenger" aria-label="聊天接入示例"><div id="placeholder">完成宿主配置后<br>在这里打开聊天</div></section>
+  </main>
+  <script src="../im-sdk.js"></script>
+  <script>
+    (() => {
+      const find = (id) => document.getElementById(id);
+      let client;
+      let view;
+      const showError = (error) => { find('message').textContent = error instanceof Error ? error.message : '操作未完成'; };
+      const setReady = (ready) => {
+        find('open').disabled = ready;
+        for (const id of ['reopen', 'logout', 'shutdown']) find(id).disabled = !ready;
+      };
+      const mount = () => {
+        view?.close();
+        find('placeholder')?.remove();
+        view = IMSDK.mountMessenger(client, find('messenger'));
+      };
+      find('space').addEventListener('change', () => {
+        find('tenant-row').hidden = find('space').value !== 'tenant';
+        find('tenant').required = find('space').value === 'tenant';
+      });
+      find('configuration').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        find('message').textContent = '';
+        find('open').disabled = true;
+        try {
+          if (!window.IMSDK) throw new Error('请先构建 Web SDK，再通过本地服务打开本示例');
+          client = new IMSDK.ImSdkClient();
+          const isPersonal = find('space').value === 'personal';
+          await client.initialize({
+            apiBaseUrl: find('api').value.trim(),
+            ...(find('gateway').value.trim() ? { gatewayBaseUrl: find('gateway').value.trim() } : {}),
+            serviceRealmId: find('realm').value.trim(),
+            privacyConsentGranted: find('consent').checked,
+            passwordLogin: isPersonal ? { space: 'personal', loginType: 'lpp_id' } : { space: 'tenant', loginType: 'login_name', tenantCode: find('tenant').value.trim() },
+          });
+          mount();
+          setReady(true);
+        } catch (error) {
+          await client?.shutdown().catch(() => {});
+          client = undefined;
+          showError(error);
+          setReady(false);
+        }
+      });
+      find('reopen').addEventListener('click', () => { try { mount(); } catch (error) { showError(error); } });
+      find('logout').addEventListener('click', async () => { try { await client.logout(); } catch (error) { showError(error); } });
+      find('shutdown').addEventListener('click', async () => {
+        try { await client.shutdown(); view?.close(); view = undefined; client = undefined; setReady(false); }
+        catch (error) { showError(error); }
+      });
+      window.addEventListener('pagehide', () => { view?.close(); void client?.shutdown(); });
+    })();
+  </script>
+</body>
+</html>

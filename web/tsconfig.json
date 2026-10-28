@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", "module": "NodeNext", "moduleResolution": "NodeNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"], "strict": true,
+    "declaration": true, "emitDeclarationOnly": true, "outDir": "dist/types",
+    "skipLibCheck": true, "noUncheckedIndexedAccess": true
+  },
+  "include": ["src/**/*.ts"]
+}
