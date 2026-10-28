@@ -155,6 +155,50 @@ async function enterWithImCredentials(credentials: ImSdkCredentials) {
 
 其他业务系统的登录 token、平台管理员 token 和服务端密钥不能当作 IM accessToken。`logout()` 是客户端本地退出；后端 token 撤销仍由宿主账号系统负责。
 
+## 宿主账号自动同步（源码新增）
+
+此模式面向已有宿主账号的会话列表入口。需使用包含这些接口的新构建；现有版本化交付快照和已发布包不会自动更新。先初始化 `hostManagedAuth: true`，再绑定宿主提供者，最后挂载界面：
+
+```ts
+import { ImSdkClient, mountMessenger, type HostSessionProvider } from '@imsdk/web';
+
+const client = new ImSdkClient();
+client.initialize({ ...configuration, hostManagedAuth: true });
+const provider: HostSessionProvider = {
+  readSession: () => hostAccounts.readSession(),
+  fetchCredentials: session => hostBackend.issueImCredentials(session),
+  subscribe: changed => hostAccounts.subscribe(changed),
+};
+client.bindHostSessionProvider(provider);
+const view = mountMessenger(client, container);
+```
+
+这里的 `configuration`、`container`、`hostAccounts` 和 `hostBackend` 由集成方提供。`readSession()` 返回 `{hostUserId, sessionId}` 或 `null`；两字段须为非空字符串，`null` 明确表示宿主已退出。`hostUserId` 是稳定的宿主用户标识，`sessionId` 是本次宿主登录的代际标识，每次重新登录或换号须改变，不能使用宿主 token 或 IM 票据明文。`fetchCredentials(session)` 通过可信宿主后端返回对应账号的有效 `ImSdkCredentials`；SDK 会核对 IM 服务端资料。宿主到 IM 的身份映射与换票接口仍由后端实现，本接口不会将宿主 token 当作 IM token，也不证明现有业务后端已经打通。
+
+绑定会启动静默预热。宿主每次登录、退出、换号后，`subscribe` 必须调用 SDK 注册的 `changed()`；SDK 立即隐藏旧账号并废弃旧请求，再重新读取宿主快照。如果宿主没有订阅接口，省略 `subscribe`，在这些变化完成后调用 `await client.notifyHostSessionChanged()`。入口和前台恢复仍会执行快照复查，弥补通知遗漏。不要只在聊天页面销毁时通知退出。
+
+`await client.synchronizeHostSession()` 可在宿主路由打开前预热或复查，已认证返回 `true`，宿主已退出返回 `false`；异常应展示宿主自己的可重试状态。`{forceRefresh: true}` 要求重新取 IM 凭证，即使当前 IM 凭证尚未过期。并发取票会合并；取票及 IM 资料校验后都会再读宿主快照，过时结果不能恢复已退出的账号。替换 provider、显式 `logout()` 或 `shutdown()` 也会废弃在途结果，`shutdown()` 负责退订。
+
+本模式下内置界面一直保持消息页壳、同账号内存缓存或页面内重试，不展示 SDK 密码表单、登录弹窗及列表首屏转圈。宿主已退出时只提示回到应用登录。`authenticate`、密码登录和注册入口不用于此模式，账号通过 provider 同步。IM 自身续期失败时会静默向 provider 重新取票；取票失败不弹出 SDK 登录界面。同账号缓存只在复核宿主快照后展示，退出或换号立即清除。
+
+页面壳可立即显示，预热和同账号缓存用于减少进入时等待；首次网络取票、IM 资料验证及会话请求仍受网络耗时影响。应分别测量预热入口和冷入口实际可交互时间，不能把无弹窗当作全部网络流程已经完成。
+
+## 宿主统一管理主题和语言（源码新增）
+
+显示设置属于宿主，SDK 不增加独立主题或语言选择器。初始化时传入宿主当前设置，之后在宿主设置变化时更新现有实例：
+
+```ts
+client.initialize({ ...configuration, themeMode: 'system', locale: 'zh-CN' });
+// 宿主改为深色、英语时；不需要再次 initialize 或 authenticate。
+client.updatePresentation({ themeMode: 'dark', locale: 'en-US' });
+```
+
+`themeMode` 支持 `system`、`light`、`dark`，默认为 `system`；`system` 通过浏览器媒体设置实时跟随系统外观。`locale` 默认 `zh-CN`，支持 `zh-CN`、`zh-TW`、`en`、`ja`、`ko`、`vi` 和 `system`。合法区域/脚本别名会归一化，例如 `zh_CN` / `zh-Hans-TW` → `zh-CN`、`zh-Hant-CN` / `zh-HK` → `zh-TW`、`en-US` → `en`；明确脚本优先于地区。`system` 按浏览器语言优先级选择支持语言，没有匹配时回退简体中文，并在 `languagechange` 后实时更新。
+
+`updatePresentation` 为同步原子更新：两字段先整体校验；未知主题、不支持语言或非法 tag 返回 `INVALID_PRESENTATION`，另一字段也不会生效。`client.config` 反映当前规范化值；`presentationChanged` 事件携带完整的 `themeMode` 与 `locale`。主题字符串允许前后空格及大小写别名；语言的 `_` 分隔符兼容常见宿主设置。
+
+页面只更新已有文案、可访问标签、占位提示及颜色变量，不重新挂载、不触发账号同步、不更换路由、不清空表单或聊天草稿。日期显示随所选语言格式化；用户消息、昵称、群名、好友附言和服务端验证码问题不会翻译，即使正文恰好等于 SDK 文案。关闭 view 时移除语言监听和文案订阅，宿主共享的 SDK 实例仍保留其显示配置。
+
 ## 需要宿主处理的事件
 
 ```ts

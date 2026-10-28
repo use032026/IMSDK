@@ -23,6 +23,13 @@ object ImSdk {
         fun onEvent(event: Map<String, Any?>)
     }
 
+    /** Return null for a signed-out host, or {hostUserId, sessionId} for a login. */
+    interface HostSessionProvider {
+        fun readSession(callback: Callback)
+        /** Return IM credentials issued by the trusted host backend, never a host bearer. */
+        fun fetchCredentials(session: Map<String, Any?>, callback: Callback)
+    }
+
     internal const val ENGINE_CACHE_ID = "com.imsdk.nativebridge.engine.v1"
     private const val STARTUP_TIMEOUT_MS = 20_000L
     private const val OPERATION_TIMEOUT_MS = 60_000L
@@ -33,6 +40,9 @@ object ImSdk {
     private var initialized = false
     private var stopping = false
     private var listener: EventListener? = null
+    private var hostSessionProvider: HostSessionProvider? = null
+    private var providerRevision = 0L
+    private var hostManagedAuth = false
     private var page = WeakReference<ImSdkActivity>(null)
     private var openingPage = false
     private var generation = 0L
@@ -55,6 +65,16 @@ object ImSdk {
     fun setEventListener(eventListener: EventListener?) = onMain { listener = eventListener }
 
     @JvmStatic
+    fun setHostSessionProvider(provider: HostSessionProvider?) = onMain {
+        hostSessionProvider = provider
+        providerRevision++
+        if (initialized && hostManagedAuth) notifyHostSessionChanged(object : Callback {
+            override fun onSuccess(value: Any?) {}
+            override fun onError(code: String, message: String?, details: Any?) {}
+        })
+    }
+
+    @JvmStatic
     fun initialize(context: Context, configuration: Map<String, Any?>, callback: Callback) = onMain {
         if (configuration["privacyConsentGranted"] != true) {
             callback.onError("CONSENT_REQUIRED", "The host must obtain privacy consent before starting the SDK", null)
@@ -62,6 +82,10 @@ object ImSdk {
         }
         if (stopping) {
             callback.onError("SDK_STOPPING", "SDK shutdown is in progress", null)
+            return@onMain
+        }
+        if (configuration["hostManagedAuth"] == true && hostSessionProvider == null) {
+            callback.onError("HOST_SESSION_PROVIDER_REQUIRED", "Bind a host session provider first", null)
             return@onMain
         }
         try {
@@ -72,12 +96,66 @@ object ImSdk {
             return@onMain
         }
         enqueue(Operation("initialize", configuration.toMap(), callback,
-            didSucceed = { initialized = true }))
+            didSucceed = {
+                initialized = true
+                hostManagedAuth = configuration["hostManagedAuth"] == true
+            }))
     }
 
     @JvmStatic
     fun authenticate(credentials: Map<String, Any?>, callback: Callback) = onMain {
         enqueueInitialized(Operation("authenticate", credentials.toMap(), callback))
+    }
+
+    /** Changes SDK theme/language in place. Never changes the host's global night mode or locale. */
+    @JvmStatic
+    fun updatePresentation(settings: Map<String, Any?>, callback: Callback) = onMain {
+        invokePriority("updatePresentation", callback, arguments = settings.toMap())
+    }
+
+    /** Prewarms the host-managed session without opening a page. */
+    @JvmStatic
+    fun synchronizeHostSession(callback: Callback) = onMain {
+        enqueueInitialized(Operation("synchronizeHostSession", null, callback))
+    }
+
+    /** Must bypass the queue: logout/account switches invalidate an in-flight login now. */
+    @JvmStatic
+    fun notifyHostSessionChanged(callback: Callback) = onMain {
+        invokePriority("notifyHostSessionChanged", callback)
+    }
+
+    private fun invokePriority(method: String, callback: Callback, closeOnSuccess: Boolean = false,
+                               arguments: Map<String, Any?>? = null) {
+        val control = channel
+        if (!ready || !initialized || stopping || control == null) {
+            callback.onError("SDK_NOT_INITIALIZED", "Initialize the SDK first", null)
+            return
+        }
+        val expectedGeneration = generation
+        if (method == "shutdown") stopping = true
+        var finished = false
+        lateinit var deadline: Runnable
+        fun complete(value: Any?, code: String? = null) {
+            if (finished) return
+            finished = true
+            main.removeCallbacks(deadline)
+            if (code == null) {
+                if (closeOnSuccess) closePage()
+                callback.onSuccess(value)
+            } else callback.onError(code, "SDK operation failed", null)
+        }
+        deadline = Runnable {
+            complete(null, if (method == "updatePresentation") "SDK_OPERATION_TIMEOUT" else "HOST_SESSION_TIMEOUT")
+        }
+        main.postDelayed(deadline, 30_000L)
+        control.invokeMethod(method, arguments, object : MethodChannel.Result {
+            override fun success(result: Any?) = onMain {
+                complete(result, if (generation == expectedGeneration) null else "SDK_RETIRED")
+            }
+            override fun error(code: String, message: String?, details: Any?) = onMain { complete(null, code) }
+            override fun notImplemented() = onMain { complete(null, "SDK_METHOD_UNAVAILABLE") }
+        })
     }
 
     /** Opens account/password login, or conversations for an active session. */
@@ -123,7 +201,8 @@ object ImSdk {
 
     @JvmStatic
     fun logout(callback: Callback) = onMain {
-        enqueueInitialized(Operation("logout", null, callback, didSucceed = { closePage() }))
+        if (hostManagedAuth) invokePriority("logout", callback, closeOnSuccess = true)
+        else enqueueInitialized(Operation("logout", null, callback, didSucceed = { closePage() }))
     }
 
     /** Destroys the engine only after Dart has completed or failed its own shutdown. */
@@ -135,6 +214,19 @@ object ImSdk {
         }
         if (stopping) {
             callback.onError("SDK_STOPPING", "SDK shutdown is already in progress", null)
+            return@onMain
+        }
+        if (hostManagedAuth && ready && initialized) {
+            invokePriority("shutdown", object : Callback {
+                override fun onSuccess(value: Any?) {
+                    disposeEngine("SDK_SHUTDOWN")
+                    callback.onSuccess(value)
+                }
+                override fun onError(code: String, message: String?, details: Any?) {
+                    disposeEngine("SDK_SHUTDOWN")
+                    callback.onError(code, message, details)
+                }
+            })
             return@onMain
         }
         stopping = true
@@ -174,8 +266,65 @@ object ImSdk {
             }
             "ready" -> { markReady(); result.success(null) }
             "close" -> { result.success(null); closePage() }
+            "readHostSession", "fetchHostCredentials" -> forwardHostSessionCall(call, result)
             else -> result.notImplemented()
         }
+    }
+
+    private fun forwardHostSessionCall(call: MethodCall, result: MethodChannel.Result) {
+        val provider = hostSessionProvider
+        if (provider == null) {
+            result.error("HOST_SESSION_PROVIDER_REQUIRED", "Bind a host session provider first", null)
+            return
+        }
+        val expectedGeneration = generation
+        val expectedProvider = providerRevision
+        var finished = false
+        lateinit var deadline: Runnable
+        fun complete(value: Any?, failure: String? = null) = onMain {
+            if (!finished) {
+                finished = true
+                main.removeCallbacks(deadline)
+                when {
+                    generation != expectedGeneration || providerRevision != expectedProvider ->
+                        result.error("HOST_SESSION_CHANGED", "Host session changed", null)
+                    failure != null -> {
+                        val allowedCodes = setOf("HOST_SESSION_CHANGED", "HOST_CREDENTIALS_UNAVAILABLE",
+                            "HOST_SESSION_UNAVAILABLE", "HOST_SESSION_TIMEOUT")
+                        result.error(if (failure in allowedCodes) failure else "HOST_SESSION_UNAVAILABLE",
+                            "Host session provider failed", null)
+                    }
+                    call.method == "fetchHostCredentials" && value == null ->
+                        result.error("HOST_CREDENTIALS_UNAVAILABLE", "IM credentials are unavailable", null)
+                    value != null && value !is Map<*, *> ->
+                        result.error("INVALID_HOST_SESSION", "Host provider must return a map", null)
+                    else -> result.success(value)
+                }
+            }
+        }
+        deadline = Runnable {
+            if (!finished) {
+                finished = true
+                result.error("HOST_SESSION_TIMEOUT", "Host session provider timed out", null)
+            }
+        }
+        main.postDelayed(deadline, 20_000L)
+        val callback = object : Callback {
+            override fun onSuccess(value: Any?) { complete(value) }
+            override fun onError(code: String, message: String?, details: Any?) { complete(null, code) }
+        }
+        try {
+            if (call.method == "readHostSession") provider.readSession(callback)
+            else {
+                val raw = call.arguments as? Map<*, *>
+                if (raw == null || raw.keys.any { it !is String }) {
+                    complete(null, "HOST_SESSION_UNAVAILABLE")
+                    return
+                }
+                val snapshot = raw.entries.associate { it.key as String to it.value }
+                provider.fetchCredentials(snapshot, callback)
+            }
+        } catch (_: Exception) { complete(null, "HOST_SESSION_UNAVAILABLE") }
     }
 
     private fun markReady() {
@@ -279,6 +428,7 @@ object ImSdk {
         operationTimeout = null
         ready = false
         initialized = false
+        hostManagedAuth = false
         // Disconnect the FlutterActivity before destroying an engine it may still reference.
         page.get()?.detachFromFlutterEngine()
         closePage()

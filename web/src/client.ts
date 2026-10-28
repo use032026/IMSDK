@@ -5,9 +5,12 @@ import {
   type CustomerServiceRequest, type CustomerServiceSession, type Contact,
   type RegistrationRequest, type RegistrationCodeRequest, type RegistrationVerificationSettings,
   type UserSearchResult, type FriendRequest, type FriendRequestSubmission, type CreateGroupRequest,
+  type HostSession, type HostSessionProvider,
+  type ImSdkPresentation,
 } from './types.js';
 import { object, required, string, conversation, message, acceptedClaims, createClientMessageId, type Json } from './protocol.js';
 import { ImSdkGateway } from './gateway.js';
+import { normalizePresentation } from './presentation.js';
 
 const API = '/api/client/v1';
 const PLATFORM = '/api/platform/v1';
@@ -23,16 +26,39 @@ export class ImSdkClient {
   private refreshTask?: Promise<void>;
   private gateway?: ImSdkGateway;
   private stopping = new Set<Promise<void>>();
+  private hostProvider?: HostSessionProvider;
+  private hostUnsubscribe?: () => void;
+  private hostEpoch = 0;
+  private hostSession?: HostSession;
+  private hostSync?: Promise<boolean>;
+  private hostSyncForced = false;
+  private hostCalls = new Set<() => void>();
+  private conversationCache?: { owner: string; page: ConversationPage };
 
   get isInitialized(): boolean { return !!this.settings && !this.disposed; }
   get isAuthenticated(): boolean { return this.isInitialized && !!this.credentials; }
   get sessionRevision(): number { return this.revision; }
+  /** A memory-only first page, visible only to its still-active IM identity. */
+  get cachedConversations(): ConversationPage | undefined {
+    if (!this.isAuthenticated || this.conversationCache?.owner !== this.credentialOwner(this.credentials!)) return undefined;
+    const page = this.conversationCache.page;
+    return { ...page, items: page.items.map(item => ({ ...item })) };
+  }
   get config(): ImSdkConfig | undefined {
     return this.settings ? { ...this.settings, passwordLogin: this.settings.passwordLogin && { ...this.settings.passwordLogin } } : undefined;
   }
   get currentUser(): { userId: string; platformUserId: string; spaceId: string } | undefined {
     const c = this.credentials;
     return c ? { userId: c.userId, platformUserId: c.platformUserId, spaceId: c.spaceId } : undefined;
+  }
+
+  /** Apply host display preferences atomically without touching account or page state. */
+  updatePresentation(presentation: ImSdkPresentation): void {
+    const settings = this.requireInitialized();
+    const next = normalizePresentation(presentation, settings);
+    if (next.themeMode === settings.themeMode && next.locale === settings.locale) return;
+    this.settings = Object.freeze({ ...settings, ...next });
+    this.emit({ type: 'presentationChanged', ...next });
   }
 
   on(listener: (event: ImSdkEvent) => void): () => void {
@@ -46,10 +72,190 @@ export class ImSdkClient {
     }
   }
 
+  /** Bind once to the host account lifecycle. Binding also starts a silent prewarm. */
+  bindHostSessionProvider(provider: HostSessionProvider): void {
+    this.requireHostManaged();
+    if (!provider || typeof provider.readSession !== 'function' || typeof provider.fetchCredentials !== 'function' ||
+        (provider.subscribe !== undefined && typeof provider.subscribe !== 'function')) {
+      throw new ImSdkError('INVALID_HOST_SESSION_PROVIDER', '宿主登录态接口无效');
+    }
+    this.detachHostProvider();
+    this.invalidateHostSession();
+    this.hostProvider = provider;
+    try {
+      this.hostUnsubscribe = provider.subscribe?.(() => {
+        if (this.hostProvider === provider && !this.disposed) void this.notifyHostSessionChanged().catch(error => this.hostFailure(error));
+      });
+    } catch {
+      this.hostProvider = undefined;
+      throw new ImSdkError('HOST_SESSION_SUBSCRIPTION_FAILED', '暂时无法同步宿主账号，请重试');
+    }
+    void this.synchronizeHostSession().catch(error => this.hostFailure(error));
+  }
+
+  /** Recheck the host at page entry; null silently clears the local SDK session. */
+  synchronizeHostSession(options: { forceRefresh?: boolean } = {}): Promise<boolean> {
+    this.requireHostManaged();
+    if (this.hostSync) {
+      if (options.forceRefresh && !this.hostSyncForced) {
+        const epoch = this.hostEpoch, provider = this.hostProvider!;
+        return this.hostSync.then(authenticated => {
+          this.checkHostEpoch(provider, epoch);
+          return authenticated ? this.synchronizeHostSession(options) : false;
+        });
+      }
+      return this.hostSync;
+    }
+    const provider = this.hostProvider;
+    if (!provider) return Promise.reject(new ImSdkError('HOST_SESSION_PROVIDER_REQUIRED', '宿主尚未连接账号，请稍后重试'));
+    const epoch = this.hostEpoch;
+    const task = this.synchronizeHost(provider, epoch, options.forceRefresh === true);
+    this.hostSync = task;
+    this.hostSyncForced = options.forceRefresh === true;
+    void task.finally(() => { if (this.hostSync === task) this.hostSync = undefined; }).catch(() => {});
+    return task;
+  }
+
+  /** Call this when the host has no subscription API. Invalidation happens before the first await. */
+  notifyHostSessionChanged(): Promise<boolean> {
+    this.requireHostManaged();
+    this.invalidateHostSession();
+    return this.synchronizeHostSession();
+  }
+
+  private async synchronizeHost(provider: HostSessionProvider, epoch: number, forceRefresh: boolean): Promise<boolean> {
+    try {
+      const session = await this.readHostSession(provider, epoch);
+      if (!session) {
+        this.hostSession = undefined;
+        this.retireSession();
+        this.emit({ type: 'hostSessionSynchronized', authenticated: false });
+        return false;
+      }
+      if (this.hostSession && !this.sameHost(this.hostSession, session)) {
+        this.hostSession = undefined;
+        this.retireSession();
+      }
+      if (!forceRefresh && this.sameHost(this.hostSession, session) && this.credentials &&
+          Date.parse(this.credentials.expiresAt) - Date.now() >= 30000) return true;
+      this.emit({ type: 'hostSessionSynchronizing' });
+      const supplied = await this.hostCall(provider, epoch,
+        () => provider.fetchCredentials(Object.freeze({ ...session })), 'HOST_CREDENTIALS');
+      const credentials = { ...supplied };
+      this.checkHostEpoch(provider, epoch);
+      this.validateCredentials(credentials);
+      if (!this.sameHost(await this.readHostSession(provider, epoch), session)) {
+        this.invalidateHostSession();
+        throw new ImSdkError('SESSION_CHANGED', '宿主账号已变化，请重新进入');
+      }
+      const sdkEpoch = this.revision;
+      await this.verifyIdentity(credentials, sdkEpoch);
+      this.checkHostEpoch(provider, epoch);
+      if (!this.sameHost(await this.readHostSession(provider, epoch), session)) {
+        this.invalidateHostSession();
+        throw new ImSdkError('SESSION_CHANGED', '宿主账号已变化，请重新进入');
+      }
+      this.checkEpoch(sdkEpoch);
+      const current = this.credentials;
+      if (current && this.sameHost(this.hostSession, session)) {
+        if (this.credentialOwner(current) !== this.credentialOwner(credentials)) {
+          this.invalidateHostSession();
+          throw new ImSdkError('HOST_IDENTITY_MISMATCH', '宿主账号对应的聊天身份已变化，请重新进入');
+        }
+        this.credentials = credentials;
+        this.refreshTask = undefined;
+      } else {
+        this.hostSession = { ...session };
+        this.activate(credentials, sdkEpoch);
+      }
+      this.emit({ type: 'hostSessionSynchronized', authenticated: true });
+      return true;
+    } catch (error) {
+      this.checkHostEpoch(provider, epoch);
+      this.hostSession = undefined;
+      this.retireSession();
+      const failure = error instanceof ImSdkError ? error : new ImSdkError('HOST_SESSION_UNAVAILABLE', '暂时无法同步宿主账号，请重试');
+      this.hostFailure(failure);
+      throw failure;
+    }
+  }
+
+  private async readHostSession(provider: HostSessionProvider, epoch: number): Promise<HostSession | null> {
+    const session = await this.hostCall(provider, epoch, () => provider.readSession(), 'HOST_SESSION');
+    this.checkHostEpoch(provider, epoch);
+    if (session === null) return null;
+    if (!session || typeof session.hostUserId !== 'string' || !session.hostUserId.trim() ||
+        typeof session.sessionId !== 'string' || !session.sessionId.trim()) {
+      throw new ImSdkError('INVALID_HOST_SESSION', '宿主账号状态无效，请重试');
+    }
+    return { hostUserId: session.hostUserId, sessionId: session.sessionId };
+  }
+
+  private sameHost(left: HostSession | null | undefined, right: HostSession | null | undefined): boolean {
+    return !!left && !!right && left.hostUserId === right.hostUserId && left.sessionId === right.sessionId;
+  }
+  private credentialOwner(credentials: ImSdkCredentials): string {
+    return JSON.stringify([credentials.platformUserId, credentials.spaceId, credentials.userId]);
+  }
+  private checkHostEpoch(provider: HostSessionProvider, epoch: number): void {
+    if (this.disposed || this.hostProvider !== provider || this.hostEpoch !== epoch) {
+      throw new ImSdkError('SESSION_CHANGED', '宿主账号已变化，请重新进入');
+    }
+  }
+  private async hostCall<T>(provider: HostSessionProvider, epoch: number, action: () => Promise<T>, code: string): Promise<T> {
+    this.checkHostEpoch(provider, epoch);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let cancel: (() => void) | undefined;
+    try {
+      const value = await new Promise<T>((resolve, reject) => {
+        cancel = () => reject(new ImSdkError('SESSION_CHANGED', '宿主账号已变化，请重新进入'));
+        this.hostCalls.add(cancel);
+        timer = setTimeout(() => reject(new ImSdkError(`${code}_TIMEOUT`, '账号同步超时，请重试')), this.settings!.requestTimeoutMs);
+        Promise.resolve().then(() => { this.checkHostEpoch(provider, epoch); return action(); }).then(resolve,
+          () => reject(new ImSdkError(`${code}_UNAVAILABLE`, '暂时无法同步宿主账号，请重试')));
+      });
+      this.checkHostEpoch(provider, epoch);
+      return value;
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+      if (cancel) this.hostCalls.delete(cancel);
+    }
+  }
+  private cancelHostCalls(): void {
+    for (const cancel of this.hostCalls) cancel();
+    this.hostCalls.clear();
+  }
+  private invalidateHostSession(): void {
+    this.hostEpoch++;
+    this.cancelHostCalls();
+    this.hostSync = undefined;
+    this.hostSession = undefined;
+    this.retireSession();
+  }
+  private detachHostProvider(): void {
+    const unsubscribe = this.hostUnsubscribe;
+    this.hostUnsubscribe = undefined;
+    this.hostProvider = undefined;
+    try { unsubscribe?.(); } catch { /* A host callback cannot retain the old account. */ }
+  }
+  private hostFailure(error: unknown): void {
+    if (!this.disposed && (!(error instanceof ImSdkError) || error.code !== 'SESSION_CHANGED')) {
+      this.emit({ type: 'hostSessionError', code: error instanceof ImSdkError ? error.code : 'HOST_SESSION_UNAVAILABLE' });
+    }
+  }
+  private requireHostManaged(): void {
+    if (!this.requireInitialized().hostManagedAuth) throw new ImSdkError('HOST_MANAGED_AUTH_REQUIRED', '请启用宿主账号同步模式');
+  }
+  private requireStandaloneAuth(): void {
+    if (this.requireInitialized().hostManagedAuth) throw new ImSdkError('HOST_MANAGED_AUTH_REQUIRED', '聊天账号由宿主自动同步');
+  }
+
   initialize(config: ImSdkConfig): void {
     if (this.disposed) throw new ImSdkError('DISPOSED', 'SDK已释放');
     if (this.settings) throw new ImSdkError('CONFIG_CONFLICT', '请为新配置创建新的SDK实例');
     if (config.privacyConsentGranted !== true) throw new ImSdkError('CONSENT_REQUIRED', '宿主需先取得用户同意');
+    if (config.hostManagedAuth !== undefined && typeof config.hostManagedAuth !== 'boolean') throw new ImSdkError('INVALID_CONFIG', '宿主账号同步配置无效');
+    const presentation = normalizePresentation({ themeMode: config.themeMode, locale: config.locale });
     const endpoint = (raw: string, gateway = false): string => {
       try {
         const url = new URL(raw);
@@ -73,7 +279,7 @@ export class ImSdkClient {
       gatewayBaseUrl: config.gatewayBaseUrl ? endpoint(config.gatewayBaseUrl, true) : undefined,
       serviceRealmId: required(config.serviceRealmId, 'serviceRealmId'),
       passwordLogin: Object.freeze({ ...login }), requestTimeoutMs: config.requestTimeoutMs ?? 30000,
-      pollIntervalMs: config.pollIntervalMs ?? 15000 });
+      pollIntervalMs: config.pollIntervalMs ?? 15000, hostManagedAuth: config.hostManagedAuth ?? false, ...presentation });
     this.emit({ type: 'ready' });
   }
 
@@ -105,7 +311,7 @@ export class ImSdkClient {
 
   /** Defaults to personal space; a resolved server-assigned enterprise session is used as returned. */
   async registerWithPassword(request: RegistrationRequest): Promise<void> {
-    this.requireInitialized();
+    this.requireStandaloneAuth();
     const identifier = this.registrationIdentifier(request);
     const displayName = required(request.displayName, '昵称');
     if (typeof request.password !== 'string' || request.password.length < 6) throw new ImSdkError('INVALID_ARGUMENT', '密码至少6位');
@@ -151,6 +357,7 @@ export class ImSdkClient {
   }
 
   async loginWithPassword(request: LoginRequest): Promise<void> {
+    this.requireStandaloneAuth();
     const config = this.requireInitialized();
     const account = required(request.account, '账号');
     if (typeof request.password !== 'string' || !request.password) throw new ImSdkError('INVALID_ARGUMENT', '密码不能为空');
@@ -202,25 +409,34 @@ export class ImSdkClient {
   }
 
   async authenticate(credentials: ImSdkCredentials): Promise<void> {
-    this.requireInitialized();
+    this.requireStandaloneAuth();
     const copy = { ...credentials };
-    for (const field of ['userId', 'platformUserId', 'spaceId', 'accessToken', 'refreshToken'] as const) required(copy[field], field);
-    if (!Number.isFinite(Date.parse(copy.expiresAt)) || Date.parse(copy.expiresAt) <= Date.now()) {
-      throw new ImSdkError('CREDENTIALS_EXPIRED', '请向宿主后端获取有效IM凭证');
-    }
+    this.validateCredentials(copy);
     const epoch = this.retireSession();
     await this.verifyIdentity(copy, epoch);
     this.activate(copy, epoch);
   }
 
+  private validateCredentials(copy: ImSdkCredentials): void {
+    for (const field of ['userId', 'platformUserId', 'spaceId', 'accessToken', 'refreshToken'] as const) required(copy[field], field);
+    if (!Number.isFinite(Date.parse(copy.expiresAt)) || Date.parse(copy.expiresAt) <= Date.now()) {
+      throw new ImSdkError('CREDENTIALS_EXPIRED', '请向宿主后端获取有效IM凭证');
+    }
+  }
+
   async listConversations(options: PageOptions = {}): Promise<ConversationPage> {
+    const revision = this.revision;
+    const hostEpoch = this.hostEpoch;
     const query = new URLSearchParams({ limit: String(this.limit(options.limit)) });
     if (options.cursor) query.set('cursor', options.cursor);
     const data = object(await this.authorized(`${API}/conversations?${query}`));
+    if (revision !== this.revision || hostEpoch !== this.hostEpoch) throw new ImSdkError('SESSION_CHANGED', '登录状态已变化，请重新操作');
     if (!Array.isArray(data.items)) throw new ImSdkError('INVALID_RESPONSE', '会话列表格式无效');
     // Temporary service sessions are outside this public direct/group API.
-    return { items: data.items.filter(x => ['direct', 'group'].includes(string(object(x).conversationType))).map(conversation),
+    const page = { items: data.items.filter(x => ['direct', 'group'].includes(string(object(x).conversationType))).map(conversation),
       nextCursor: string(data.nextCursor) || undefined };
+    if (!options.cursor && this.credentials) this.conversationCache = { owner: this.credentialOwner(this.credentials), page };
+    return page;
   }
 
   async getConversation(id: string): Promise<Conversation> {
@@ -275,7 +491,7 @@ export class ImSdkClient {
     const data = object(await this.authorized(`${API}/direct-chats`, 'POST', { peerUserId: peer }));
     const id = required(data.conversationId ?? data.chatId, 'conversationId');
     this.emit({ type: 'conversationsChanged' });
-    return { conversationId: id, type: 'direct', title: string(data.title) || '聊天', peerUserId: peer, unreadCount: 0 };
+    return { conversationId: id, type: 'direct', title: string(data.title) || '聊天', ...(!string(data.title) ? { titleIsDefault: true } : {}), peerUserId: peer, unreadCount: 0 };
   }
 
   async listContacts(): Promise<Contact[]> {
@@ -284,7 +500,8 @@ export class ImSdkClient {
     return data.map(value => {
       const row = object(value);
       return { userId: required(row.friendUserId ?? row.userId, 'userId'),
-        displayName: string(row.remarkName) || string(row.displayName) || string(row.name) || '联系人' };
+        displayName: string(row.remarkName) || string(row.displayName) || string(row.name) || '联系人',
+        ...(!(string(row.remarkName) || string(row.displayName) || string(row.name)) ? { displayNameIsDefault: 'contact' as const } : {}) };
     });
   }
 
@@ -295,6 +512,7 @@ export class ImSdkClient {
     return data.map(value => {
       const row = object(value);
       return { userId: required(row.userId, 'userId'), displayName: string(row.displayName) || string(row.name) || '用户',
+        ...(!(string(row.displayName) || string(row.name)) ? { displayNameIsDefault: 'user' as const } : {}),
         ...(typeof row.isFriend === 'boolean' ? { isFriend: row.isFriend } : {}), ...(string(row.lppId) ? { lppId: string(row.lppId) } : {}) };
     });
   }
@@ -320,7 +538,8 @@ export class ImSdkClient {
       const status = ['pending', 'accepted', 'rejected', 'cancelled'].includes(rawStatus) ? rawStatus as FriendRequest['status'] : 'unknown';
       return { requestId: required(row.requestId, 'requestId'), fromUserId: required(row.fromUserId, 'fromUserId'),
         fromDisplayName: string(row.fromDisplayName) || '用户', toUserId: required(row.toUserId, 'toUserId'),
-        toDisplayName: string(row.toDisplayName) || '用户', message: string(row.message) || undefined, status };
+        toDisplayName: string(row.toDisplayName) || '用户', message: string(row.message) || undefined, status,
+        ...(!string(row.fromDisplayName) ? { fromNameIsDefault: true } : {}), ...(!string(row.toDisplayName) ? { toNameIsDefault: true } : {}) };
     });
   }
 
@@ -365,13 +584,19 @@ export class ImSdkClient {
 
   async logout(): Promise<void> {
     this.requireInitialized();
-    this.retireSession();
+    if (this.settings!.hostManagedAuth) this.invalidateHostSession();
+    else this.retireSession();
     this.emit({ type: 'loggedOut' });
     await Promise.all([...this.stopping]);
   }
 
   async shutdown(): Promise<void> {
     if (this.disposed) { await Promise.all([...this.stopping]); return; }
+    this.hostEpoch++;
+    this.cancelHostCalls();
+    this.hostSync = undefined;
+    this.hostSession = undefined;
+    this.detachHostProvider();
     this.retireSession();
     this.disposed = true;
     this.emit({ type: 'shutdown' });
@@ -382,6 +607,7 @@ export class ImSdkClient {
   private retireSession(): number {
     const epoch = ++this.revision;
     this.credentials = undefined;
+    this.conversationCache = undefined;
     this.refreshTask = undefined;
     for (const request of this.requests) request.abort();
     this.requests.clear();
@@ -409,6 +635,11 @@ export class ImSdkClient {
   }
 
   private expireSession(): void {
+    if (this.settings?.hostManagedAuth) {
+      this.invalidateHostSession();
+      this.emit({ type: 'hostSessionError', code: 'SESSION_EXPIRED' });
+      return;
+    }
     this.retireSession();
     this.emit({ type: 'authenticationRequired', code: 'SESSION_EXPIRED' });
   }
@@ -480,10 +711,15 @@ export class ImSdkClient {
           if (next.userId !== previous.userId || next.platformUserId !== previous.platformUserId) throw new ImSdkError('AUTH_EXTERNAL_IDENTITY_MISMATCH', '刷新凭证身份不匹配');
           await this.verifyIdentity(next, epoch);
           this.checkEpoch(epoch);
-          this.credentials = next;
+          // A host-issued replacement may have committed while the IM refresh
+          // or its identity check was in flight. Never overwrite that newer pair.
+          if (this.credentials === previous) this.credentials = next;
         } catch (error) {
+          // A rejection from the retired pair must not expire or trigger a new
+          // host exchange after a newer verified pair has already committed.
+          if (this.revision === epoch && this.credentials && this.credentials !== previous) return;
           const failure = this.failure(error);
-          if (this.revision === epoch && (failure.status === 401 || failure.status === 403 ||
+          if (!this.settings?.hostManagedAuth && this.revision === epoch && (failure.status === 401 || failure.status === 403 ||
               /^(AUTH_|TOKEN_|REFRESH_TOKEN_|SESSION_)/.test(failure.code))) this.expireSession();
           throw failure;
         }
@@ -502,20 +738,49 @@ export class ImSdkClient {
   }
 
   private async authorized(path: string, method = 'GET', body?: unknown): Promise<unknown> {
+    const hostManaged = this.requireInitialized().hostManagedAuth === true;
+    if (hostManaged && !await this.synchronizeHostSession()) {
+      throw new ImSdkError('HOST_NOT_AUTHENTICATED', '宿主账号已退出');
+    }
     this.requireSession();
     const epoch = this.revision;
-    const token = await this.accessToken(epoch);
-    try { return await this.raw(path, method, body, token, epoch); }
-    catch (error) {
-      if (!(error instanceof ImSdkError) || error.status !== 401) throw error;
-      this.checkEpoch(epoch);
-      if (this.requireSession().accessToken === token) await this.refresh(epoch);
-      this.checkEpoch(epoch);
-      try { return await this.raw(path, method, body, this.requireSession().accessToken, epoch); }
-      catch (retryError) {
-        if (retryError instanceof ImSdkError && retryError.status === 401 && this.revision === epoch) this.expireSession();
-        throw retryError;
+    const hostEpoch = this.hostEpoch;
+    const hostSession = this.hostSession;
+    let refreshing = false;
+    try {
+      refreshing = Date.parse(this.requireSession().expiresAt) - Date.now() < 30000;
+      const token = await this.accessToken(epoch);
+      refreshing = false;
+      try { return await this.raw(path, method, body, token, epoch); }
+      catch (error) {
+        if (!(error instanceof ImSdkError) || error.status !== 401) throw error;
+        this.checkEpoch(epoch);
+        if (this.requireSession().accessToken === token) {
+          refreshing = true;
+          await this.refresh(epoch);
+          refreshing = false;
+        }
+        this.checkEpoch(epoch);
+        return await this.raw(path, method, body, this.requireSession().accessToken, epoch);
       }
+    }
+    catch (error) {
+      const authFailure = error instanceof ImSdkError && (error.status === 401 ||
+        (refreshing && error.status === 403) || /^(AUTH_|TOKEN_|REFRESH_TOKEN_)/.test(error.code));
+      if (hostManaged && authFailure && this.hostEpoch === hostEpoch && this.revision === epoch) {
+        await this.synchronizeHostSession({ forceRefresh: true });
+        if (this.hostEpoch !== hostEpoch || !this.sameHost(this.hostSession, hostSession)) {
+          throw new ImSdkError('SESSION_CHANGED', '宿主账号已变化，请重新操作');
+        }
+        const recoveredEpoch = this.revision;
+        try { return await this.raw(path, method, body, this.requireSession().accessToken, recoveredEpoch); }
+        catch (retryError) {
+          if (retryError instanceof ImSdkError && retryError.status === 401 && this.revision === recoveredEpoch) this.expireSession();
+          throw retryError;
+        }
+      }
+      if (error instanceof ImSdkError && error.status === 401 && this.revision === epoch) this.expireSession();
+      throw error;
     }
   }
 

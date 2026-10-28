@@ -37,6 +37,10 @@ const view = mountMessenger(client, containerElement);
 
 view.close() 只关闭界面；logout() 清理当前账号；shutdown() 释放实例、请求和连接，之后需创建新实例。一个实例只有一个活跃账号/空间。外部认证用 authenticate(credentials)，必须由受信后端签发 IM 凭证，并由 profile/me 验证身份。其他系统账号的打通由后端负责。
 
+源码新增宿主账号同步模式：初始化设置 `hostManagedAuth: true`，绑定 `HostSessionProvider` 后自动预热；会话列表入口、前台恢复和认证失败时会重新核对宿主账号，必要时静默获取 IM 凭证。宿主退出或换号通知会立即隐藏旧账号内容并废弃旧请求。该模式不展示 SDK 登录表单、登录弹窗或列表首屏转圈；同账号再次打开可先展示内存缓存。网络首次取票与列表请求仍有耗时，不能将无弹窗理解成任意网络下即时完成。接入契约见 [接入说明](handoff/docs/INTEGRATION.md#宿主账号自动同步源码新增)。现有版本化 `dist` 快照及已发布包需重新构建发布后才包含这些新增接口。
+
+源码也支持由宿主统一管理显示设置：初始化传 `themeMode: 'system' | 'light' | 'dark'` 和 `locale`，运行中调用 `client.updatePresentation({themeMode, locale})` 即可更新现有页面。默认主题跟随系统，默认语言保持简体中文；支持简体中文、繁体中文、英语、日语、韩语和越南语，`locale: 'system'` 跟随浏览器语言。更新不重新认证、不重建页面、不清空输入草稿；消息、昵称和后端内容保持原文。详见 [显示设置接入](handoff/docs/INTEGRATION.md#宿主统一管理主题和语言源码新增)。
+
 sendText(target,text,{clientMessageId}) 的网络失败不会自动重发；结果不明确时调用方重试同一份消息应沿用同一个 clientMessageId。客服 queued / unknown 不会提前打开聊天。非文本消息只显示类型占位；媒体上传/预览、通话、推送、群管理及完整离线数据库不在此版本。
 
 ## 已验证范围

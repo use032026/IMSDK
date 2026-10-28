@@ -73,6 +73,10 @@ await client.registerWithPassword(
 
 ## 账号系统与生命周期
 
+宿主主题与语言使用初始化配置的 `themeMode` / `locale`，已打开页面通过 `client.updatePresentation(...)` 更新；详见 [主题与语言同步](HOST_PRESENTATION_SYNC.md)。
+
+需要跟随宿主自动登录 / 退出时，按 [宿主管理登录态](HOST_SESSION_SYNC.md) 启用 `hostManagedAuth` 并绑定 `ImSdkHostSessionProvider`。该模式从宿主会话与受信后端取票，不显示 SDK 密码登录页；以下主动 `authenticate` 用法适用于默认独立登录模式。新增接口属于本次修改后的源码，已有分发二进制尚未更新。
+
 其他 App 账号的打通由双方服务端完成：认证宿主用户、建立稳定 IM 身份映射、签发和刷新 IM 凭证，并校验联系人、会话及群成员权限。SDK 新增密码入口复用已有 IM 登录协议，不能据此认定其他 App 的账号已接通。
 
 已有宿主也可继续调用 `authenticate(ImSdkCredentials(...))`，传入受信后端签发的真实 IM 凭证。SDK 会核验 IM 身份；其他 App 的登录 token、admin token 或签名密钥不能直接作为 IM accessToken。外部凭证认证、指定私聊及客服接口是兼容接入能力，不需要让终端用户手填这些字段。

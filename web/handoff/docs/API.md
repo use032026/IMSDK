@@ -155,7 +155,47 @@ interface ImSdkCredentials {
 - SDK 会先用收到的 bearer 请求服务端身份，再核对身份和空间，不直接把宿主声称的用户 ID 当作认证依据。开始有效的身份切换后，旧会话和旧请求会失效。
 - 后续请求在凭证临近到期时尝试刷新；并发刷新合并，HTTP 401 最多刷新并重试一次。暂时的网络错误不会被当作必须清除账号的凭据。
 
-其他系统的账号与 IM 账号映射、取票、服务端撤销由后端完成。不要将其他业务系统 token、管理员密钥或服务端密钥作为 `accessToken`。可选的平台凭证字段不代表 SDK 提供跨系统 SSO；IM 续期以 IM `refreshToken` 为准。
+其他系统的账号与 IM 账号映射、取票、服务端撤销由后端完成。不要将其他业务系统 token、管理员密钥或服务端密钥作为 `accessToken`。可选的平台凭证字段不代表 SDK 提供跨系统 SSO；IM 自身续期以 IM `refreshToken` 为准。源码新增的 `hostManagedAuth` 模式可通过宿主 provider 静默获取新 IM 凭证，契约如下；现有版本化交付包需重新构建发布才包含这些接口。
+
+### 宿主显示设置 API（源码新增）
+
+```ts
+type ImSdkThemeMode = 'system' | 'light' | 'dark';
+interface ImSdkPresentation { themeMode?: ImSdkThemeMode; locale?: string }
+client.updatePresentation({ themeMode: 'dark', locale: 'ja-JP' }); // void
+```
+
+- `ImSdkConfig` 新增相同两字段，主题默认 `system`，语言默认 `zh-CN`。支持的语言为 `zh-CN`、`zh-TW`、`en`、`ja`、`ko`、`vi`，另可使用 `system`。
+- 合法的语言、脚本和区域别名会规范化；`_` 兼容 `-`，中文脚本 Hans/Hant 优先于地区。示例：`zh-Hans-TW` → `zh-CN`、`zh-Hant-CN` → `zh-TW`、`en_US` → `en`。不接受非法 tag 或未支持语言；更新整体失败时返回 `INVALID_PRESENTATION`，配置和界面均保持原值。
+- `system` 主题实时响应系统深浅色媒体设置；`system` 语言响应浏览器语言及 `languagechange`，无支持语言时回退 `zh-CN`。显式选择时系统变化不覆盖宿主的值。
+- 更新同步生效，`config` 返回新快照；`presentationChanged` 包含完整规范化值。无实际变化时不重复发事件。身份和会话 revision 均不变，不调用认证或宿主取票。
+- 已挂载界面原位更新 SDK 文案、错误提示、占位、日期及 aria 标签；保留表单、草稿、滚动和路由。消息正文、昵称、群名、好友附言及后端验证码问题维持原文。缺省名称与标题通过 SDK 标记识别，只有 SDK 生成的占位名会翻译。
+- `close()` 取消该 view 的语言及显示监听。该 API 适用于独立登录和宿主账号同步两种模式；现有版本化分发快照需新构建发布后才具备接口。
+
+### 宿主账号同步 API（源码新增）
+
+```ts
+interface HostSession { hostUserId: string; sessionId: string }
+interface HostSessionProvider {
+  readSession(): Promise<HostSession | null>;
+  fetchCredentials(session: HostSession): Promise<ImSdkCredentials>;
+  subscribe?(onChanged: () => void): () => void;
+}
+// initialize({ ...configuration, hostManagedAuth: true }) 后使用：
+client.bindHostSessionProvider(provider); // 注册变化订阅并静默预热
+await client.synchronizeHostSession({ forceRefresh: false }); // Promise<boolean>
+await client.notifyHostSessionChanged(); // Promise<boolean>，先立即废弃旧状态
+```
+
+- `hostManagedAuth` 默认 `false`。启用后账号由 provider 驱动，`authenticate`、密码登录及注册操作返回 `HOST_MANAGED_AUTH_REQUIRED`，内置界面不显示 SDK 登录表单。provider 需在已初始化且启用此模式的实例上绑定。
+- `readSession` 返回 `null` 表示宿主登出；非空对象的两个字段均须为非空字符串。`sessionId` 是宿主登录代际，每次重新登录或换号须变化，不得包含宿主 token 或 IM 票据。SDK 不持久保存宿主会话或凭证。
+- `fetchCredentials` 返回可信宿主后端签发的 IM 凭证。SDK 检查资料、身份及空间，并在取票与资料验证后复查宿主快照。宿主身份到 IM 账号映射由可信后端负责，不能只凭字符串相同宣称已打通。
+- `subscribe` 回调应在宿主登录、登出及换号后立即触发；SDK 先废弃旧账号与请求，再静默同步。不提供订阅时，集成方需在每次账号变化完成后调用 `notifyHostSessionChanged`。会话列表入口、前台恢复及请求仍会复核快照。
+- `synchronizeHostSession` 返回 `true` 表示当前宿主快照已对应有效 SDK 登录态，`false` 表示宿主已退出。`forceRefresh: true` 会要求取新票，并发普通复查不会吞掉该要求。
+- provider 的快照读取与取票分别受 `requestTimeoutMs` 限制，超时返回 `HOST_SESSION_TIMEOUT` / `HOST_CREDENTIALS_TIMEOUT`，之后可以重试。退出、通知变化或释放时立即废弃 SDK 对旧调用的等待，不取消宿主自行拥有的网络任务，也不应用其迟到结果。
+- `hostSessionSynchronizing` / `hostSessionSynchronized`（`authenticated: boolean`）/ `hostSessionError`（`code`）供宿主显示状态。内置界面只显示列表壳、同账号内存缓存或页面内重试，不显示登录弹窗或列表首屏转圈。
+- `logout`、provider 替换和 `shutdown` 会立即使在途票据失效；`shutdown` 退订。以后显式同步仍会以宿主当前真实状态为准。`cachedConversations` 仅返回当前有效 IM 身份的内存首屏副本，账号退出及换号时清除。
+- 账号系统、IM 服务器与宿主网络调用均可能失败；没有真实换票接口时只能验证 SDK 契约，不能认定真实业务已打通，也不能保证任意网络下的冷启动耗时。
 
 ## 4. 会话与联系人
 

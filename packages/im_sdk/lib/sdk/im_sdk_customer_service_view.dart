@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:im_sdk/app/theme/theme.dart';
 import 'im_sdk_chat_view.dart';
 import 'im_sdk_client.dart';
 import 'im_sdk_models.dart';
+import 'im_sdk_presentation.dart';
 
 /// Presents the authoritative handoff state, with user-initiated status checks.
 class ImSdkCustomerServiceView extends StatefulWidget {
@@ -24,12 +24,15 @@ class ImSdkCustomerServiceView extends StatefulWidget {
       _ImSdkCustomerServiceViewState();
 }
 
-class _ImSdkCustomerServiceViewState extends State<ImSdkCustomerServiceView> {
-  late final int _boundSessionRevision;
+class _ImSdkCustomerServiceViewState extends State<ImSdkCustomerServiceView>
+    with WidgetsBindingObserver {
+  late int _boundSessionRevision;
   ImSdkCustomerServiceSession? _session;
   bool _busy = false;
   bool _closing = false;
   String? _errorCode;
+  bool _hostChecked = false;
+  bool _hostChecking = false;
 
   @override
   void initState() {
@@ -38,7 +41,11 @@ class _ImSdkCustomerServiceViewState extends State<ImSdkCustomerServiceView> {
     _boundSessionRevision = widget.client.sessionRevision;
     _session = widget.initialSession;
     widget.client.revision.addListener(_onClientChanged);
-    if (_session == null) {
+    _hostChecked = widget.client.config?.hostManagedAuth != true;
+    if (!_hostChecked) {
+      WidgetsBinding.instance.addObserver(this);
+      unawaited(_verifyHostEntry());
+    } else if (_session == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) unawaited(_refresh());
       });
@@ -46,11 +53,47 @@ class _ImSdkCustomerServiceViewState extends State<ImSdkCustomerServiceView> {
   }
 
   bool get _sessionIsCurrent =>
+      _hostChecked &&
       widget.client.isAuthenticated &&
       widget.client.sessionRevision == _boundSessionRevision;
 
   void _onClientChanged() {
+    if (!_hostChecked) return;
     if (!_sessionIsCurrent) _close();
+  }
+
+  Future<void> _verifyHostEntry() async {
+    if (_hostChecking || _closing) return;
+    _hostChecking = true;
+    setState(() {
+      _hostChecked = false;
+      _errorCode = null;
+    });
+    try {
+      final ready = await widget.client.synchronizeHostSession();
+      if (!mounted || _closing) return;
+      if (!ready ||
+          (_session != null &&
+              _boundSessionRevision != widget.client.sessionRevision)) {
+        _close();
+        return;
+      }
+      setState(() {
+        _hostChecked = true;
+        _boundSessionRevision = widget.client.sessionRevision;
+        _errorCode = null;
+      });
+      if (_session == null) await _refresh();
+    } catch (_) {
+      if (mounted) setState(() => _errorCode = 'HOST_AUTH_UNAVAILABLE');
+    } finally {
+      _hostChecking = false;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(_verifyHostEntry());
   }
 
   @override
@@ -107,12 +150,25 @@ class _ImSdkCustomerServiceViewState extends State<ImSdkCustomerServiceView> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     widget.client.revision.removeListener(_onClientChanged);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_hostChecked) {
+      return SdkPresentationApp(
+          client: widget.client,
+          homeBuilder: (context) => Scaffold(
+              appBar: AppBar(title: Text(sdkText(context, '企业客服'))),
+              body: _errorCode != null
+                  ? Center(
+                      child: TextButton(
+                          onPressed: _verifyHostEntry,
+                          child: Text(sdkText(context, '聊天服务暂不可用，重试'))))
+                  : const SizedBox.expand()));
+    }
     if (!_sessionIsCurrent) _close();
     final session = _session;
     if (_sessionIsCurrent && session?.canOpenConversation == true) {
@@ -128,19 +184,17 @@ class _ImSdkCustomerServiceViewState extends State<ImSdkCustomerServiceView> {
       ImSdkCustomerServiceStatus.unknown => '接待状态暂未确认',
       null => '正在联系企业客服',
     };
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      home: Scaffold(
+    return SdkPresentationApp(
+      client: widget.client,
+      homeBuilder: (context) => Scaffold(
         appBar: AppBar(
           leadingWidth: 104,
           leading: TextButton(
             key: const ValueKey('im_sdk.customerService.close'),
             onPressed: _close,
-            child: const Text('返回宿主'),
+            child: Text(sdkText(context, '返回宿主')),
           ),
-          title: const Text('企业客服'),
+          title: Text(sdkText(context, '企业客服')),
         ),
         body: Center(
           child: SingleChildScrollView(
@@ -153,26 +207,27 @@ class _ImSdkCustomerServiceViewState extends State<ImSdkCustomerServiceView> {
               children: [
                 const Icon(Icons.support_agent, size: 48),
                 const SizedBox(height: 16),
-                Text(title,
+                Text(sdkText(context, title),
                     key: const ValueKey('im_sdk.customerService.status'),
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 12),
-                const Text('客服接入后可进入聊天。可手动查看接待状态。',
+                Text(sdkText(context, '客服接入后可进入聊天。可手动查看接待状态。'),
                     textAlign: TextAlign.center),
                 if (_errorCode != null) ...[
                   const SizedBox(height: 12),
-                  Text('暂时无法查看（$_errorCode）',
+                  Text(sdkText(context, '聊天服务暂不可用'),
                       key: const ValueKey('im_sdk.customerService.error')),
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
                   key: const ValueKey('im_sdk.customerService.refresh'),
                   onPressed: _busy ? null : _refresh,
-                  child: const Text('查看接待状态'),
+                  child: Text(sdkText(context, '查看接待状态')),
                 ),
                 if (_busy) ...[
                   const SizedBox(height: 16),
-                  const CircularProgressIndicator(),
+                  CircularProgressIndicator(
+                      semanticsLabel: sdkText(context, '正在加载…')),
                 ],
               ],
             ),

@@ -34,6 +34,7 @@ export function conversation(value: unknown): Conversation {
   return {
     conversationId: required(row.conversationId, 'conversationId'), type: row.conversationType,
     title: string(row.title) || (row.conversationType === 'group' ? '群聊' : '聊天'),
+    ...(!string(row.title) ? { titleIsDefault: true } : {}),
     unreadCount: sequence(row.unreadCount), peerUserId: string(row.peerUserId) || undefined,
     lastMessage: string(last.preview) || undefined,
     lastMessageAt: string(row.lastActivityAt) || string(last.sentAt) || undefined,

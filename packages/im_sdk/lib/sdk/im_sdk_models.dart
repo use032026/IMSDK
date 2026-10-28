@@ -7,7 +7,9 @@ class ImSdkConfig {
     this.gatewayBaseUrl,
     this.storageNamespace = 'default',
     this.locale = 'zh_CN',
+    this.themeMode = 'system',
     this.passwordLogin,
+    this.hostManagedAuth = false,
   });
 
   final String apiBaseUrl;
@@ -16,7 +18,21 @@ class ImSdkConfig {
   final bool privacyConsentGranted;
   final String storageNamespace;
   final String locale;
+  final String themeMode;
+
+  String get normalizedThemeMode {
+    final value = themeMode.trim().toLowerCase();
+    if (!const {'system', 'light', 'dark'}.contains(value)) {
+      throw const ImSdkException('INVALID_PRESENTATION', '主题配置无效');
+    }
+    return value;
+  }
+
+  String get normalizedLocale => normalizeImSdkLocale(locale);
   final ImSdkPasswordLoginConfig? passwordLogin;
+
+  /// The integrating app owns identity. SDK login UI is disabled in this mode.
+  final bool hostManagedAuth;
 
   void validate() {
     if (!privacyConsentGranted) {
@@ -36,6 +52,8 @@ class ImSdkConfig {
       }
     }
     _required(serviceRealmId, 'serviceRealmId');
+    normalizedThemeMode;
+    normalizedLocale;
     passwordLogin?.validate();
     if (!RegExp(r'^[a-zA-Z0-9._-]{1,64}$').hasMatch(storageNamespace)) {
       throw const ImSdkException(
@@ -50,7 +68,9 @@ class ImSdkConfig {
         'privacyConsentGranted': privacyConsentGranted,
         'storageNamespace': storageNamespace,
         'locale': locale,
+        'themeMode': themeMode,
         if (passwordLogin != null) 'passwordLogin': passwordLogin!.toMap(),
+        'hostManagedAuth': hostManagedAuth,
       };
 
   factory ImSdkConfig.fromMap(Map<String, dynamic> value) => ImSdkConfig(
@@ -60,9 +80,11 @@ class ImSdkConfig {
         privacyConsentGranted: value['privacyConsentGranted'] == true,
         storageNamespace: value['storageNamespace'] as String? ?? 'default',
         locale: value['locale'] as String? ?? 'zh_CN',
+        themeMode: value['themeMode'] as String? ?? 'system',
         passwordLogin: value['passwordLogin'] == null
             ? null
             : ImSdkPasswordLoginConfig.fromMap(value['passwordLogin']),
+        hostManagedAuth: value['hostManagedAuth'] == true,
       );
 
   @override
@@ -74,10 +96,83 @@ class ImSdkConfig {
       storageNamespace == other.storageNamespace &&
       privacyConsentGranted == other.privacyConsentGranted &&
       locale == other.locale &&
+      themeMode == other.themeMode &&
+      hostManagedAuth == other.hostManagedAuth &&
       passwordLogin == other.passwordLogin;
   @override
-  int get hashCode => Object.hash(apiBaseUrl, gatewayBaseUrl, serviceRealmId,
-      storageNamespace, privacyConsentGranted, locale, passwordLogin);
+  int get hashCode => Object.hash(
+      apiBaseUrl,
+      gatewayBaseUrl,
+      serviceRealmId,
+      storageNamespace,
+      privacyConsentGranted,
+      locale,
+      themeMode,
+      passwordLogin,
+      hostManagedAuth);
+
+  /// Presentation changes use updatePresentation; repeated runtime setup is
+  /// harmless and must never reset the host's most recent appearance choice.
+  bool hasSameRuntimeConfiguration(ImSdkConfig other) =>
+      apiBaseUrl == other.apiBaseUrl &&
+      gatewayBaseUrl == other.gatewayBaseUrl &&
+      serviceRealmId == other.serviceRealmId &&
+      storageNamespace == other.storageNamespace &&
+      privacyConsentGranted == other.privacyConsentGranted &&
+      passwordLogin == other.passwordLogin &&
+      hostManagedAuth == other.hostManagedAuth;
+}
+
+/// Canonical SDK language identifiers. Explicit unsupported languages fail
+/// closed rather than silently changing the user's selected language.
+String normalizeImSdkLocale(String value) {
+  final tag = value.trim().replaceAll('_', '-').toLowerCase();
+  if (tag == 'system') return tag;
+  final parts = tag.split('-');
+  if (parts.isEmpty || parts.length > 3 || parts.any((part) => part.isEmpty)) {
+    throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
+  }
+  final language = parts.first;
+  if (!const {'zh', 'en', 'ja', 'ko', 'vi'}.contains(language)) {
+    throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
+  }
+  String? script;
+  String? region;
+  for (final part in parts.skip(1)) {
+    if (RegExp(r'^[a-z]{4}$').hasMatch(part) &&
+        script == null &&
+        region == null) {
+      script = part;
+    } else if (RegExp(r'^(?:[a-z]{2}|[0-9]{3})$').hasMatch(part) &&
+        region == null) {
+      region = part;
+    } else {
+      throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
+    }
+  }
+  if (language == 'zh') {
+    if (script != null && script != 'hans' && script != 'hant') {
+      throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
+    }
+    if (region != null &&
+        !const {'cn', 'sg', 'tw', 'hk', 'mo'}.contains(region)) {
+      throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
+    }
+    if (script == 'hant' ||
+        (script == null && const {'tw', 'hk', 'mo'}.contains(region)))
+      return 'zh-TW';
+    return 'zh-CN';
+  }
+  final allowedScript = switch (language) {
+    'en' || 'vi' => 'latn',
+    'ja' => 'jpan',
+    'ko' => 'kore',
+    _ => '',
+  };
+  if (script != null && script != allowedScript) {
+    throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
+  }
+  return language;
 }
 
 /// Fixed authentication routing supplied by the integrating app, never by the
@@ -219,12 +314,28 @@ class ImSdkCredentials {
 class ImSdkDirectConversation {
   const ImSdkDirectConversation(
       {required this.conversationId,
-      this.title = '聊天',
+      String? title,
       this.peerUserId,
       this.avatarUrl,
-      this.serviceThreadId});
+      this.serviceThreadId})
+      : title = title ?? '聊天',
+        titleIsDefault = title == null,
+        sdkDefaultTitle = title == null ? '聊天' : null;
+
+  const ImSdkDirectConversation._customerService({
+    required this.conversationId,
+    required this.serviceThreadId,
+  })  : title = '客服',
+        titleIsDefault = true,
+        sdkDefaultTitle = '客服',
+        peerUserId = null,
+        avatarUrl = null;
   final String conversationId;
   final String title;
+  final bool titleIsDefault;
+
+  /// Present only for titles created by the SDK itself, never from host maps.
+  final String? sdkDefaultTitle;
   final String? peerUserId;
   final String? avatarUrl;
 
@@ -234,7 +345,7 @@ class ImSdkDirectConversation {
   factory ImSdkDirectConversation.fromMap(Map<String, dynamic> value) =>
       ImSdkDirectConversation(
           conversationId: _string(value, 'conversationId'),
-          title: value['title'] as String? ?? '聊天',
+          title: value['title'] as String?,
           peerUserId: value['peerUserId'] as String?,
           avatarUrl: value['avatarUrl'] as String?,
           serviceThreadId: value['serviceThreadId'] as String?);
@@ -340,10 +451,8 @@ class ImSdkCustomerServiceSession {
               : 'SERVICE_NOT_READY',
           '客服会话尚未接入');
     }
-    return ImSdkDirectConversation(
-        conversationId: conversationId!,
-        serviceThreadId: threadId,
-        title: '客服');
+    return ImSdkDirectConversation._customerService(
+        conversationId: conversationId!, serviceThreadId: threadId);
   }
 
   Map<String, Object?> toMap() => {

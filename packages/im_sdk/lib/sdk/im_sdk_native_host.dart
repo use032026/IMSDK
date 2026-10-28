@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'im_sdk_client.dart';
 import 'im_sdk_models.dart';
+import 'im_sdk_host_session.dart';
 import 'im_sdk_chat_view.dart';
 import 'im_sdk_customer_service_view.dart';
 import 'im_sdk_messaging_view.dart';
+import 'im_sdk_presentation.dart';
 
 const _control = MethodChannel('im_sdk/control');
 
@@ -40,6 +42,7 @@ class _ServicePresentation extends _SdkPresentation {
 
 class _NativeSdkHost {
   final client = ImSdkClient();
+  final _hostSessionProvider = _ChannelHostSessionProvider();
   final presentation = ValueNotifier<_SdkPresentation?>(null);
   int presentationRevision = 0;
   StreamSubscription<ImSdkEvent>? _subscription;
@@ -67,17 +70,41 @@ class _NativeSdkHost {
             if (event.type == 'authenticationRequired' ||
                 event.type == 'loggedOut') {
               if (presentation.value != null &&
-                  presentation.value is! _MessagingPresentation)
+                  ((event.type == 'loggedOut' &&
+                          client.config?.hostManagedAuth == true) ||
+                      presentation.value is! _MessagingPresentation))
                 closePresentation();
             }
           });
-          await client.initialize(ImSdkConfig.fromMap(args));
+          final config = ImSdkConfig.fromMap(args);
+          if (config.hostManagedAuth) {
+            client.bindHostSessionProvider(_hostSessionProvider);
+          }
+          await client.initialize(config);
           return null;
+        case 'synchronizeHostSession':
+          return client.synchronizeHostSession(
+              forceRefresh: args['forceRefresh'] == true);
+        case 'updatePresentation':
+          if ((args['themeMode'] != null && args['themeMode'] is! String) ||
+              (args['locale'] != null && args['locale'] is! String)) {
+            throw const ImSdkException('INVALID_PRESENTATION', '呈现配置无效');
+          }
+          await client.updatePresentation(
+              themeMode: args['themeMode'] as String?,
+              locale: args['locale'] as String?);
+          return null;
+        case 'notifyHostSessionChanged':
+          return client.notifyHostSessionChanged();
         case 'authenticate':
           presentation.value = null;
           await client.authenticate(ImSdkCredentials.fromMap(args));
           return null;
         case 'openDirectConversation':
+          if (client.config?.hostManagedAuth == true &&
+              !await client.synchronizeHostSession()) {
+            throw const ImSdkException('HOST_NOT_AUTHENTICATED', '请先登录当前应用');
+          }
           if (!client.isAuthenticated) {
             throw const ImSdkException('NOT_AUTHENTICATED', '请先通过宿主登录');
           }
@@ -89,9 +116,17 @@ class _NativeSdkHost {
           if (!client.isInitialized) {
             throw const ImSdkException('NOT_INITIALIZED', '请先初始化SDK');
           }
+          if (client.config?.hostManagedAuth == true &&
+              !await client.synchronizeHostSession()) {
+            throw const ImSdkException('HOST_NOT_AUTHENTICATED', '请先登录当前应用');
+          }
           _present(const _MessagingPresentation());
           return null;
         case 'openCustomerService':
+          if (client.config?.hostManagedAuth == true &&
+              !await client.synchronizeHostSession()) {
+            throw const ImSdkException('HOST_NOT_AUTHENTICATED', '请先登录当前应用');
+          }
           final request = ImSdkCustomerServiceRequest.fromMap(args);
           final revision = client.sessionRevision;
           final session = await client.requestCustomerService(request);
@@ -122,6 +157,43 @@ class _NativeSdkHost {
   }
 }
 
+class _ChannelHostSessionProvider extends ImSdkHostSessionProvider {
+  static const _publicCodes = {
+    'HOST_CREDENTIALS_UNAVAILABLE',
+    'HOST_SESSION_CHANGED',
+    'HOST_SESSION_UNAVAILABLE',
+    'HOST_SESSION_TIMEOUT',
+  };
+
+  Future<Map<String, dynamic>?> _invoke(String method,
+      [Map<String, Object?>? args]) async {
+    try {
+      return await _control.invokeMapMethod<String, dynamic>(method, args);
+    } on PlatformException catch (error) {
+      throw ImSdkException(
+          _publicCodes.contains(error.code)
+              ? error.code
+              : 'HOST_AUTH_UNAVAILABLE',
+          '聊天服务暂不可用，请重试');
+    }
+  }
+
+  @override
+  Future<ImSdkHostSession?> readSession() async {
+    final value = await _invoke('readHostSession');
+    return value == null ? null : ImSdkHostSession.fromMap(value);
+  }
+
+  @override
+  Future<ImSdkCredentials> fetchCredentials(ImSdkHostSession session) async {
+    final value = await _invoke('fetchHostCredentials', session.toMap());
+    if (value == null) {
+      throw const ImSdkException('HOST_AUTH_UNAVAILABLE', '聊天服务暂不可用，请重试');
+    }
+    return ImSdkCredentials.fromMap(value);
+  }
+}
+
 class _NativeSdkApp extends StatelessWidget {
   const _NativeSdkApp({required this.host});
   final _NativeSdkHost host;
@@ -130,9 +202,9 @@ class _NativeSdkApp extends StatelessWidget {
       ValueListenableBuilder<_SdkPresentation?>(
         valueListenable: host.presentation,
         builder: (context, presentation, _) => presentation == null
-            ? const MaterialApp(
-                debugShowCheckedModeBanner: false,
-                home: Scaffold(body: SizedBox.shrink()))
+            ? SdkPresentationApp(
+                client: host.client,
+                homeBuilder: (_) => const Scaffold(body: SizedBox.shrink()))
             : switch (presentation) {
                 _MessagingPresentation() => ImSdkMessagingView(
                     key: ValueKey(host.presentationRevision),

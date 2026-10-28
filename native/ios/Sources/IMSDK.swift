@@ -5,6 +5,17 @@ import UIKit
   func imSdkDidReceiveEvent(_ payload: [String: Any])
 }
 
+/// Supplies host identity and IM credentials from a trusted host backend.
+/// A nil session means signed out. Never return a host bearer as an IM bearer.
+@objc public protocol IMSDKHostSessionProvider: AnyObject {
+  @objc(imSdkReadHostSessionWithCompletion:)
+  func imSdkReadHostSession(completion: @escaping ([String: Any]?, NSError?) -> Void)
+
+  @objc(imSdkFetchCredentialsForHostSession:completion:)
+  func imSdkFetchCredentials(forHostSession session: [String: Any],
+                            completion: @escaping ([String: Any]?, NSError?) -> Void)
+}
+
 @objc public enum IMSDKPresentationMode: Int {
   case automatic
   case push
@@ -17,7 +28,24 @@ import UIKit
   @objc public static let shared = IMSDK()
   @objc public weak var eventListener: IMSDKEventListener?
   @objc public var presentationMode: IMSDKPresentationMode = .automatic
+  /// Set before initializing with hostManagedAuth=true. Provider callbacks run on main.
+  @objc public var hostSessionProvider: IMSDKHostSessionProvider? {
+    get { sessionProvider }
+    set {
+      onMain {
+        self.sessionProvider = newValue
+        self.providerRevision += 1
+        if self.initialized && self.hostManagedAuth {
+          self.notifyHostSessionChanged { _, _ in }
+        }
+      }
+    }
+  }
 
+  private var sessionProvider: IMSDKHostSessionProvider?
+  private var providerRevision = 0
+  private var hostManagedAuth = false
+  private var sdkInterfaceStyle: UIUserInterfaceStyle = .unspecified
   private var engine: FlutterEngine?
   private var channel: FlutterMethodChannel?
   private var ready = false
@@ -65,12 +93,23 @@ import UIKit
         completion(nil, self.error("SDK_STOPPING", "SDK shutdown is in progress"))
         return
       }
+      if configuration["hostManagedAuth"] as? Bool == true && self.sessionProvider == nil {
+        completion(nil, self.error("HOST_SESSION_PROVIDER_REQUIRED", "Bind a host session provider first"))
+        return
+      }
       if self.engine == nil, let failure = self.createEngine() {
         completion(nil, failure)
         return
       }
       self.enqueue(Operation("initialize", arguments: configuration, completion: completion,
-        didSucceed: { self.initialized = true }))
+        didSucceed: {
+          let firstInitialization = !self.initialized
+          self.initialized = true
+          self.hostManagedAuth = configuration["hostManagedAuth"] as? Bool == true
+          if firstInitialization {
+            self.applySDKTheme(configuration["themeMode"] as? String ?? "system")
+          }
+        }))
     }
   }
 
@@ -78,6 +117,65 @@ import UIKit
   public func authenticate(credentials: [String: Any], completion: @escaping Completion) {
     onMain {
       self.enqueueInitialized(Operation("authenticate", arguments: credentials, completion: completion))
+    }
+  }
+
+  /// Updates the SDK's own UI without changing the host window or login session.
+  @objc(updatePresentationWithSettings:completion:)
+  public func updatePresentation(settings: [String: Any], completion: @escaping Completion) {
+    onMain {
+      self.invokePriority("updatePresentation", arguments: settings, completion: completion)
+    }
+  }
+
+  /// Prepares the session before a page is opened. Does not present any UI.
+  @objc(synchronizeHostSessionWithCompletion:)
+  public func synchronizeHostSession(completion: @escaping Completion) {
+    onMain {
+      self.enqueueInitialized(Operation("synchronizeHostSession", arguments: nil, completion: completion))
+    }
+  }
+
+  /// Bypasses the normal operation queue so an in-flight authentication is invalidated now.
+  @objc(notifyHostSessionChangedWithCompletion:)
+  public func notifyHostSessionChanged(completion: @escaping Completion) {
+    onMain { self.invokePriority("notifyHostSessionChanged", completion: completion) }
+  }
+
+  private func invokePriority(_ method: String, arguments: [String: Any]? = nil,
+                              closeOnSuccess: Bool = false,
+                              completion: @escaping Completion) {
+    guard self.ready, self.initialized, !self.stopping, let channel = self.channel else {
+      completion(nil, self.error("SDK_NOT_INITIALIZED", "Initialize the SDK first"))
+      return
+    }
+    let expectedGeneration = self.generation
+    if method == "shutdown" { self.stopping = true }
+    var finished = false
+    let finish: Completion = { value, failure in
+      guard !finished else { return }
+      finished = true
+      if failure == nil && closeOnSuccess { self.closePage() }
+      completion(value, failure)
+    }
+    let timeout = DispatchWorkItem {
+      let code = method == "updatePresentation" ? "SDK_OPERATION_TIMEOUT" : "HOST_SESSION_TIMEOUT"
+      finish(nil, self.error(code, "SDK operation timed out"))
+    }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 30, execute: timeout)
+    channel.invokeMethod(method, arguments: arguments) { value in
+      self.onMain {
+        timeout.cancel()
+        guard self.generation == expectedGeneration else {
+          finish(nil, self.error("SDK_RETIRED", "This SDK engine is retired"))
+          return
+        }
+        if let failure = value as? FlutterError {
+          finish(nil, self.error(failure.code, "SDK operation failed"))
+        } else if let marker = value as? NSObject, marker === FlutterMethodNotImplemented {
+          finish(nil, self.error("SDK_METHOD_UNAVAILABLE", "SDK method is unavailable"))
+        } else { finish(value, nil) }
+      }
     }
   }
 
@@ -102,8 +200,12 @@ import UIKit
   @objc(logoutWithCompletion:)
   public func logout(completion: @escaping Completion) {
     onMain {
-      self.enqueueInitialized(Operation("logout", arguments: nil, completion: completion,
-        didSucceed: { self.closePage() }))
+      if self.hostManagedAuth {
+        self.invokePriority("logout", closeOnSuccess: true, completion: completion)
+      } else {
+        self.enqueueInitialized(Operation("logout", arguments: nil, completion: completion,
+          didSucceed: { self.closePage() }))
+      }
     }
   }
 
@@ -116,6 +218,12 @@ import UIKit
         return
       }
       guard self.engine != nil else { completion(nil, nil); return }
+      if self.hostManagedAuth && self.ready && self.initialized {
+        self.invokePriority("shutdown") { value, failure in
+          self.disposeEngine(reason: "SDK_SHUTDOWN") { completion(value, failure) }
+        }
+        return
+      }
       self.stopping = true
       self.enqueue(Operation("shutdown", arguments: nil, completion: completion,
         didFinish: { finished in self.disposeEngine(reason: "SDK_SHUTDOWN", completion: finished) }))
@@ -162,6 +270,10 @@ import UIKit
     case "event":
       let payload = call.arguments as? [String: Any] ?? [:]
       if payload["type"] as? String == "ready" { markReady() }
+      if payload["type"] as? String == "presentationChanged" {
+        let settings = payload["data"] as? [String: Any] ?? payload
+        if let mode = settings["themeMode"] as? String { applySDKTheme(mode) }
+      }
       result(nil)
       eventListener?.imSdkDidReceiveEvent(payload)
     case "ready":
@@ -170,8 +282,67 @@ import UIKit
     case "close":
       result(nil)
       closePage()
+    case "readHostSession", "fetchHostCredentials":
+      forwardHostSessionCall(call, result: result)
     default:
       result(FlutterMethodNotImplemented)
+    }
+  }
+
+  private func applySDKTheme(_ mode: String) {
+    switch mode.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+    case "light": sdkInterfaceStyle = .light
+    case "dark": sdkInterfaceStyle = .dark
+    case "system": sdkInterfaceStyle = .unspecified
+    default: return
+    }
+    enginePage?.overrideUserInterfaceStyle = sdkInterfaceStyle
+  }
+
+  private func forwardHostSessionCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    guard let provider = sessionProvider else {
+      result(FlutterError(code: "HOST_SESSION_PROVIDER_REQUIRED", message: "Bind a host session provider first", details: nil))
+      return
+    }
+    let expectedGeneration = generation
+    let expectedProvider = providerRevision
+    var finished = false
+    var timeout: DispatchWorkItem?
+    let complete: ([String: Any]?, NSError?) -> Void = { value, failure in
+      self.onMain {
+        guard !finished else { return }
+        finished = true
+        timeout?.cancel()
+        guard self.generation == expectedGeneration, self.providerRevision == expectedProvider else {
+          result(FlutterError(code: "HOST_SESSION_CHANGED", message: "Host session changed", details: nil))
+          return
+        }
+        if failure != nil {
+          let requestedCode = failure?.userInfo["code"] as? String ?? failure?.domain ?? ""
+          let allowedCodes = ["HOST_SESSION_CHANGED", "HOST_CREDENTIALS_UNAVAILABLE",
+                              "HOST_SESSION_UNAVAILABLE", "HOST_SESSION_TIMEOUT"]
+          let code = allowedCodes.contains(requestedCode) ? requestedCode : "HOST_SESSION_UNAVAILABLE"
+          result(FlutterError(code: code, message: "Host session provider failed", details: nil))
+        } else if call.method == "fetchHostCredentials" && value == nil {
+          result(FlutterError(code: "HOST_CREDENTIALS_UNAVAILABLE", message: "IM credentials are unavailable", details: nil))
+        } else { result(value) }
+      }
+    }
+    let deadline = DispatchWorkItem {
+      guard !finished else { return }
+      finished = true
+      result(FlutterError(code: "HOST_SESSION_TIMEOUT", message: "Host session provider timed out", details: nil))
+    }
+    timeout = deadline
+    DispatchQueue.main.asyncAfter(deadline: .now() + 20, execute: deadline)
+    if call.method == "readHostSession" {
+      provider.imSdkReadHostSession(completion: complete)
+    } else {
+      guard let snapshot = call.arguments as? [String: Any] else {
+        complete(nil, error("INVALID_ARGUMENT", "A host session snapshot is required"))
+        return
+      }
+      provider.imSdkFetchCredentials(forHostSession: snapshot, completion: complete)
     }
   }
 
@@ -300,6 +471,7 @@ import UIKit
       enginePage = controller
     }
     controller.modalPresentationStyle = .fullScreen
+    controller.overrideUserInterfaceStyle = sdkInterfaceStyle
     page = controller
     if shouldPush { navigation?.pushViewController(controller, animated: true) }
     else { presenter.present(controller, animated: true) }
@@ -340,6 +512,7 @@ import UIKit
     operationTimeout = nil
     ready = false
     initialized = false
+    hostManagedAuth = false
     channel?.setMethodCallHandler(nil)
     channel = nil
     let retiredEngine = engine

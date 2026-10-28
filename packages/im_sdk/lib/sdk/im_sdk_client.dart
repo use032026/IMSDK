@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +18,7 @@ import 'package:im_sdk/core/network/error_handler.dart';
 import 'package:im_sdk/core/network/site_line_manager.dart';
 import 'package:im_sdk/core/privacy/privacy_consent_service.dart';
 import 'package:im_sdk/core/providers/locale_provider.dart';
+import 'package:im_sdk/core/providers/theme_provider.dart';
 import 'package:im_sdk/core/runtime/account_runtime.dart';
 import 'package:im_sdk/core/space/account_scope.dart';
 import 'package:im_sdk/core/space/space_transition.dart';
@@ -33,9 +35,18 @@ import 'package:im_sdk/features/chat/presentation/providers/gateway_provider.dar
 import 'package:im_sdk/features/chat/presentation/controllers/media_open_controller.dart';
 import 'data/sdk_customer_service_repository.dart';
 import 'im_sdk_models.dart';
+import 'im_sdk_host_session.dart';
 
 /// Owns one authenticated runtime independently of all chat pages.
-class ImSdkClient {
+class ImSdkClient with WidgetsBindingObserver {
+  ImSdkClient() : _providerOverrides = const [];
+
+  /// A test-only dependency seam; never accepted from native configuration.
+  @visibleForTesting
+  ImSdkClient.withProviderOverrides(List<Override> overrides)
+      : _providerOverrides = List.unmodifiable(overrides);
+
+  final List<Override> _providerOverrides;
   static ImSdkClient? _owner;
   final _events = StreamController<ImSdkEvent>.broadcast();
   final ValueNotifier<int> _revision = ValueNotifier(0);
@@ -52,6 +63,18 @@ class ImSdkClient {
   bool _authenticated = false;
   int _generation = 0;
   Future<void>? _disposeFuture;
+  ImSdkHostSessionProvider? _hostSessionProvider;
+  StreamSubscription<void>? _hostSessionChanges;
+  ImSdkHostSession? _authenticatedHostSession;
+  DateTime? _hostCredentialExpiry;
+  int _hostEpoch = 0;
+  Future<bool>? _hostSynchronization;
+  bool _hostForceRefreshRequested = false;
+  int _hostCredentialRevision = 0;
+  Future<void>? _hostRetirement;
+  bool _hostClosed = false;
+  int _presentationRevision = 0;
+  static const _hostCallTimeout = Duration(seconds: 15);
 
   Stream<ImSdkEvent> get events => _events.stream;
   bool get isInitialized => _root != null && !_disposed;
@@ -59,7 +82,281 @@ class ImSdkClient {
   ImSdkConfig? get config => _config;
   ValueListenable<int> get revision => _revision;
   ProviderContainer? get accountContainer => _account;
+
+  /// The root presentation scope also exists while no account is active.
+  ProviderContainer? get presentationContainer => _root;
   int get sessionRevision => _generation;
+
+  /// Applies the host's appearance choice without replacing account state or
+  /// navigation. Validate the entire update before changing either provider.
+  Future<void> updatePresentation({String? themeMode, String? locale}) async {
+    final root = _requireRoot();
+    if (_disposed || _hostClosed) {
+      throw const ImSdkException('DISPOSED', 'SDK已释放');
+    }
+    final next = ImSdkConfig.fromMap({
+      ..._config!.toMap(),
+      if (themeMode != null) 'themeMode': themeMode,
+      if (locale != null) 'locale': locale,
+    });
+    next.validate();
+    final revision = ++_presentationRevision;
+    _config = next;
+    final writes = _applyPresentation(root, next);
+    _changed();
+    await writes;
+    if (revision == _presentationRevision && !_disposed && !_hostClosed) {
+      _emit('presentationChanged', {
+        'themeMode': _config!.normalizedThemeMode,
+        'locale': _config!.normalizedLocale,
+      });
+    }
+  }
+
+  Future<void> _applyPresentation(ProviderContainer root, ImSdkConfig config) {
+    final mode = switch (config.normalizedThemeMode) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      _ => ThemeMode.system,
+    };
+    final selected = config.normalizedLocale;
+    final locale = selected == 'system'
+        ? _systemLocale()
+        : supportedLocaleFromTag(selected)!;
+    return Future.wait<void>([
+      root.read(themeModeProvider.notifier).setThemeMode(mode),
+      root.read(localeProvider.notifier).setLocale(locale),
+    ]).then<void>((_) {});
+  }
+
+  Locale _systemLocale() {
+    for (final locale in WidgetsBinding.instance.platformDispatcher.locales) {
+      final supported = normalizedSupportedLocale(locale);
+      if (supported != null) return supported;
+    }
+    return const Locale('zh', 'CN');
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (_root != null &&
+        !_hostClosed &&
+        !_disposed &&
+        _config?.normalizedLocale == 'system') {
+      unawaited(
+          _root!.read(localeProvider.notifier).setLocale(_systemLocale()));
+      _changed();
+    }
+  }
+
+  /// Bind once, either before or after initialize. Host callbacks never run in
+  /// the operation queue, so logout can invalidate a slow credential request.
+  void bindHostSessionProvider(ImSdkHostSessionProvider provider) {
+    if (_disposed || _hostClosed) {
+      throw const ImSdkException('DISPOSED', 'SDK已释放');
+    }
+    if (identical(_hostSessionProvider, provider)) return;
+    if (_hostSessionProvider != null) {
+      throw const ImSdkException('HOST_PROVIDER_CONFLICT', '宿主登录状态提供方已绑定');
+    }
+    _hostSessionProvider = provider;
+    _hostSessionChanges = provider.changes.listen((_) {
+      unawaited(notifyHostSessionChanged().catchError((Object _) => false));
+    }, onError: (Object _) {
+      _emit('hostAuthenticationFailed', {'code': 'HOST_AUTH_UNAVAILABLE'});
+    });
+  }
+
+  /// Rechecks the host on every entry/resume. Cached SDK credentials are used
+  /// only after the host confirms the same login incarnation.
+  Future<bool> synchronizeHostSession({bool forceRefresh = false}) {
+    if (_disposed || _hostClosed) {
+      return Future.error(const ImSdkException('DISPOSED', 'SDK已释放'));
+    }
+    _requireRoot();
+    if (_config?.hostManagedAuth != true) return Future.value(isAuthenticated);
+    if (_hostSessionProvider == null) {
+      return Future.error(
+          const ImSdkException('HOST_AUTH_PROVIDER_MISSING', '应用尚未连接登录状态'));
+    }
+    final inFlight = _hostSynchronization;
+    if (inFlight != null) {
+      if (!forceRefresh) return inFlight;
+      _hostForceRefreshRequested = true;
+      final revision = _hostCredentialRevision;
+      final epoch = _hostEpoch;
+      return inFlight.then((ready) {
+        _ensureHostEpoch(epoch);
+        // An arriving forced request must not be lost if the cached check
+        // already finished but its completion is still queued as a microtask.
+        if (ready && revision == _hostCredentialRevision) {
+          return synchronizeHostSession(forceRefresh: true);
+        }
+        return ready;
+      });
+    }
+    final epoch = _hostEpoch;
+    _hostForceRefreshRequested = forceRefresh;
+    late final Future<bool> operation;
+    operation = _synchronizeHostSession(epoch, forceRefresh).whenComplete(() {
+      if (identical(_hostSynchronization, operation)) {
+        _hostSynchronization = null;
+      }
+    });
+    _hostSynchronization = operation;
+    return operation;
+  }
+
+  /// Call immediately after the host changes login state. Invalidating the
+  /// previous operation is synchronous, including while profile verification
+  /// or a platform callback is still pending.
+  Future<bool> notifyHostSessionChanged() {
+    if (_disposed || _hostClosed) return Future.value(false);
+    _invalidateHostOperation();
+    if (_root == null || _config?.hostManagedAuth != true) {
+      return Future.value(false);
+    }
+    _startHostRetirement();
+    return synchronizeHostSession();
+  }
+
+  void _invalidateHostOperation({bool forgetSession = false}) {
+    ++_hostEpoch;
+    _hostSynchronization = null;
+    if (forgetSession) _authenticatedHostSession = null;
+    _hostCredentialExpiry = null;
+    if (_config?.hostManagedAuth == true) {
+      _root?.read(authProvider.notifier).invalidateExternalSessionOperation();
+      ++_generation;
+      _authenticated = false;
+      _changed();
+    }
+  }
+
+  void _ensureHostEpoch(int epoch) {
+    if (_disposed || _hostClosed || epoch != _hostEpoch) {
+      throw const ImSdkException('HOST_SESSION_CHANGED', '应用登录状态已变化');
+    }
+  }
+
+  Future<ImSdkHostSession?> _readHostSession(int epoch) async {
+    _ensureHostEpoch(epoch);
+    final session =
+        await _hostSessionProvider!.readSession().timeout(_hostCallTimeout);
+    _ensureHostEpoch(epoch);
+    session?.validate();
+    return session;
+  }
+
+  Future<void> _verifyHostSession(int epoch, ImSdkHostSession expected) async {
+    final latest = await _readHostSession(epoch);
+    if (latest != expected) {
+      _invalidateHostOperation(forgetSession: true);
+      _startHostRetirement();
+      throw const ImSdkException('HOST_SESSION_CHANGED', '应用登录状态已变化');
+    }
+  }
+
+  Future<void> _startHostRetirement() {
+    final inFlight = _hostRetirement;
+    if (inFlight != null) return inFlight;
+    final root = _root;
+    if (root == null) return Future.value();
+    late final Future<void> operation;
+    operation = (() async {
+      final auth = root.read(authProvider.notifier);
+      await auth.logout();
+      await auth.waitForLogoutCleanup();
+      _installRuntime(null);
+    })()
+        .whenComplete(() {
+      if (identical(_hostRetirement, operation)) _hostRetirement = null;
+    });
+    _hostRetirement = operation;
+    unawaited(operation.catchError((Object _) {
+      _emit('hostAuthenticationFailed', {'code': 'HOST_AUTH_UNAVAILABLE'});
+    }));
+    return operation;
+  }
+
+  Future<bool> _synchronizeHostSession(int epoch, bool forceRefresh) async {
+    try {
+      final session = await _readHostSession(epoch);
+      if (session == null) {
+        _authenticatedHostSession = null;
+        _hostCredentialExpiry = null;
+        _authenticated = false;
+        _changed();
+        await _startHostRetirement();
+        _ensureHostEpoch(epoch);
+        _emit('loggedOut');
+        return false;
+      }
+      final retirement = _hostRetirement;
+      if (retirement != null) {
+        await retirement;
+        await _verifyHostSession(epoch, session);
+      }
+      if (_authenticatedHostSession != null &&
+          _authenticatedHostSession != session) {
+        _authenticated = false;
+        ++_generation;
+        _changed();
+        _root!.read(authProvider.notifier).invalidateExternalSessionOperation();
+        await _startHostRetirement();
+        await _verifyHostSession(epoch, session);
+      }
+      if (!forceRefresh &&
+          !_hostForceRefreshRequested &&
+          session == _authenticatedHostSession &&
+          isAuthenticated &&
+          _hostCredentialExpiry
+                  ?.isAfter(DateTime.now().add(const Duration(seconds: 30))) ==
+              true) {
+        return true;
+      }
+      final credentials = await _hostSessionProvider!
+          .fetchCredentials(session)
+          .timeout(_hostCallTimeout);
+      await _verifyHostSession(epoch, session);
+      await _serial(() async {
+        await _verifyHostSession(epoch, session);
+        await _authenticateCredentials(credentials,
+            publishAuthentication: false,
+            externalOperationIsCurrent: () =>
+                epoch == _hostEpoch && !_hostClosed && !_disposed,
+            verifyExternalSession: () => _verifyHostSession(epoch, session));
+        await _verifyHostSession(epoch, session);
+        _authenticatedHostSession = session;
+        _hostCredentialExpiry = credentials.expiresAt;
+        ++_hostCredentialRevision;
+        _authenticated = true;
+        _changed();
+        _emit('authenticated', {'spaceId': credentials.spaceId});
+      });
+      _ensureHostEpoch(epoch);
+      return isAuthenticated;
+    } catch (error) {
+      if (epoch != _hostEpoch || _hostClosed || _disposed) {
+        throw const ImSdkException('HOST_SESSION_CHANGED', '应用登录状态已变化');
+      }
+      // A failed host query is not proof of logout. Keep a confirmed current
+      // session on network failure; a new entry presents an inline retry.
+      const publicCodes = {
+        'HOST_CREDENTIALS_UNAVAILABLE',
+        'HOST_SESSION_CHANGED',
+        'HOST_SESSION_UNAVAILABLE',
+        'HOST_SESSION_TIMEOUT',
+      };
+      final code = error is ImSdkException && publicCodes.contains(error.code)
+          ? error.code
+          : error is TimeoutException
+              ? 'HOST_SESSION_TIMEOUT'
+              : 'HOST_AUTH_UNAVAILABLE';
+      _emit('hostAuthenticationFailed', {'code': code});
+      throw ImSdkException(code, '聊天服务暂不可用，请重试');
+    }
+  }
 
   Future<T> _serial<T>(Future<T> Function() action) {
     if (_disposed)
@@ -75,7 +372,7 @@ class ImSdkClient {
   Future<void> initialize(ImSdkConfig config) => _serial(() async {
         config.validate();
         if (_root != null) {
-          if (_config == config) return;
+          if (_config!.hasSameRuntimeConfiguration(config)) return;
           throw const ImSdkException('CONFIG_CONFLICT', '已初始化SDK不能切换配置');
         }
         if (_owner != null && !identical(_owner, this)) {
@@ -110,13 +407,13 @@ class ImSdkClient {
             accountStorageRegistryProvider.overrideWith((ref) async =>
                 AccountStorageRegistry(documentsRoot: directory)),
             privacyConsentControllerProvider.overrideWith((ref) => consent),
+            ..._providerOverrides,
           ]);
           _root = root;
           _config = config;
           await root.read(authProvider.future);
-          final locale = supportedLocaleFromTag(config.locale);
-          if (locale != null)
-            await root.read(localeProvider.notifier).setLocale(locale);
+          await _applyPresentation(root, config);
+          WidgetsBinding.instance.addObserver(this);
           _runtimeSubscription = root.listen(activeAccountRuntimeProvider,
               (_, runtime) => _installRuntime(runtime),
               fireImmediately: true);
@@ -126,6 +423,11 @@ class ImSdkClient {
               _authenticated = false;
               _emit('authenticationRequired');
               _changed();
+              if (_config?.hostManagedAuth == true &&
+                  _authenticatedHostSession != null) {
+                unawaited(synchronizeHostSession(forceRefresh: true)
+                    .catchError((Object _) => false));
+              }
             }
           });
           _emit('initialized');
@@ -144,31 +446,50 @@ class ImSdkClient {
       });
 
   Future<void> authenticate(ImSdkCredentials credentials) => _serial(() async {
-        final root = _requireRoot();
-        _authenticated = false;
-        _generation++;
-        _changed();
-        credentials.validate();
-        final scope = AccountScope.tryCreate(
-            serviceRealmId: _config!.serviceRealmId,
-            platformUserId: credentials.platformUserId,
-            spaceId: credentials.spaceId,
-            userId: credentials.userId)!;
-        await root.read(authProvider.notifier).acceptExternalSession(
-            scope: scope,
-            credentials: SessionCredentials(
-                tenantAccessToken: credentials.accessToken,
-                tenantRefreshToken: credentials.refreshToken,
-                platformAccessToken: credentials.platformToken,
-                platformRefreshToken: credentials.platformRefreshToken,
-                deviceSessionToken: credentials.deviceSessionToken),
-            issuedAt: DateTime.now().toUtc(),
-            expiresAt: credentials.expiresAt.toUtc());
-        await _waitForRuntime(scope);
-        _authenticated = true;
-        _changed();
-        _emit('authenticated', {'spaceId': scope.spaceId});
+        if (_config?.hostManagedAuth == true) {
+          throw const ImSdkException('HOST_AUTH_MANAGED', '请通过应用登录状态同步聊天');
+        }
+        await _authenticateCredentials(credentials);
       });
+
+  Future<void> _authenticateCredentials(ImSdkCredentials credentials,
+      {bool publishAuthentication = true,
+      bool Function()? externalOperationIsCurrent,
+      Future<void> Function()? verifyExternalSession}) async {
+    final root = _requireRoot();
+    _authenticated = false;
+    _generation++;
+    _changed();
+    credentials.validate();
+    final scope = AccountScope.tryCreate(
+        serviceRealmId: _config!.serviceRealmId,
+        platformUserId: credentials.platformUserId,
+        spaceId: credentials.spaceId,
+        userId: credentials.userId)!;
+    await root.read(authProvider.notifier).acceptExternalSession(
+        scope: scope,
+        credentials: SessionCredentials(
+            tenantAccessToken: credentials.accessToken,
+            tenantRefreshToken: credentials.refreshToken,
+            platformAccessToken: credentials.platformToken,
+            platformRefreshToken: credentials.platformRefreshToken,
+            deviceSessionToken: credentials.deviceSessionToken),
+        issuedAt: DateTime.now().toUtc(),
+        expiresAt: credentials.expiresAt.toUtc(),
+        externalOperationIsCurrent: externalOperationIsCurrent,
+        verifyExternalSession: verifyExternalSession);
+    await _waitForRuntime(scope,
+        operationIsCurrent: externalOperationIsCurrent);
+    await verifyExternalSession?.call();
+    if (externalOperationIsCurrent?.call() == false) {
+      throw const ImSdkException('HOST_SESSION_CHANGED', '应用登录状态已变化');
+    }
+    if (publishAuthentication) {
+      _authenticated = true;
+      _changed();
+      _emit('authenticated', {'spaceId': scope.spaceId});
+    }
+  }
 
   /// Uses the existing IM authentication service. Other-app account integration
   /// must be implemented by that service; passwords are never stored by this API.
@@ -302,6 +623,9 @@ class ImSdkClient {
           String? captchaAnswer}) =>
       _serial(() async {
         final root = _requireRoot();
+        if (_config?.hostManagedAuth == true) {
+          throw const ImSdkException('HOST_AUTH_MANAGED', '请通过应用登录状态同步聊天');
+        }
         _validateRegistrationIdentifier(identifier, channel);
         _validateCaptcha(captchaToken, captchaAnswer);
         if (displayName.trim().isEmpty || password.length < 6) {
@@ -379,6 +703,9 @@ class ImSdkClient {
       });
 
   ImSdkPasswordLoginConfig _requirePasswordLogin() {
+    if (_config?.hostManagedAuth == true) {
+      throw const ImSdkException('HOST_AUTH_MANAGED', '请通过应用登录状态同步聊天');
+    }
     final login = _config?.passwordLogin;
     if (login == null) {
       throw const ImSdkException(
@@ -389,38 +716,61 @@ class ImSdkClient {
   }
 
   Future<ImSdkCustomerServiceSession> requestCustomerService(
-          ImSdkCustomerServiceRequest request) =>
-      _serial(() async {
-        _requireAuthenticated();
-        final generation = _generation;
-        final result =
-            await SdkCustomerServiceRepository(_account!.read(dioProvider))
-                .request(request);
-        if (generation != _generation || !isAuthenticated) {
-          throw const ImSdkException('SESSION_CHANGED', '客服请求所属账号已变化');
-        }
-        _emit('customerServiceChanged', result.toMap());
-        return result;
-      });
+      ImSdkCustomerServiceRequest request) async {
+    final epoch = await _synchronizeProtectedEntry();
+    return _serial(() async {
+      if (epoch != null) _ensureHostEpoch(epoch);
+      _requireAuthenticated();
+      final generation = _generation;
+      final result =
+          await SdkCustomerServiceRepository(_account!.read(dioProvider))
+              .request(request);
+      if (generation != _generation || !isAuthenticated) {
+        throw const ImSdkException('SESSION_CHANGED', '客服请求所属账号已变化');
+      }
+      _emit('customerServiceChanged', result.toMap());
+      return result;
+    });
+  }
 
   /// Target-only API. Use requestCustomerService + the service view to retain
   /// queued/unknown states instead of receiving SERVICE_QUEUED/NOT_READY.
   Future<ImSdkDirectConversation> contactCustomerService(
-          ImSdkCustomerServiceRequest request) =>
-      _serial(() async {
-        _requireAuthenticated();
-        final generation = _generation;
-        final result =
-            await SdkCustomerServiceRepository(_account!.read(dioProvider))
-                .contact(request);
-        if (generation != _generation || !isAuthenticated) {
-          throw const ImSdkException('SESSION_CHANGED', '客服请求所属账号已变化');
-        }
-        return result;
-      });
+      ImSdkCustomerServiceRequest request) async {
+    final epoch = await _synchronizeProtectedEntry();
+    return _serial(() async {
+      if (epoch != null) _ensureHostEpoch(epoch);
+      _requireAuthenticated();
+      final generation = _generation;
+      final result =
+          await SdkCustomerServiceRepository(_account!.read(dioProvider))
+              .contact(request);
+      if (generation != _generation || !isAuthenticated) {
+        throw const ImSdkException('SESSION_CHANGED', '客服请求所属账号已变化');
+      }
+      return result;
+    });
+  }
+
+  Future<int?> _synchronizeProtectedEntry() async {
+    if (_config?.hostManagedAuth != true) return null;
+    if (!await synchronizeHostSession()) {
+      throw const ImSdkException('HOST_NOT_AUTHENTICATED', '请先登录当前应用');
+    }
+    return _hostEpoch;
+  }
 
   /// Deactivates this SDK session locally using the existing auth owner.
-  Future<void> logout() => _serial(_logout);
+  Future<void> logout() {
+    _invalidateHostOperation(forgetSession: true);
+    final retirement =
+        _config?.hostManagedAuth == true ? _startHostRetirement() : null;
+    return _serial(() async {
+      await retirement;
+      await _logout();
+    });
+  }
+
   Future<void> _logout() async {
     final root = _requireRoot();
     _generation++;
@@ -431,41 +781,51 @@ class ImSdkClient {
     _emit('loggedOut');
   }
 
-  Future<void> dispose() => _disposeFuture ??= _serial(() async {
-        Object? failure;
-        Future<void> attempt(FutureOr<void> Function() action) async {
-          try {
-            await action();
-          } catch (error) {
-            failure ??= error;
-          }
+  Future<void> dispose() {
+    if (_disposeFuture != null) return _disposeFuture!;
+    _invalidateHostOperation(forgetSession: true);
+    _hostClosed = true;
+    WidgetsBinding.instance.removeObserver(this);
+    final retirement =
+        _config?.hostManagedAuth == true ? _startHostRetirement() : null;
+    return _disposeFuture = _serial(() async {
+      Object? failure;
+      Future<void> attempt(FutureOr<void> Function() action) async {
+        try {
+          await action();
+        } catch (error) {
+          failure ??= error;
         }
+      }
 
-        _generation++;
-        _authenticated = false;
-        await attempt(() => _installRuntime(null));
-        _authSubscription?.close();
-        _runtimeSubscription?.close();
-        final root = _root;
-        final runtime = root?.read(accountRuntimeProvider).valueOrNull;
-        // Logout publishes its foreground state before credential deletion
-        // finishes. Its owner must remain alive until that work has drained.
-        await attempt(
-            () => root?.read(authProvider.notifier).waitForLogoutCleanup());
-        _root = null;
-        TokenRefreshService.instance.stop();
-        if (runtime != null) await attempt(runtime.retire);
-        await attempt(() => root?.read(httpClientProvider).close());
-        await attempt(() => root?.dispose());
-        await attempt(HiveStorage.closeForSdk);
-        _config = null;
-        if (identical(_owner, this)) _owner = null;
-        _disposed = true;
-        _changed();
-        await _events.close();
-        if (failure != null)
-          throw const ImSdkException('CLEANUP_FAILED', 'SDK已停止，部分本地资源清理失败');
-      });
+      _generation++;
+      _authenticated = false;
+      await attempt(() => _hostSessionChanges?.cancel());
+      await attempt(() => retirement);
+      await attempt(() => _installRuntime(null));
+      _authSubscription?.close();
+      _runtimeSubscription?.close();
+      final root = _root;
+      final runtime = root?.read(accountRuntimeProvider).valueOrNull;
+      // Logout publishes its foreground state before credential deletion
+      // finishes. Its owner must remain alive until that work has drained.
+      await attempt(
+          () => root?.read(authProvider.notifier).waitForLogoutCleanup());
+      _root = null;
+      TokenRefreshService.instance.stop();
+      if (runtime != null) await attempt(runtime.retire);
+      await attempt(() => root?.read(httpClientProvider).close());
+      await attempt(() => root?.dispose());
+      await attempt(HiveStorage.closeForSdk);
+      _config = null;
+      if (identical(_owner, this)) _owner = null;
+      _disposed = true;
+      _changed();
+      await _events.close();
+      if (failure != null)
+        throw const ImSdkException('CLEANUP_FAILED', 'SDK已停止，部分本地资源清理失败');
+    });
+  }
 
   ProviderContainer _requireRoot() =>
       _root ?? (throw const ImSdkException('NOT_INITIALIZED', '请先初始化SDK'));
@@ -534,16 +894,29 @@ class ImSdkClient {
     _changed();
   }
 
-  Future<void> _waitForRuntime(AccountScope scope) async {
+  Future<void> _waitForRuntime(AccountScope scope,
+      {bool Function()? operationIsCurrent}) async {
     final root = _requireRoot();
     final complete = Completer<void>();
+    void checkOperation() {
+      if (operationIsCurrent?.call() == false && !complete.isCompleted) {
+        complete.completeError(
+            const ImSdkException('HOST_SESSION_CHANGED', '应用登录状态已变化'));
+      }
+    }
+
+    if (operationIsCurrent?.call() == false) {
+      throw const ImSdkException('HOST_SESSION_CHANGED', '应用登录状态已变化');
+    }
     bool matches(AccountRuntime? runtime) =>
         runtime?.session.scope == scope &&
         runtime?.lifecycle == AccountRuntimeLifecycle.active;
     if (matches(root.read(activeAccountRuntimeProvider))) return;
     final subscription = root.listen(activeAccountRuntimeProvider, (_, next) {
+      checkOperation();
       if (matches(next) && !complete.isCompleted) complete.complete();
     }, fireImmediately: true);
+    _revision.addListener(checkOperation);
     final errors = root.listen(accountRuntimeProvider, (_, next) {
       if (next.hasError && !complete.isCompleted)
         complete.completeError(
@@ -554,6 +927,7 @@ class ImSdkClient {
     } finally {
       subscription.close();
       errors.close();
+      _revision.removeListener(checkOperation);
     }
   }
 }

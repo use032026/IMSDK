@@ -68,6 +68,10 @@ Flutter 工具链固定为 `.flutter-version` 的 **3.41.9**。先执行 `./scri
 
 ## 账号与生命周期
 
+SDK 主题和语言可由宿主统一配置并运行时更新，支持深浅 / 系统主题与六种语言 / 系统语言，见 [宿主管理主题与语言](docs/HOST_PRESENTATION_SYNC.md)。该能力独立于登录同步，无需重新认证。
+
+宿主自动同步登录态的新增源码接入使用 `hostManagedAuth: true` 和宿主 session provider，见 [宿主管理登录态](docs/HOST_SESSION_SYNC.md)；[MediaServiceClient 参考适配](docs/MEDIASERVICECLIENT_HOST_SESSION.md) 仅位于本 SDK 内，尚未集成到真实宿主。新增接口尚未重建进既有 Release 二进制 / 交付快照，真实静默登录仍需后端 IM 换票契约。
+
 其他 App 账号与 IM 账号的打通由服务端负责：建立稳定身份映射，签发、刷新 IM 凭证并校验权限。相同用户名或宿主 token 不能直接代表同一 IM 用户。SDK 不包含服务端密钥或生产签名。
 
 移动端每个 Flutter isolate 支持一个 SDK runtime 和一个活跃账号 / 空间；Web 每个实例只有一个活跃账号 / 空间。关闭页面保留会话，退出账号与释放整个 SDK 分别调用对应 API。系统后台、终止和通知恢复仍需宿主集成，不保证后台连接常驻。

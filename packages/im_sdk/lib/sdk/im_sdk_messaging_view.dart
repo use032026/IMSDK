@@ -42,6 +42,7 @@ import 'package:im_sdk/l10n/app_localizations.dart';
 
 import 'im_sdk_client.dart';
 import 'im_sdk_models.dart';
+import 'im_sdk_presentation.dart';
 import 'im_sdk_registration_page.dart';
 
 /// The primary SDK UI: password login, conversations, and direct/group chats.
@@ -63,6 +64,13 @@ class ImSdkMessagingView extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
         valueListenable: client.revision,
         builder: (context, _, __) {
+          if ((client.config ?? configuration)?.hostManagedAuth == true) {
+            return _HostManagedMessagingView(
+                key: ValueKey(client),
+                client: client,
+                configuration: configuration,
+                onClose: onClose);
+          }
           final account = client.accountContainer;
           if (client.isAuthenticated && account != null) {
             return UncontrolledProviderScope(
@@ -73,10 +81,10 @@ class ImSdkMessagingView extends StatelessWidget {
               ),
             );
           }
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            home: _PasswordLoginPage(
+          return SdkPresentationApp(
+            client: client,
+            configuration: configuration,
+            homeBuilder: (_) => _PasswordLoginPage(
               client: client,
               configuration: configuration,
               onClose: onClose,
@@ -84,6 +92,141 @@ class ImSdkMessagingView extends StatelessWidget {
           );
         },
       );
+}
+
+/// Host authentication never falls through to the SDK's password UI. The
+/// first frame is a stable conversation shell while the local host snapshot
+/// is checked; credential exchange runs without a modal or progress overlay.
+class _HostManagedMessagingView extends StatefulWidget {
+  const _HostManagedMessagingView(
+      {super.key, required this.client, this.configuration, this.onClose});
+  final ImSdkClient client;
+  final ImSdkConfig? configuration;
+  final VoidCallback? onClose;
+
+  @override
+  State<_HostManagedMessagingView> createState() =>
+      _HostManagedMessagingViewState();
+}
+
+class _HostManagedMessagingViewState extends State<_HostManagedMessagingView>
+    with WidgetsBindingObserver {
+  bool _entryChecked = false;
+  int _checkRevision = 0;
+  bool _failed = false;
+  bool _signedOut = false;
+  StreamSubscription<ImSdkEvent>? _events;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _events = widget.client.events.listen((event) {
+      if (!mounted) return;
+      if (event.type == 'hostAuthenticationFailed') {
+        ++_checkRevision;
+        setState(() {
+          _entryChecked = false;
+          _failed = true;
+        });
+      } else if (event.type == 'authenticated') {
+        ++_checkRevision;
+        setState(() {
+          _entryChecked = true;
+          _failed = false;
+          _signedOut = false;
+        });
+      } else if (event.type == 'loggedOut') {
+        ++_checkRevision;
+        setState(() {
+          _entryChecked = false;
+          _signedOut = true;
+          _failed = false;
+        });
+      }
+    });
+    unawaited(_synchronize());
+  }
+
+  Future<void> _synchronize() async {
+    final revision = ++_checkRevision;
+    setState(() {
+      _entryChecked = false;
+      _failed = false;
+      _signedOut = false;
+    });
+    try {
+      if (!widget.client.isInitialized) {
+        final configuration = widget.configuration;
+        if (configuration == null) {
+          throw const ImSdkException('NOT_INITIALIZED', '聊天服务暂不可用');
+        }
+        await widget.client.initialize(configuration);
+      }
+      final authenticated = await widget.client.synchronizeHostSession();
+      if (mounted && revision == _checkRevision) {
+        setState(() {
+          _entryChecked = true;
+          _signedOut = !authenticated;
+          _failed = false;
+        });
+      }
+    } catch (_) {
+      if (mounted && revision == _checkRevision) {
+        setState(() => _failed = true);
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(_synchronize());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_events?.cancel());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final account = widget.client.accountContainer;
+    if (_entryChecked &&
+        !_failed &&
+        widget.client.isAuthenticated &&
+        account != null) {
+      return UncontrolledProviderScope(
+        container: account,
+        child: _MessagingNavigator(
+          key: ValueKey((widget.client, widget.client.sessionRevision)),
+          onClose: widget.onClose,
+          silentLoading: true,
+        ),
+      );
+    }
+    return SdkPresentationApp(
+      client: widget.client,
+      configuration: widget.configuration,
+      homeBuilder: (context) => Scaffold(
+        appBar: AppBar(
+          title: Text(sdkText(context, '会话')),
+          leading: widget.onClose == null
+              ? null
+              : IconButton(
+                  tooltip: sdkText(context, '关闭'),
+                  onPressed: widget.onClose,
+                  icon: const Icon(Icons.close)),
+        ),
+        body: _failed
+            ? _RetryView(message: '聊天服务暂不可用', retry: _synchronize)
+            : _signedOut
+                ? Center(child: Text(sdkText(context, '请先登录当前应用')))
+                : const SizedBox.expand(),
+      ),
+    );
+  }
 }
 
 class _PasswordLoginPage extends StatefulWidget {
@@ -207,11 +350,11 @@ class _PasswordLoginPageState extends State<_PasswordLoginPage> {
         (widget.client.config ?? widget.configuration)?.passwordLogin != null;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('聊天'),
+        title: Text(sdkText(context, '聊天')),
         leading: widget.onClose == null
             ? null
             : IconButton(
-                tooltip: '关闭',
+                tooltip: sdkText(context, '关闭'),
                 icon: const Icon(Icons.close),
                 onPressed: widget.onClose),
       ),
@@ -228,15 +371,15 @@ class _PasswordLoginPageState extends State<_PasswordLoginPage> {
                   children: [
                     const Icon(Icons.forum_outlined, size: 52),
                     const SizedBox(height: 24),
-                    Text('登录聊天',
+                    Text(sdkText(context, '登录聊天'),
                         style: Theme.of(context).textTheme.headlineSmall),
                     const SizedBox(height: 8),
-                    const Text('登录后即可查看会话，与好友和群成员聊天'),
+                    Text(sdkText(context, '登录后即可查看会话，与好友和群成员聊天')),
                     const SizedBox(height: 28),
                     if (!configured)
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(bottom: 20),
-                        child: Text('接入方尚未配置聊天服务，请联系应用提供方'),
+                        child: Text(sdkText(context, '接入方尚未配置聊天服务，请联系应用提供方')),
                       ),
                     TextFormField(
                       key: const ValueKey('messaging.account'),
@@ -245,10 +388,12 @@ class _PasswordLoginPageState extends State<_PasswordLoginPage> {
                       autocorrect: false,
                       enableSuggestions: false,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                          labelText: '账号', border: OutlineInputBorder()),
-                      validator: (value) =>
-                          value?.trim().isEmpty != false ? '请输入账号' : null,
+                      decoration: InputDecoration(
+                          labelText: sdkText(context, '账号'),
+                          border: OutlineInputBorder()),
+                      validator: (value) => value?.trim().isEmpty != false
+                          ? sdkText(context, '请输入账号')
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -260,10 +405,12 @@ class _PasswordLoginPageState extends State<_PasswordLoginPage> {
                       enableSuggestions: false,
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _login(),
-                      decoration: const InputDecoration(
-                          labelText: '密码', border: OutlineInputBorder()),
-                      validator: (value) =>
-                          value?.isEmpty != false ? '请输入密码' : null,
+                      decoration: InputDecoration(
+                          labelText: sdkText(context, '密码'),
+                          border: OutlineInputBorder()),
+                      validator: (value) => value?.isEmpty != false
+                          ? sdkText(context, '请输入密码')
+                          : null,
                     ),
                     if (!widget.client.isInitialized) ...[
                       const SizedBox(height: 12),
@@ -275,7 +422,7 @@ class _PasswordLoginPageState extends State<_PasswordLoginPage> {
                             ? null
                             : (value) =>
                                 setState(() => _consent = value == true),
-                        title: const Text('我已了解并同意使用聊天服务'),
+                        title: Text(sdkText(context, '我已了解并同意使用聊天服务')),
                         controlAffinity: ListTileControlAffinity.leading,
                       ),
                     ],
@@ -284,7 +431,7 @@ class _PasswordLoginPageState extends State<_PasswordLoginPage> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Semantics(
                             liveRegion: true,
-                            child: Text(_error!,
+                            child: Text(sdkErrorText(context, _error!),
                                 style: TextStyle(
                                     color:
                                         Theme.of(context).colorScheme.error))),
@@ -293,12 +440,12 @@ class _PasswordLoginPageState extends State<_PasswordLoginPage> {
                     FilledButton(
                       key: const ValueKey('messaging.login'),
                       onPressed: _busy || !configured ? null : _login,
-                      child: Text(_busy ? '正在登录…' : '登录'),
+                      child: Text(sdkText(context, _busy ? '正在登录…' : '登录')),
                     ),
                     TextButton(
                       key: const ValueKey('messaging.register'),
                       onPressed: _busy || !configured ? null : _register,
-                      child: const Text('注册账号'),
+                      child: Text(sdkText(context, '注册账号')),
                     ),
                   ],
                 ),
@@ -348,7 +495,7 @@ class _LoginCaptchaDialogState extends State<_LoginCaptchaDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: const Text('登录验证'),
+        title: Text(sdkText(context, '登录验证')),
         content: TextField(
           controller: _answer,
           autofocus: true,
@@ -357,17 +504,20 @@ class _LoginCaptchaDialogState extends State<_LoginCaptchaDialog> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: const Text('取消')),
+              onPressed: () => Navigator.pop(context),
+              child: Text(sdkText(context, '取消'))),
           TextButton(
               onPressed: () => Navigator.pop(context, _answer.text.trim()),
-              child: const Text('确定')),
+              child: Text(sdkText(context, '确定'))),
         ],
       );
 }
 
 class _MessagingNavigator extends ConsumerStatefulWidget {
-  const _MessagingNavigator({super.key, this.onClose});
+  const _MessagingNavigator(
+      {super.key, this.onClose, this.silentLoading = false});
   final VoidCallback? onClose;
+  final bool silentLoading;
 
   @override
   ConsumerState<_MessagingNavigator> createState() =>
@@ -379,7 +529,8 @@ class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
     routes: [
       GoRoute(
           path: '/',
-          builder: (_, __) => _ConversationsPage(onClose: widget.onClose)),
+          builder: (_, __) => _ConversationsPage(
+              onClose: widget.onClose, silentLoading: widget.silentLoading)),
       GoRoute(path: '/new-chat', builder: (_, __) => const _NewChatPage()),
       GoRoute(
           path: '/add-friend',
@@ -392,13 +543,13 @@ class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
               existingGroupId: s.extra is String ? s.extra as String : null)),
       GoRoute(
           path: '/chat/:id',
-          builder: (_, s) {
+          builder: (context, s) {
             final extra = _extra(s);
             return ChatPage(
               conversationId: s.pathParameters['id']!,
               isGroup: extra['isGroup'] == true ||
                   extra['conversationType'] == 'group',
-              title: extra['title'] as String? ?? '聊天',
+              title: extra['title'] as String? ?? sdkText(context, '聊天'),
               peerUserId: extra['peerUserId'] as String?,
               avatarUrl: extra['avatarUrl'] as String?,
               memberCount: extra['memberCount'] as int?,
@@ -499,10 +650,11 @@ class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
               subjectId: _extra(s)['subjectId'] as String? ?? '')),
     ],
     errorBuilder: (context, _) => Scaffold(
-      appBar: AppBar(title: const Text('聊天')),
+      appBar: AppBar(title: Text(sdkText(context, '聊天'))),
       body: Center(
           child: TextButton(
-              onPressed: () => _router.go('/'), child: const Text('返回会话列表'))),
+              onPressed: () => _router.go('/'),
+              child: Text(sdkText(context, '返回会话列表')))),
     ),
   );
 
@@ -534,8 +686,9 @@ Map<dynamic, dynamic> _extra(GoRouterState state) =>
     state.extra is Map ? state.extra as Map : const {};
 
 class _ConversationsPage extends ConsumerStatefulWidget {
-  const _ConversationsPage({this.onClose});
+  const _ConversationsPage({this.onClose, this.silentLoading = false});
   final VoidCallback? onClose;
+  final bool silentLoading;
   @override
   ConsumerState<_ConversationsPage> createState() => _ConversationsPageState();
 }
@@ -551,24 +704,24 @@ class _ConversationsPageState extends ConsumerState<_ConversationsPage> {
         ref.read(conversationsProvider(spaceId).notifier).refresh();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('会话'),
+        title: Text(sdkText(context, '会话')),
         leading: widget.onClose == null
             ? null
             : IconButton(
-                tooltip: '关闭',
+                tooltip: sdkText(context, '关闭'),
                 onPressed: widget.onClose,
                 icon: const Icon(Icons.close)),
         actions: [
           IconButton(
-              tooltip: '添加好友',
+              tooltip: sdkText(context, '添加好友'),
               onPressed: () => context.push('/add-friend'),
               icon: const Icon(Icons.person_add_outlined)),
           IconButton(
-              tooltip: '好友申请',
+              tooltip: sdkText(context, '好友申请'),
               onPressed: () => context.push('/new-friends'),
               icon: const Icon(Icons.mark_email_unread_outlined)),
           IconButton(
-              tooltip: '发起聊天',
+              tooltip: sdkText(context, '发起聊天'),
               onPressed: () => context.push('/new-chat'),
               icon: const Icon(Icons.add_comment_outlined)),
         ],
@@ -577,8 +730,8 @@ class _ConversationsPageState extends ConsumerState<_ConversationsPage> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: TextField(
-            decoration: const InputDecoration(
-                hintText: '搜索会话',
+            decoration: InputDecoration(
+                hintText: sdkText(context, '搜索会话'),
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder()),
             onChanged: (value) =>
@@ -587,7 +740,11 @@ class _ConversationsPageState extends ConsumerState<_ConversationsPage> {
         ),
         Expanded(
             child: conversations.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => widget.silentLoading
+              ? const SizedBox.expand()
+              : Center(
+                  child: CircularProgressIndicator(
+                      semanticsLabel: sdkText(context, '正在加载…'))),
           error: (_, __) => _RetryView(message: '会话加载失败', retry: refresh),
           data: (items) {
             final hasMore =
@@ -628,7 +785,11 @@ class _ConversationsPageState extends ConsumerState<_ConversationsPage> {
                         Padding(
                           padding: const EdgeInsets.all(40),
                           child: Text(
-                              _search.isEmpty ? '暂无会话，点击右上角发起聊天' : '没有匹配的会话',
+                              sdkText(
+                                  context,
+                                  _search.isEmpty
+                                      ? '暂无会话，点击右上角发起聊天'
+                                      : '没有匹配的会话'),
                               textAlign: TextAlign.center),
                         ),
                         if (hasMore)
@@ -636,7 +797,7 @@ class _ConversationsPageState extends ConsumerState<_ConversationsPage> {
                               onPressed: () => ref
                                   .read(conversationsProvider(spaceId).notifier)
                                   .loadMore(),
-                              child: const Text('加载更多'))
+                              child: Text(sdkText(context, '加载更多')))
                       ]);
                     }
                     if (index == visible.length) {
@@ -644,7 +805,7 @@ class _ConversationsPageState extends ConsumerState<_ConversationsPage> {
                         onPressed: () => ref
                             .read(conversationsProvider(spaceId).notifier)
                             .loadMore(),
-                        child: const Text('加载更多'),
+                        child: Text(sdkText(context, '加载更多')),
                       );
                     }
                     final item = visible[index];
@@ -701,8 +862,8 @@ class _NewChatPageState extends ConsumerState<_NewChatPage> {
       });
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('暂时无法发起聊天，请稍后重试')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(sdkText(context, '暂时无法发起聊天，请稍后重试'))));
       }
     } finally {
       if (mounted) setState(() => _opening = false);
@@ -714,36 +875,39 @@ class _NewChatPageState extends ConsumerState<_NewChatPage> {
     final space = ref.watch(currentSpaceProvider);
     final contacts = ref.watch(friendsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('发起聊天')),
+      appBar: AppBar(title: Text(sdkText(context, '发起聊天'))),
       body: Column(children: [
         ListTile(
             leading: const Icon(Icons.person_add_outlined),
-            title: const Text('添加好友'),
+            title: Text(sdkText(context, '添加好友')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/add-friend')),
         ListTile(
             leading: const Icon(Icons.mark_email_unread_outlined),
-            title: const Text('好友申请'),
+            title: Text(sdkText(context, '好友申请')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/new-friends')),
         ListTile(
           leading: const Icon(Icons.group_add_outlined),
-          title: const Text('新建群聊'),
+          title: Text(sdkText(context, '新建群聊')),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push('/create-group'),
         ),
         Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
-              decoration: const InputDecoration(
-                  hintText: '搜索联系人', prefixIcon: Icon(Icons.search)),
+              decoration: InputDecoration(
+                  hintText: sdkText(context, '搜索联系人'),
+                  prefixIcon: Icon(Icons.search)),
               onChanged: (value) =>
                   setState(() => _search = value.trim().toLowerCase()),
             )),
         if (_opening) const LinearProgressIndicator(),
         Expanded(
             child: contacts.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => Center(
+              child: CircularProgressIndicator(
+                  semanticsLabel: sdkText(context, '正在加载…'))),
           error: (_, __) => _RetryView(
               message: '联系人加载失败',
               retry: () async {
@@ -756,7 +920,8 @@ class _NewChatPageState extends ConsumerState<_NewChatPage> {
                     c.officialAccount == null &&
                     c.displayName.toLowerCase().contains(_search))
                 .toList();
-            if (visible.isEmpty) return const Center(child: Text('暂无可聊天的联系人'));
+            if (visible.isEmpty)
+              return Center(child: Text(sdkText(context, '暂无可聊天的联系人')));
             return ListView.builder(
                 itemCount: visible.length,
                 itemBuilder: (context, index) {
@@ -785,7 +950,7 @@ class _RetryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text(message),
-        TextButton(onPressed: retry, child: const Text('重试')),
+        Text(sdkText(context, message)),
+        TextButton(onPressed: retry, child: Text(sdkText(context, '重试'))),
       ]));
 }

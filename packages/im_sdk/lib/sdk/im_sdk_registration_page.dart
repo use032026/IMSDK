@@ -5,6 +5,7 @@ import 'package:im_sdk/core/utils/validators.dart';
 
 import 'im_sdk_client.dart';
 import 'im_sdk_models.dart';
+import 'im_sdk_presentation.dart';
 
 /// Personal registration inside the SDK's unauthenticated navigator.
 class ImSdkRegistrationPage extends StatefulWidget {
@@ -110,7 +111,7 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
         if (_countdown <= 0) timer.cancel();
       });
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('验证码已发送')));
+          .showSnackBar(SnackBar(content: Text(sdkText(context, '验证码已发送'))));
     } on ImSdkException catch (error) {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
@@ -182,7 +183,7 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
     final available = _settings?.isEnabled(_channel) == true;
     final enabled = !_busy && !_created && available;
     return Scaffold(
-      appBar: AppBar(title: const Text('注册账号')),
+      appBar: AppBar(title: Text(sdkText(context, '注册账号'))),
       body: SafeArea(
           child: Center(
               child: ConstrainedBox(
@@ -194,30 +195,35 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text('注册后即可开始聊天，无需选择空间'),
+                    Text(sdkText(context, '注册后即可开始聊天，无需选择空间')),
                     if (_loading)
-                      const Padding(
+                      Padding(
                           padding: EdgeInsets.all(24),
-                          child: Center(child: CircularProgressIndicator()))
+                          child: Center(
+                              child: CircularProgressIndicator(
+                                  semanticsLabel: sdkText(context, '正在加载…'))))
                     else if (_settings == null)
                       TextButton(
                           onPressed: _loadSettings,
-                          child: const Text('重新加载注册方式'))
+                          child: Text(sdkText(context, '重新加载注册方式')))
                     else if (!available)
-                      const Padding(
+                      Padding(
                           padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Text('当前没有可用的注册方式，请联系应用提供方')),
+                          child:
+                              Text(sdkText(context, '当前没有可用的注册方式，请联系应用提供方'))),
                     if (_settings != null &&
                         (_settings!.smsEnabled || _settings!.emailEnabled)) ...[
                       const SizedBox(height: 20),
                       SegmentedButton<String>(
                           segments: [
                             if (_settings!.smsEnabled)
-                              const ButtonSegment(
-                                  value: 'sms', label: Text('手机号')),
+                              ButtonSegment(
+                                  value: 'sms',
+                                  label: Text(sdkText(context, '手机号'))),
                             if (_settings!.emailEnabled)
-                              const ButtonSegment(
-                                  value: 'email', label: Text('邮箱')),
+                              ButtonSegment(
+                                  value: 'email',
+                                  label: Text(sdkText(context, '邮箱'))),
                           ],
                           selected: {
                             _channel
@@ -237,11 +243,12 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                           key: const ValueKey('registration.name'),
                           controller: _name,
                           enabled: enabled,
-                          decoration: const InputDecoration(
-                              labelText: '昵称', border: OutlineInputBorder()),
+                          decoration: InputDecoration(
+                              labelText: sdkText(context, '昵称'),
+                              border: OutlineInputBorder()),
                           validator: (value) => value?.trim().isNotEmpty == true
                               ? null
-                              : '请输入昵称'),
+                              : sdkText(context, '请输入昵称')),
                       const SizedBox(height: 16),
                       TextFormField(
                           key: const ValueKey('registration.identifier'),
@@ -257,11 +264,14 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                               : TextInputType.emailAddress,
                           autocorrect: false,
                           decoration: InputDecoration(
-                              labelText: _channel == 'sms' ? '手机号' : '邮箱',
+                              labelText: sdkText(
+                                  context, _channel == 'sms' ? '手机号' : '邮箱'),
                               border: const OutlineInputBorder()),
-                          validator: (value) => _channel == 'sms'
-                              ? Validators.validateMobile(value ?? '')
-                              : Validators.validateEmail(value ?? '')),
+                          validator: (value) => sdkValidationText(
+                              context,
+                              _channel == 'sms'
+                                  ? Validators.validateMobile(value ?? '')
+                                  : Validators.validateEmail(value ?? ''))),
                       const SizedBox(height: 16),
                       TextFormField(
                           key: const ValueKey('registration.password'),
@@ -270,10 +280,11 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                           obscureText: true,
                           autocorrect: false,
                           enableSuggestions: false,
-                          decoration: const InputDecoration(
-                              labelText: '密码', border: OutlineInputBorder()),
-                          validator: (value) =>
-                              Validators.validatePassword(value ?? '')),
+                          decoration: InputDecoration(
+                              labelText: sdkText(context, '密码'),
+                              border: OutlineInputBorder()),
+                          validator: (value) => sdkValidationText(context,
+                              Validators.validatePassword(value ?? ''))),
                       const SizedBox(height: 16),
                       TextFormField(
                           key: const ValueKey('registration.confirmation'),
@@ -282,10 +293,12 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                           obscureText: true,
                           autocorrect: false,
                           enableSuggestions: false,
-                          decoration: const InputDecoration(
-                              labelText: '确认密码', border: OutlineInputBorder()),
-                          validator: (value) =>
-                              value == _password.text ? null : '两次密码不一致'),
+                          decoration: InputDecoration(
+                              labelText: sdkText(context, '确认密码'),
+                              border: OutlineInputBorder()),
+                          validator: (value) => value == _password.text
+                              ? null
+                              : sdkText(context, '两次密码不一致')),
                       const SizedBox(height: 16),
                       Row(children: [
                         Expanded(
@@ -294,22 +307,25 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                                 controller: _code,
                                 enabled: enabled,
                                 decoration: InputDecoration(
-                                    labelText: _settings!.isRequired(_channel)
-                                        ? '验证码'
-                                        : '验证码（可选）',
+                                    labelText: sdkText(
+                                        context,
+                                        _settings!.isRequired(_channel)
+                                            ? '验证码'
+                                            : '验证码（可选）'),
                                     border: const OutlineInputBorder()),
                                 validator: (value) =>
                                     _settings!.isRequired(_channel) &&
                                             value?.trim().isNotEmpty != true
-                                        ? '请输入验证码'
+                                        ? sdkText(context, '请输入验证码')
                                         : null)),
                         const SizedBox(width: 8),
                         TextButton(
                             key: const ValueKey('registration.sendCode'),
                             onPressed:
                                 enabled && _countdown == 0 ? _sendCode : null,
-                            child: Text(
-                                _countdown > 0 ? '${_countdown}s' : '发送验证码'))
+                            child: Text(_countdown > 0
+                                ? '${_countdown}s'
+                                : sdkText(context, '发送验证码')))
                       ]),
                     ],
                     if (_error != null)
@@ -317,7 +333,7 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Semantics(
                               liveRegion: true,
-                              child: Text(_error!,
+                              child: Text(sdkErrorText(context, _error!),
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .colorScheme
@@ -326,11 +342,12 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                     FilledButton(
                         key: const ValueKey('registration.submit'),
                         onPressed: enabled ? _register : null,
-                        child: Text(_busy ? '正在处理…' : '注册并进入聊天')),
+                        child: Text(
+                            sdkText(context, _busy ? '正在处理…' : '注册并进入聊天'))),
                     TextButton(
                         onPressed:
                             _busy ? null : () => Navigator.of(context).pop(),
-                        child: const Text('返回登录')),
+                        child: Text(sdkText(context, '返回登录'))),
                   ]),
             )),
       ))),
@@ -357,7 +374,7 @@ class _RegistrationCaptchaDialogState
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-          title: const Text('安全验证'),
+          title: Text(sdkText(context, '安全验证')),
           content: TextField(
               controller: _answer,
               autofocus: true,
@@ -366,9 +383,9 @@ class _RegistrationCaptchaDialogState
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消')),
+                child: Text(sdkText(context, '取消'))),
             TextButton(
                 onPressed: () => Navigator.pop(context, _answer.text.trim()),
-                child: const Text('确定'))
+                child: Text(sdkText(context, '确定')))
           ]);
 }

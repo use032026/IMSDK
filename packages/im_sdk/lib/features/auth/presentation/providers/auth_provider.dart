@@ -679,6 +679,12 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
   }
 
+  /// Invalidates a pending external login immediately, before queued teardown.
+  /// It cannot grant or restore an identity.
+  void invalidateExternalSessionOperation() {
+    if (ref.read(externalSessionOnlyProvider)) ++_authOperationGeneration;
+  }
+
   /// Accepts only a server-verified identity from an authenticated SDK host.
   /// No role, admin credential or restored login is trusted from the caller.
   Future<void> acceptExternalSession({
@@ -686,6 +692,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     required SessionCredentials credentials,
     required DateTime issuedAt,
     required DateTime expiresAt,
+    bool Function()? externalOperationIsCurrent,
+    Future<void> Function()? verifyExternalSession,
   }) async {
     if (!ref.read(externalSessionOnlyProvider)) {
       throw StateError(
@@ -693,10 +701,18 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
     await _waitForLogoutCleanup();
     final authOperation = ++_authOperationGeneration;
+    void ensureCurrent() {
+      _ensureAuthOperationCurrent(authOperation);
+      if (externalOperationIsCurrent?.call() == false) {
+        throw const _AuthOperationSuperseded();
+      }
+    }
+
     try {
+      ensureCurrent();
       await _beginIdentityTransition(authOperation);
       await _serializeAuthMutation(() async {
-        _ensureAuthOperationCurrent(authOperation);
+        ensureCurrent();
         if (scope.serviceRealmId != ServiceRealmConfig.current.realmId ||
             credentials.tenantAccessToken.trim().isEmpty ||
             credentials.tenantRefreshToken.trim().isEmpty ||
@@ -707,7 +723,9 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         }
         final identity =
             await _repo.getTenantIdentity(credentials.tenantAccessToken);
-        _ensureAuthOperationCurrent(authOperation);
+        ensureCurrent();
+        await verifyExternalSession?.call();
+        ensureCurrent();
         if (!identity.hasStableIdentity ||
             identity.userId.trim() != scope.userId ||
             identity.platformUserId.trim() != scope.platformUserId) {
@@ -724,7 +742,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
               userId: identity.userId,
               accessToken: credentials.tenantAccessToken,
             );
-            _ensureAuthOperationCurrent(authOperation);
+            ensureCurrent();
             if (membershipRole < 0 || membershipRole > 4) membershipRole = 0;
           }
           if (_isEmployeeTenantIdentity(
@@ -735,7 +753,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
             try {
               final friendMode = await _repo
                   .getTenantFriendMode(credentials.tenantAccessToken);
-              _ensureAuthOperationCurrent(authOperation);
+              ensureCurrent();
               if (friendMode == TenantFriendMode.social)
                 spaceType = SpaceType.customerSocial;
             } on _AuthOperationSuperseded {
@@ -745,9 +763,11 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
             }
           }
         }
-        _ensureAuthOperationCurrent(authOperation);
+        ensureCurrent();
+        await verifyExternalSession?.call();
+        ensureCurrent();
         final predecessor = await _sessionStore.loadActive();
-        _ensureAuthOperationCurrent(authOperation);
+        ensureCurrent();
         final persistedRevision = predecessor?.session.identityRevision ?? 0;
         final nextRevision = (_identityRevision > persistedRevision
                 ? _identityRevision
@@ -767,9 +787,13 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
           accessTokenExpiresAt: expiresAt.toUtc(),
           expectedActivationId: predecessor?.activationId,
           identityRevision: nextRevision,
-          canCommit: () => _isAuthOperationCurrent(authOperation),
+          canCommit: () =>
+              _isAuthOperationCurrent(authOperation) &&
+              externalOperationIsCurrent?.call() != false,
         );
-        _ensureAuthOperationCurrent(authOperation);
+        ensureCurrent();
+        await verifyExternalSession?.call();
+        ensureCurrent();
         _identityRevision = nextRevision;
         _committedSession = active.session;
         _committedCredentials = active.credentials;

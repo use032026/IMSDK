@@ -2,6 +2,7 @@
 library;
 
 export 'sdk/im_sdk_models.dart';
+export 'sdk/im_sdk_host_session.dart';
 export 'sdk/im_sdk_client.dart' show ImSdkClient;
 export 'sdk/im_sdk_chat_view.dart' show ImSdkChatView;
 export 'sdk/im_sdk_messaging_view.dart' show ImSdkMessagingView;
