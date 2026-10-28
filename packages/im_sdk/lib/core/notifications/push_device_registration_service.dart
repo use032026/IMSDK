@@ -1,0 +1,145 @@
+import 'package:dio/dio.dart';
+import 'package:im_sdk/core/platform/platform_capabilities.dart';
+
+/// Push provider channel used by the server notification module.
+enum PushChannel {
+  fcm(1),
+  jpush(2),
+  oppo(3);
+
+  final int wireValue;
+  const PushChannel(this.wireValue);
+}
+
+/// Client platform enum expected by POST /api/v1/notifications/devices.
+enum PushPlatform {
+  android(1),
+  ios(2);
+
+  final int wireValue;
+  const PushPlatform(this.wireValue);
+}
+
+class PushDeviceRegistration {
+  final String deviceId;
+  final PushPlatform platform;
+  final PushChannel channel;
+  final String token;
+  final String? region;
+  final String? appVersion;
+
+  const PushDeviceRegistration({
+    required this.deviceId,
+    required this.platform,
+    required this.channel,
+    required this.token,
+    this.region,
+    this.appVersion,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'deviceId': deviceId,
+        'platform': platform.wireValue,
+        'channel': channel.wireValue,
+        'token': token,
+        if (region != null) 'region': region,
+        if (appVersion != null) 'appVersion': appVersion,
+      };
+}
+
+class RegisteredPushDevice {
+  final String deviceId;
+  final int platform;
+  final int channel;
+  final String? region;
+  final String? appVersion;
+  final DateTime? lastActiveAt;
+
+  const RegisteredPushDevice({
+    required this.deviceId,
+    required this.platform,
+    required this.channel,
+    this.region,
+    this.appVersion,
+    this.lastActiveAt,
+  });
+
+  factory RegisteredPushDevice.fromJson(Map<String, dynamic> json) {
+    return RegisteredPushDevice(
+      deviceId: json['deviceId'] as String? ?? '',
+      platform: json['platform'] as int? ?? 0,
+      channel: json['channel'] as int? ?? 0,
+      region: json['region'] as String?,
+      appVersion: json['appVersion'] as String?,
+      lastActiveAt: DateTime.tryParse(json['lastActiveAt'] as String? ?? ''),
+    );
+  }
+}
+
+abstract interface class PushDeviceRegistrar {
+  Future<void> registerOrUpdate(
+    PushDeviceRegistration registration, {
+    String? accessToken,
+  });
+
+  Future<void> unregister(String deviceId, {String? accessToken});
+}
+
+/// Thin API wrapper for server push device registration.
+///
+/// This does not acquire FCM/JPush tokens by itself. Platform integrations should
+/// obtain the native push token, then call [registerOrUpdate].
+class PushDeviceRegistrationService implements PushDeviceRegistrar {
+  final Dio _dio;
+
+  const PushDeviceRegistrationService(this._dio);
+
+  @override
+  Future<void> registerOrUpdate(
+    PushDeviceRegistration registration, {
+    String? accessToken,
+  }) async {
+    await _dio.post<void>(
+      '/api/v1/notifications/devices',
+      data: registration.toJson(),
+      options: _authOptions(accessToken),
+    );
+  }
+
+  @override
+  Future<void> unregister(String deviceId, {String? accessToken}) async {
+    await _dio.delete<void>(
+      '/api/v1/notifications/devices/$deviceId',
+      options: _authOptions(accessToken),
+    );
+  }
+
+  Future<List<RegisteredPushDevice>> listRegisteredDevices() async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/api/v1/notifications/devices',
+    );
+    final data = response.data?['data'];
+    final list = data is List ? data : const [];
+    return list
+        .map((e) => RegisteredPushDevice.fromJson(
+              Map<String, dynamic>.from(e as Map),
+            ))
+        .toList();
+  }
+
+  static PushPlatform? currentMobilePlatform() {
+    if (PlatformCapabilities.isAndroid) return PushPlatform.android;
+    if (PlatformCapabilities.isIOS) return PushPlatform.ios;
+    return null;
+  }
+
+  Options? _authOptions(String? accessToken) {
+    if (accessToken == null || accessToken.isEmpty) return null;
+    return Options(
+      headers: {'Authorization': 'Bearer $accessToken'},
+      // A multi-space registration may intentionally use an inactive space's
+      // token. A 401 must not refresh or clear the active space credentials.
+      extra: {'skipAuthHandling': true},
+    );
+  }
+}

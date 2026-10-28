@@ -1,0 +1,9 @@
+{
+  "platform": "flutter",
+  "version": "0.1.0",
+  "branch": "flutter/v0.1.0",
+  "releaseTag": "flutter-v0.1.0",
+  "download": "https://github.com/use032026/IMSDK/releases/download/flutter-v0.1.0/IMSDK-Flutter-0.1.0.tar.gz",
+  "sourceSnapshot": "source-before.zip at mobile 0.1.0",
+  "sourceRestoration": "Historical archived source only; no current runtime files were backfilled. Podspec version metadata aligned to this version."
+}

@@ -1,0 +1,120 @@
+name: im_sdk
+description: Embeddable StartLink IM and customer chat SDK for Flutter and native hosts.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  cupertino_icons: 1.0.8
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: 2.6.1
+  riverpod_annotation: 2.6.1
+
+  # Navigation
+  go_router: 13.2.5
+
+  # Networking
+  dio: 5.11.1
+  retrofit: 4.10.0
+  http: 1.6.0
+
+  # Serialization
+  json_annotation: 4.9.0
+  freezed_annotation: 2.4.4
+
+  # Local storage
+  hive: 2.2.3
+  hive_flutter: 1.1.0
+  flutter_secure_storage: 9.2.4
+  sqflite: 2.4.2+1
+  path: 1.9.1
+
+  # Real-time communication
+  signalr_netcore: 1.4.4
+  # Keep the verified call runtime; upgrades require Android/iOS call regression.
+  flutter_webrtc: 1.4.1
+
+  # Media
+  record: 5.2.1
+  just_audio: 0.9.46
+  # 10.3.8+ renames the iOS FileUtils Objective-C class, avoiding a runtime
+  # collision with OSAnalytics on current iOS versions.
+  file_picker: 10.3.10
+  image_picker: 1.2.3
+  audioplayers: 6.7.1
+  speech_to_text: 7.4.0
+
+  # Utilities
+  path_provider: 2.1.6
+  connectivity_plus: 6.1.5
+  uuid: 4.6.0
+  intl: 0.20.2
+  cached_network_image: 3.4.1
+  extended_image: 10.1.0
+  flutter_cache_manager: 3.4.2
+  flutter_svg: 2.3.0
+  crypto: 3.0.7
+  # Verified site-line AES-ECB and ECDSA-P256 contract (Android/iOS shared).
+  pointycastle: 4.0.0
+  characters: 1.4.1
+  qr_flutter: 4.1.0
+  url_launcher: 6.3.2
+  flutter_local_notifications: 21.0.0
+  package_info_plus: 9.0.1
+  share_plus: 11.1.0
+  open_filex: 4.7.0
+  mobile_scanner: 7.4.1
+  video_thumbnail: 0.5.6
+  video_player: 2.11.1
+  camera: 0.12.0+2
+  app_badge_plus: 1.3.5
+  image_picker_android: 0.8.13+17
+  image_picker_platform_interface: 2.11.1
+  punycode: 1.0.0
+
+dependency_overrides:
+  record_linux: 1.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  video_player_platform_interface: 6.9.0
+  analyzer: 6.4.1
+  sqflite_common_ffi: 2.4.0+3
+  path_provider_platform_interface: 2.1.3
+
+  # Code generation
+  build_runner: 2.4.13
+  riverpod_generator: 2.4.0
+  retrofit_generator: 8.2.1
+  json_serializable: 6.8.0
+  freezed: 2.5.2
+  hive_generator: 2.0.1
+
+  # Linting
+  flutter_lints: 3.0.2
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.imsdk.flutter
+        pluginClass: ImSdkPlugin
+      ios:
+        pluginClass: ImSdkPlugin
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/brand/app_icon.png
+    - assets/brand/brand_logo_icon.png
+    - assets/brand/startlink_loading.png
+    - assets/auth/
