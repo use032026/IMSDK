@@ -1,0 +1,9 @@
+{
+  "platform": "ios",
+  "version": "0.1.0",
+  "branch": "ios/v0.1.0",
+  "releaseTag": "ios-v0.1.0",
+  "download": "https://github.com/use032026/IMSDK/releases/download/ios-v0.1.0/IMSDK-iOS-0.1.0.zip",
+  "sourceSnapshot": "source-before.zip at mobile 0.1.0",
+  "sourceRestoration": "Historical archived source only; no current runtime files were backfilled. Podspec version metadata aligned to this version."
+}

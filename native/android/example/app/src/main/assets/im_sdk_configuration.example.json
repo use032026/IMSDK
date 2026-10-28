@@ -1,0 +1,9 @@
+{
+  "apiBaseUrl": "",
+  "serviceRealmId": "",
+  "storageNamespace": "native_android_example",
+  "passwordLogin": {
+    "space": "personal",
+    "loginType": "lpp_id"
+  }
+}

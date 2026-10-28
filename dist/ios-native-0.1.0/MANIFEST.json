@@ -1,0 +1,74 @@
+{
+  "product": "IM SDK iOS",
+  "sdkVersion": "0.1.0",
+  "documentationRevision": "2026-10-28",
+  "deliveryKind": "binary-sdk-with-native-host-source",
+  "binaryTreeSha256": "d90f68e6bbc23fb4ee9c270a7d77fc420eb4b7d44185743b28bb778bc539f464",
+  "preconfiguredAccountsOrServiceEnvironment": false,
+  "validation": {
+    "status": "passed",
+    "sdkModes": [
+      "Debug",
+      "Release"
+    ],
+    "frameworksPerMode": 35,
+    "staticLinkOnlyFrameworks": 3,
+    "dynamicEmbeddedFrameworks": 32,
+    "swiftObjCHandoffSnippets": [
+      {
+        "mode": "Debug",
+        "platform": "device",
+        "arch": "arm64",
+        "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+      },
+      {
+        "mode": "Debug",
+        "platform": "simulator",
+        "arch": "arm64",
+        "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+      },
+      {
+        "mode": "Debug",
+        "platform": "simulator",
+        "arch": "x86_64",
+        "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+      },
+      {
+        "mode": "Release",
+        "platform": "device",
+        "arch": "arm64",
+        "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+      },
+      {
+        "mode": "Release",
+        "platform": "simulator",
+        "arch": "arm64",
+        "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+      },
+      {
+        "mode": "Release",
+        "platform": "simulator",
+        "arch": "x86_64",
+        "swiftAndObjCHandoffSnippetsCompileAndLink": "passed"
+      }
+    ],
+    "independentUIKitHostDebugSimulatorBuild": "passed_no_signing",
+    "independentUIKitHostReleaseDeviceBuild": "passed_no_signing",
+    "toolchain": "Xcode 26.5; Build version 17F42",
+    "newHostRuntimeValidation": "not_performed_for_packaging",
+    "releaseRuntimeBusinessValidation": "not_tested"
+  },
+  "historicalBusinessValidation": {
+    "date": "2026-10-27",
+    "environment": "iOS Debug simulator",
+    "personalPasswordLoginConversationListDirectAndGroupTextRoundTrips": "passed",
+    "physicalDeviceAndProductionPush": "not_tested"
+  },
+  "frameworksPerMode": 35,
+  "modes": [
+    "Debug",
+    "Release"
+  ],
+  "releaseRebuiltOn": "2026-10-28",
+  "releaseRuntimeBusinessValidation": "not_tested"
+}

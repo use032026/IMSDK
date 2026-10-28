@@ -1,0 +1,10 @@
+{
+  "apiBaseUrl": "",
+  "serviceRealmId": "",
+  "hostPrivacyPolicyUrl": "",
+  "storageNamespace": "native_android_handoff",
+  "passwordLogin": {
+    "space": "personal",
+    "loginType": "lpp_id"
+  }
+}
