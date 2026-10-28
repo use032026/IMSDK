@@ -1,0 +1,201 @@
+{
+  "product": "IM SDK Web / H5",
+  "sdkVersion": "0.1.4",
+  "documentationRevision": "2026-10-28",
+  "npmPackage": "npm/imsdk-web-0.1.4.tgz",
+  "browserEntry": "sdk/im-sdk.js",
+  "defaultUserEntry": "examples/plain-html/index.html",
+  "defaultEntryBehavior": "automatic login/registration when unauthenticated; conversation list when authenticated; configuration supplied by host code",
+  "bundleSha256": "364e479c80a8bc38a9d0560851d3a2e9e657b6ae6ab9ac195f8eeef09a00f841",
+  "runtimeBinaryChangedByHandoff": false,
+  "validatedOn": "2026-10-28",
+  "validation": {
+    "status": "passed",
+    "version": "0.1.4",
+    "sdkVersion": "0.1.4",
+    "validatedAt": "2026-10-28T04:18:41.545411+00:00",
+    "bundleSha256": "364e479c80a8bc38a9d0560851d3a2e9e657b6ae6ab9ac195f8eeef09a00f841",
+    "runtimeSourceSha256": "6057d3e211c70e0991ca3e6c318356d1b38433a50047e01a68121576d7cbebab",
+    "checks": {
+      "typecheck": true,
+      "build": true,
+      "unitTests": true,
+      "browserContract": true,
+      "defaultUserEntry": true,
+      "realDefaultEntryLoginListLogout": true,
+      "standaloneOfficialNpmConsumers": true,
+      "sameBundleAsCurrentRealEntry": true,
+      "privacyScan": true,
+      "independentReview": true
+    },
+    "tests": {
+      "unitTotal": 50,
+      "unitPassed": 50,
+      "unitFailed": 0
+    },
+    "defaultEntry": {
+      "status": "passed",
+      "sourceSha256": {
+        "index.html": "abde320b82b8ec449c002107cba77b1d560d504a2d638bc755b3c2c28c5f820b",
+        "host-config.js": "b04d70f5c735cf2107e630518f14f489a52802996a59eeec3155789ce0ffcc93"
+      },
+      "entry": "examples/plain-html/index.html",
+      "technicalConfigurationForm": false,
+      "unauthenticated": "login/registration",
+      "authenticated": "conversation list",
+      "fixtureChecks": [
+        "unconfigured login/registration with no technical form or requests",
+        "late ready restores registration and configured refresh interval",
+        "close clears interval and offers reopen",
+        "authenticated reopen shows conversations",
+        "visible logout returns login",
+        "invalid host config keeps login; direct ready clears old host feedback",
+        "preauthenticated external client opens list without reinitialize; host retains ownership",
+        "disposed mount leaves no orphan DOM; plain entry provides friendly recovery",
+        "file:// source example and standalone handoff show login and registration"
+      ],
+      "fixtureReport": "logs/web-entry-20261028/entry-browser-report.json",
+      "realServiceReport": "logs/web-entry-20261028/source-final-default-entry-live.json",
+      "realServiceChecks": {
+        "automaticLoginRegistrationEntryWithoutTechnicalFields": true,
+        "registrationPageWithoutSpaceChooser": true,
+        "realPasswordLoginAutomaticallyEntersConversationList": true,
+        "authenticatedReopenGoesDirectlyToConversationList": true,
+        "logoutReturnsToLoginRegistration": true,
+        "noNewAccountsMessagesGroupsOrVerificationMessages": true,
+        "shutdownCompletesCleanly": true
+      }
+    },
+    "browserContract": {
+      "passed": true,
+      "fixtureOnly": true,
+      "liveBackend": false,
+      "viewports": [
+        1280,
+        390
+      ],
+      "report": "logs/web-entry-20261028/browser-contract/browser-report.json"
+    },
+    "frameworkTemplateContracts": {
+      "passed": 22,
+      "failed": 0,
+      "actualFrameworkBrowserRuntimeTested": false,
+      "report": "logs/web-entry-20261028/framework-templates.json"
+    },
+    "consumer": {
+      "status": "passed",
+      "sdkVersion": "0.1.4",
+      "artifactSha256": "d27154c239da92ce5e239b99871ca2f3156ff36803ab3ddd34e9b5cdf1ed23de",
+      "standaloneExtractedOfficialPackage": true,
+      "dependencyInstalls": 0,
+      "checks": {
+        "sameBundleAsActualRealServiceValidation": true,
+        "officialRuntimeAndTypesMatchCurrentBuild": true,
+        "packageExportManifest": true,
+        "esmStandaloneRuntime": true,
+        "commonjsStandaloneRuntime": true,
+        "standalonePublicTypeConsumer": true,
+        "noKnownPrivateAccountsTokensOrConfiguredServiceValues": true,
+        "noOriginalSourceOrExternalRuntimeRequests": true,
+        "standaloneBrowserIifeDefaultEntry": true
+      },
+      "errors": [],
+      "bundleSha256": "364e479c80a8bc38a9d0560851d3a2e9e657b6ae6ab9ac195f8eeef09a00f841",
+      "browserVersion": "156.0.8078.73",
+      "finishedAt": "2026-10-28T04:17:53.082Z"
+    },
+    "officialNpmPackage": "dist/web/imsdk-web-0.1.4.tgz",
+    "officialNpmSha256": "d27154c239da92ce5e239b99871ca2f3156ff36803ab3ddd34e9b5cdf1ed23de",
+    "realServiceBinding": {
+      "passed": true,
+      "currentDefaultEntryBundleIdentical": true,
+      "fullBusinessFlowBaselineBundleIdentical": false,
+      "businessClientSourcesUnchanged": true,
+      "currentEntryReport": "logs/web-entry-20261028/source-final-default-entry-live.json",
+      "baselineReport": "logs/unification-release-20261028/validation.json",
+      "noNewBusinessWritesDuringEntryValidation": true
+    }
+  },
+  "realServiceValidation": {
+    "passed": true,
+    "realBackend": true,
+    "mockedResponses": false,
+    "businessFlowPassed": true,
+    "checks": {
+      "registration": true,
+      "login": true,
+      "friendRequestAccepted": true,
+      "conversationList": true,
+      "directRoundTrip": true,
+      "groupCreateRoundTrip": true,
+      "singleActiveSpace": true,
+      "logoutDisposeClean": true
+    },
+    "verificationCodeRequiredByService": false,
+    "verificationMessagesSent": 0,
+    "testOnlyDedicatedAccounts": true,
+    "actualNewAccountSpaceKind": "personal",
+    "actualEnterpriseAssignment": "not_observed; contract_regression_only",
+    "mobileSurface": "current Flutter SDK in dedicated iOS26.5 simulator; separate final lifecycle acceptance",
+    "webSurface": "Chrome 0.1.3 full real business flow baseline; Chrome 0.1.4 actual HTML entry real login, conversation list, authenticated reopen, logout and shutdown.",
+    "mobileSdkRegressionTests": 92,
+    "bugsFixedDuringValidation": [
+      "cold_start_persisted_activation_replacement",
+      "logout_cleanup_drain_before_sdk_disposal",
+      "settings_async_completion_after_disposal"
+    ],
+    "evidence": [
+      {
+        "report": "unification-live-20261028-6576f4b0-r2-mobile.json",
+        "sha256": "8c647b0c36685f50c5277dc4e464053d2c300c2d641a1fe1f87200bf9d09dfe6"
+      },
+      {
+        "report": "unification-live-20261028-6576f4b0-r2-mobile-lifecycle.json",
+        "sha256": "0e787100f49c815273c666fa731c9c54f9041d3be28966f721ace9d205e74119"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/evidence-chain.json",
+        "sha256": "df16a03a5a060e21245f58ff794fab563e920b5a83330d1e99aeced1ecae73ce"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/peer-report.json",
+        "sha256": "7ca64ca32b5bc761e22fec407c8f7bc5ef1fda94ec3e7b43df9dc605d3ca8bbd"
+      },
+      {
+        "report": "unification-web-live-20261028-6576f4b0-r2/roundtrip-report.json",
+        "sha256": "1d8b3ad17046bf04304a0d987de415f6876fe2309fa07ddc2df34a2a5dad2949"
+      },
+      {
+        "report": "web-entry-20261028/source-final-default-entry-live.json",
+        "sha256": "83b9d0d25e3d488dc3c4927e67291eaed4c3b1ce589bc95c3cf8a21a9de6e050"
+      }
+    ],
+    "coverageStrategy": "0.1.3 full business-flow baseline plus 0.1.4 default-entry delta; current entry validation does not repeat registration, friendship creation or message writes.",
+    "fullBusinessFlowBaselineSdkVersions": {
+      "native": "0.1.1",
+      "web": "0.1.3"
+    },
+    "currentWebEntry": {
+      "passed": true,
+      "sdkVersion": "0.1.4",
+      "report": "logs/web-entry-20261028/source-final-default-entry-live.json",
+      "sha256": "83b9d0d25e3d488dc3c4927e67291eaed4c3b1ce589bc95c3cf8a21a9de6e050",
+      "bundleSha256": "364e479c80a8bc38a9d0560851d3a2e9e657b6ae6ab9ac195f8eeef09a00f841",
+      "checks": {
+        "automaticLoginRegistrationEntryWithoutTechnicalFields": true,
+        "registrationPageWithoutSpaceChooser": true,
+        "realPasswordLoginAutomaticallyEntersConversationList": true,
+        "authenticatedReopenGoesDirectlyToConversationList": true,
+        "logoutReturnsToLoginRegistration": true,
+        "noNewAccountsMessagesGroupsOrVerificationMessages": true,
+        "shutdownCompletesCleanly": true
+      },
+      "mockedApiResponses": false,
+      "newAccounts": 0,
+      "newMessages": 0,
+      "newGroups": 0,
+      "verificationMessagesSent": 0
+    }
+  },
+  "registrationSpacePolicy": "no chooser; personal default; use actual authenticated enterprise response; one active space"
+}
