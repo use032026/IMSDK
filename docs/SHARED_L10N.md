@@ -65,7 +65,8 @@ and placeholder metadata are explicit inputs, never guessed.
 
 ```sh
 python3 scripts/l10n_update.py prepare --consumer-root .
-# Review the printed temporary Ln18 checkout and manually commit/push it:
+# Codex presents the prepared changes and waits for user confirmation;
+# after approval, Codex commits/pushes Ln18, verifies the remote SHA, then continues:
 python3 scripts/l10n_update.py adopt --plan /path/from/prepare/plan.json
 python3 scripts/l10n_update.py check --consumer-root . --offline
 ```
@@ -76,8 +77,13 @@ SDK profile metadata, archive and plan. Pending work stays in the ignored
 and adopted. Adopt verifies the archive from a fresh remote download before
 updating pins and generating/checking resources. It clears the matching draft
 only after every target succeeds, and restores language-owned files/configs on
-failure without changing Git's index or unrelated code. No command commits or
-pushes. `--dry-run` preflights adoption; `--revision` pins a specific full remote
+failure without changing Git's index or unrelated code. These low-level commands do not commit or push. Codex presents the prepared
+changes, validation results, repositories and publication scope, then pauses for
+explicit user confirmation. After confirmation, Codex handles Git publication,
+verifies the remote revision and continues adoption/checks; the user does not
+operate Git. Subsequent consumer commits/pushes stay within that confirmed scope.
+Do not ask again for the same scope; obtain confirmation for added scope. Neither
+a plan file nor successful preparation is publication approval. `--dry-run` preflights adoption; `--revision` pins a specific full remote
 commit instead of discovering remote HEAD.
 
 Drafts and local generated-resource drift block ordinary sync/check. The source
@@ -100,8 +106,9 @@ retain SDK-specific overrides and supplementary datasets. A mobile feature does
 not automatically expand the SDK's selected key set. PC uses its separate JSON
 dataset in Ln18.
 
-Create a new catalog version and archive, verify it, and commit/push it to Ln18
-before consumers adopt it. Update `l10n.source.json` with that exact commit,
+Create and verify a new catalog version/archive, then have Codex obtain user
+confirmation for the concrete change and repository scope before publishing it
+to Ln18. Codex verifies the remote revision before continuing consumer adoption. Update `l10n.source.json` with that exact commit,
 archive path and SHA256; update `catalogVersion` in both `l10n.resources.json`
 and `packages/im_sdk/l10n.bundle.json`. Run sync and check, then test the affected
 SDK interfaces and commit the generated ARB/Dart/Web files and both receipts

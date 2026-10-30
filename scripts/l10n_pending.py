@@ -49,7 +49,7 @@ def check_pending(consumer_root):
     if pending and (not authorized or change_path != draft.resolve()):
         raise PendingChangeError(
             f"Unpublished language entries in {draft}. Run l10n_update.py prepare, "
-            "commit/push the prepared Ln18 update manually, then run adopt. "
+            "have Codex present the change scope and pause for your confirmation, then publish Ln18 and continue with adopt. "
             "Existing generated resources were preserved."
         )
     return authorized

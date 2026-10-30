@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare and adopt language updates locally; Git commits and pushes stay manual."""
+"""Prepare and adopt language updates locally; Codex publishes after user confirmation."""
 import argparse
 from contextlib import contextmanager
 import hashlib
@@ -309,7 +309,7 @@ def main(argv=None):
     prepare.add_argument("--workspace", type=Path)
     prepare.add_argument("--sdk-root", type=Path)
     prepare.add_argument("--package-directory")
-    adopt = actions.add_parser("adopt", help="Verify the manually published archive, update pins, generate and check")
+    adopt = actions.add_parser("adopt", help="Verify the published archive after user-confirmed publication, update pins, generate and check")
     adopt.add_argument("--plan", type=Path, required=True)
     adopt.add_argument("--revision", help="Full remote commit SHA; defaults to the currently published HEAD")
     adopt.add_argument("--dry-run", action="store_true")
@@ -324,7 +324,8 @@ def main(argv=None):
                                    workspace=arguments.workspace, sdk_root=arguments.sdk_root,
                                    package_directory=arguments.package_directory)
         print(f"Prepared language update plan: {plan_path}")
-        print("Review the temporary Ln18 checkout and manually commit/push it, then run adopt --plan with this path.")
+        print("Next: Codex presents the prepared changes, validation results and repository publication scope, then pauses for your confirmation.")
+        print("After confirmation, Codex commits/pushes Ln18, verifies the remote revision and continues with adopt --plan using this path. You do not need to operate Git.")
     elif arguments.action == "adopt":
         print(json.dumps(adopt_update(arguments.plan, revision=arguments.revision, dry_run=arguments.dry_run), ensure_ascii=False, indent=2))
     else:

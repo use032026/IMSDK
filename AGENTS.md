@@ -2,7 +2,7 @@
 
 ## 多语言更新交付
 
-新增或修改 SDK 文案时，维护 `l10n.changes.json` 并运行 `python3 scripts/l10n_update.py prepare --consumer-root .`。准备工具处理词源、SDK profile、版本与归档；用户手动提交推送 Ln18 后，再运行 `python3 scripts/l10n_update.py adopt --plan <plan.json>` 自动固定已发布来源、生成并检查。chat-im-cs 词条供 SDK 使用时由发起方标记 `sdk: true` 并提供 SDK 根目录，不自动扩大整个 SDK 词条范围。不得为绕过检查删除草稿或覆盖未回补的生成资源；Git 提交和推送仍由用户操作。
+新增或修改 SDK 文案时，维护 `l10n.changes.json` 并运行 `python3 scripts/l10n_update.py prepare --consumer-root .`。准备工具处理词源、SDK profile、版本与归档；Codex 完成 prepare 和隔离验证后，展示变更、验证结果、涉及仓库与提交推送范围，暂停等待用户明确确认；确认后由 Codex 提交推送 Ln18、核验远程提交，再运行 `python3 scripts/l10n_update.py adopt --plan <plan.json>` 自动固定来源、生成并检查。用户无需自行操作 Git；同一已确认范围不重复询问，新增范围另行确认，计划文件不代表授权。chat-im-cs 词条供 SDK 使用时由发起方标记 `sdk: true` 并提供 SDK 根目录，不自动扩大整个 SDK 词条范围。不得为绕过检查删除草稿或覆盖未回补的生成资源；后续 Git 提交和推送由 Codex 按用户已确认范围执行。
 
 ## 构建与验证结束后清理
 

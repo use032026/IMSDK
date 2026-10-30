@@ -1,4 +1,4 @@
-"""Prepare a reviewable Ln18 update; Git commits and pushes remain manual."""
+"""Prepare a reviewable Ln18 update for Codex to publish after user confirmation."""
 import copy
 import hashlib
 import json
