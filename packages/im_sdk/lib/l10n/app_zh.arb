@@ -1,69 +1,156 @@
 {
   "@@locale": "zh",
   "navWorkbench": "工作台",
-  "@navWorkbench": {"description": "Workbench navigation label"},
+  "@navWorkbench": {
+    "description": "Workbench navigation label"
+  },
   "navBadgeOverflow": "99+",
-  "@navBadgeOverflow": {"description": "Overflow count shown on navigation badges"},
+  "@navBadgeOverflow": {
+    "description": "Overflow count shown on navigation badges"
+  },
   "appRuntimeLoadFailed": "账号数据加载失败",
-  "@appRuntimeLoadFailed": {"description": "Account runtime load failure"},
+  "@appRuntimeLoadFailed": {
+    "description": "Account runtime load failure"
+  },
   "startupFailureTitle": "启动失败",
-  "@startupFailureTitle": {"description": "Startup failure title"},
+  "@startupFailureTitle": {
+    "description": "Startup failure title"
+  },
   "startupFailureMessage": "请检查网络后重试",
-  "@startupFailureMessage": {"description": "Startup failure guidance"},
+  "@startupFailureMessage": {
+    "description": "Startup failure guidance"
+  },
   "privacyConsentTitle": "服务协议与隐私政策",
-  "@privacyConsentTitle": {"description": "Privacy consent title"},
+  "@privacyConsentTitle": {
+    "description": "Privacy consent title"
+  },
   "privacyConsentBodyAndroid": "欢迎使用{brand}。为向您提供账号登录、即时通讯、企业协作、在线客服、消息提醒和安全保障等服务，我们需要按照用户协议和隐私政策处理必要信息。\n\n在您点击同意前，我们不会读取剪切板信息，不会初始化极光及手机厂商推送 SDK，也不会通过这些 SDK 获取 Android ID、OAID、安装应用列表、MAC 地址等信息。若您暂不同意，我们会保存该选择；您仍可继续阅读协议，并可稍后重新选择。\n\n您同意后，为完成消息、客服和来电提醒，极光 JPush/JCore 及手机厂商推送服务可能处理设备型号、Android 版本、应用包名与版本、网络类型、IP 地址、Android ID、OAID、推送 Registration ID、厂商推送 Token 以及通知送达和点击信息。我们已关闭智能推送、安装应用列表、MAC、IMEI、IMSI、Wi-Fi 列表、自动唤醒和关联启动等非必要能力。\n\n剪切板仅在您主动使用复制或粘贴功能时调用；相机、麦克风和通知等系统权限仅在您主动使用相关功能时申请。拒绝单项权限只影响对应功能。请阅读下方完整协议后，自主选择是否同意。",
-  "@privacyConsentBodyAndroid": {"description": "Android pre-consent data processing disclosure", "placeholders": {"brand": {"type": "String"}}},
+  "@privacyConsentBodyAndroid": {
+    "description": "Android pre-consent data processing disclosure",
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      }
+    }
+  },
   "privacyConsentBodyIos": "欢迎使用{brand}。为向您提供账号登录、即时通讯、企业协作、在线客服、消息提醒和安全保障等服务，我们需要按照用户协议和隐私政策处理必要信息。\n\n在您点击同意前，我们不会读取剪切板信息，不会初始化极光 JPush/JCore 或注册 Apple 推送通知服务（APNs），也不会获取极光 Registration ID、APNs 设备令牌等推送标识。若您暂不同意，我们会保存该选择；您仍可继续阅读协议，并可稍后重新选择。\n\n您同意后，为完成消息、客服和来电提醒，我们可能处理 iPhone 型号、iOS 版本、应用包名与版本、网络类型、IP 地址、IDFV、极光 Registration ID、APNs 设备令牌以及通知送达和点击信息。极光 JPush/JCore 用于连接推送服务；Apple APNs 处理 App 标识、设备令牌和通知负载以完成系统推送。当前 iOS 版不接入广告服务，不获取 IDFA。\n\n剪切板仅在您主动使用复制或粘贴功能时调用；相机、麦克风和通知等系统权限仅在您主动使用相关功能时申请。拒绝单项权限只影响对应功能。请阅读下方完整协议后，自主选择是否同意。",
-  "@privacyConsentBodyIos": {"description": "iOS pre-consent data processing disclosure", "placeholders": {"brand": {"type": "String"}}},
+  "@privacyConsentBodyIos": {
+    "description": "iOS pre-consent data processing disclosure",
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      }
+    }
+  },
   "privacyConsentTermsLink": "《用户协议》",
-  "@privacyConsentTermsLink": {"description": "Terms link"},
+  "@privacyConsentTermsLink": {
+    "description": "Terms link"
+  },
   "privacyConsentConjunction": "和",
-  "@privacyConsentConjunction": {"description": "Terms and privacy conjunction"},
+  "@privacyConsentConjunction": {
+    "description": "Terms and privacy conjunction"
+  },
   "privacyConsentPrivacyLink": "《隐私政策》",
-  "@privacyConsentPrivacyLink": {"description": "Privacy policy link"},
+  "@privacyConsentPrivacyLink": {
+    "description": "Privacy policy link"
+  },
   "privacyConsentDecline": "不同意",
-  "@privacyConsentDecline": {"description": "Decline privacy consent"},
+  "@privacyConsentDecline": {
+    "description": "Decline privacy consent"
+  },
   "privacyConsentDeclinedExit": "您未同意服务协议和隐私政策，应用即将退出",
-  "@privacyConsentDeclinedExit": {"description": "Android notice shown before exiting after privacy consent is declined"},
+  "@privacyConsentDeclinedExit": {
+    "description": "Android notice shown before exiting after privacy consent is declined"
+  },
   "privacyConsentAccept": "同意",
-  "@privacyConsentAccept": {"description": "Accept privacy consent"},
+  "@privacyConsentAccept": {
+    "description": "Accept privacy consent"
+  },
   "privacyConsentRuntimeFailure": "启动失败，请检查网络后重试",
-  "@privacyConsentRuntimeFailure": {"description": "Authorized runtime startup failure"},
+  "@privacyConsentRuntimeFailure": {
+    "description": "Authorized runtime startup failure"
+  },
   "privacyConsentSaveFailure": "未能保存选择，请重试",
-  "@privacyConsentSaveFailure": {"description": "Consent choice persistence failure"},
+  "@privacyConsentSaveFailure": {
+    "description": "Consent choice persistence failure"
+  },
   "appUpdateRequiredTitle": "必须更新后继续使用",
-  "@appUpdateRequiredTitle": {"description": "Required update title"},
+  "@appUpdateRequiredTitle": {
+    "description": "Required update title"
+  },
   "appUpdateOptionalTitle": "发现新版本",
-  "@appUpdateOptionalTitle": {"description": "Optional update title"},
+  "@appUpdateOptionalTitle": {
+    "description": "Optional update title"
+  },
   "appUpdateVersionAvailable": "{brand} {version} 已可更新",
-  "@appUpdateVersionAvailable": {"description": "Available app version", "placeholders": {"brand": {"type": "String"}, "version": {"type": "String"}}},
+  "@appUpdateVersionAvailable": {
+    "description": "Available app version",
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      },
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateLater": "稍后",
-  "@appUpdateLater": {"description": "Dismiss optional update"},
+  "@appUpdateLater": {
+    "description": "Dismiss optional update"
+  },
   "appUpdateNow": "立即更新",
-  "@appUpdateNow": {"description": "Start app update"},
+  "@appUpdateNow": {
+    "description": "Start app update"
+  },
   "appUpdateProcessing": "处理中...",
-  "@appUpdateProcessing": {"description": "App update processing"},
+  "@appUpdateProcessing": {
+    "description": "App update processing"
+  },
   "appUpdateInvalidUrl": "更新地址无效，请稍后重试",
-  "@appUpdateInvalidUrl": {"description": "Invalid update URL"},
+  "@appUpdateInvalidUrl": {
+    "description": "Invalid update URL"
+  },
   "appUpdateOpenUrlFailed": "无法打开更新链接，请稍后重试",
-  "@appUpdateOpenUrlFailed": {"description": "Open update URL failure"},
+  "@appUpdateOpenUrlFailed": {
+    "description": "Open update URL failure"
+  },
   "appUpdateDownloadInterrupted": "下载中断，请检查网络后重试",
-  "@appUpdateDownloadInterrupted": {"description": "Interrupted update download"},
+  "@appUpdateDownloadInterrupted": {
+    "description": "Interrupted update download"
+  },
   "appUpdatePackageVerificationFailed": "安装包校验失败，请重新下载",
-  "@appUpdatePackageVerificationFailed": {"description": "Update package verification failure"},
+  "@appUpdatePackageVerificationFailed": {
+    "description": "Update package verification failure"
+  },
   "appUpdatePermissionDenied": "请在系统设置中允许{brand}安装更新",
-  "@appUpdatePermissionDenied": {"description": "Install permission denied", "placeholders": {"brand": {"type": "String"}}},
+  "@appUpdatePermissionDenied": {
+    "description": "Install permission denied",
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      }
+    }
+  },
   "appUpdateOpenInstallerFailed": "无法打开系统安装器，请检查安装权限",
-  "@appUpdateOpenInstallerFailed": {"description": "Open system installer failure"},
+  "@appUpdateOpenInstallerFailed": {
+    "description": "Open system installer failure"
+  },
   "appUpdateGenericFailure": "更新失败，请检查网络后重试",
-  "@appUpdateGenericFailure": {"description": "Generic update failure"},
+  "@appUpdateGenericFailure": {
+    "description": "Generic update failure"
+  },
   "appUpdateUnavailable": "新版本暂不可下载，请稍后再试",
-  "@appUpdateUnavailable": {"description": "Update package unavailable"},
+  "@appUpdateUnavailable": {
+    "description": "Update package unavailable"
+  },
   "appUpdateCheckFailed": "检查更新失败，请稍后重试",
-  "@appUpdateCheckFailed": {"description": "Update check failure"},
+  "@appUpdateCheckFailed": {
+    "description": "Update check failure"
+  },
   "appUpdateChecking": "检查中",
-  "@appUpdateChecking": {"description": "Checking for updates"},
+  "@appUpdateChecking": {
+    "description": "Checking for updates"
+  },
   "commonConfirm": "确定",
   "@commonConfirm": {
     "description": "Confirm button"
@@ -410,167 +497,369 @@
     "description": "Pending approval"
   },
   "authNoAccount": "没有账号？",
-  "@authNoAccount": {"description": "Login registration prompt"},
+  "@authNoAccount": {
+    "description": "Login registration prompt"
+  },
   "authRegisterNow": "立即注册",
-  "@authRegisterNow": {"description": "Open registration"},
+  "@authRegisterNow": {
+    "description": "Open registration"
+  },
   "authCountryPickerTitle": "选择国家/地区",
-  "@authCountryPickerTitle": {"description": "Country picker title"},
+  "@authCountryPickerTitle": {
+    "description": "Country picker title"
+  },
   "authCountrySearchHint": "搜索国家/地区",
-  "@authCountrySearchHint": {"description": "Country picker search hint"},
+  "@authCountrySearchHint": {
+    "description": "Country picker search hint"
+  },
   "authCountryChinaMainland": "中国大陆",
-  "@authCountryChinaMainland": {"description": "Country name"},
+  "@authCountryChinaMainland": {
+    "description": "Country name"
+  },
   "authCountryHongKong": "中国香港",
-  "@authCountryHongKong": {"description": "Country name"},
+  "@authCountryHongKong": {
+    "description": "Country name"
+  },
   "authCountryMacau": "中国澳门",
-  "@authCountryMacau": {"description": "Country name"},
+  "@authCountryMacau": {
+    "description": "Country name"
+  },
   "authCountryTaiwan": "中国台湾",
-  "@authCountryTaiwan": {"description": "Country name"},
+  "@authCountryTaiwan": {
+    "description": "Country name"
+  },
   "authCountryUnitedStates": "美国",
-  "@authCountryUnitedStates": {"description": "Country name"},
+  "@authCountryUnitedStates": {
+    "description": "Country name"
+  },
   "authCountryUnitedKingdom": "英国",
-  "@authCountryUnitedKingdom": {"description": "Country name"},
+  "@authCountryUnitedKingdom": {
+    "description": "Country name"
+  },
   "authCountryJapan": "日本",
-  "@authCountryJapan": {"description": "Country name"},
+  "@authCountryJapan": {
+    "description": "Country name"
+  },
   "authCountrySouthKorea": "韩国",
-  "@authCountrySouthKorea": {"description": "Country name"},
+  "@authCountrySouthKorea": {
+    "description": "Country name"
+  },
   "authCountrySingapore": "新加坡",
-  "@authCountrySingapore": {"description": "Country name"},
+  "@authCountrySingapore": {
+    "description": "Country name"
+  },
   "authCountryMalaysia": "马来西亚",
-  "@authCountryMalaysia": {"description": "Country name"},
+  "@authCountryMalaysia": {
+    "description": "Country name"
+  },
   "authCountryAustralia": "澳大利亚",
-  "@authCountryAustralia": {"description": "Country name"},
+  "@authCountryAustralia": {
+    "description": "Country name"
+  },
   "authCountryCanada": "加拿大",
-  "@authCountryCanada": {"description": "Country name"},
+  "@authCountryCanada": {
+    "description": "Country name"
+  },
   "authCountryGermany": "德国",
-  "@authCountryGermany": {"description": "Country name"},
+  "@authCountryGermany": {
+    "description": "Country name"
+  },
   "authCountryFrance": "法国",
-  "@authCountryFrance": {"description": "Country name"},
+  "@authCountryFrance": {
+    "description": "Country name"
+  },
   "authCountryIndia": "印度",
-  "@authCountryIndia": {"description": "Country name"},
+  "@authCountryIndia": {
+    "description": "Country name"
+  },
   "authCountryThailand": "泰国",
-  "@authCountryThailand": {"description": "Country name"},
+  "@authCountryThailand": {
+    "description": "Country name"
+  },
   "authCountryVietnam": "越南",
-  "@authCountryVietnam": {"description": "Country name"},
+  "@authCountryVietnam": {
+    "description": "Country name"
+  },
   "authCountryIndonesia": "印度尼西亚",
-  "@authCountryIndonesia": {"description": "Country name"},
+  "@authCountryIndonesia": {
+    "description": "Country name"
+  },
   "authCountryPhilippines": "菲律宾",
-  "@authCountryPhilippines": {"description": "Country name"},
+  "@authCountryPhilippines": {
+    "description": "Country name"
+  },
   "authQuickLoginTitle": "快速登录",
-  "@authQuickLoginTitle": {"description": "Developer quick login title"},
+  "@authQuickLoginTitle": {
+    "description": "Developer quick login title"
+  },
   "authQuickLoginSummary": "{count} 个快捷登录账号；凭证由宿主提供。",
-  "@authQuickLoginSummary": {"description": "Developer quick login summary", "placeholders": {"count": {"type": "int"}}},
+  "@authQuickLoginSummary": {
+    "description": "Developer quick login summary",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "authQuickLoginProgress": "正在登录，请稍候",
-  "@authQuickLoginProgress": {"description": "Quick login progress"},
+  "@authQuickLoginProgress": {
+    "description": "Quick login progress"
+  },
   "authRoleOwner": "所有者",
-  "@authRoleOwner": {"description": "Owner role"},
+  "@authRoleOwner": {
+    "description": "Owner role"
+  },
   "authRoleAdministrator": "管理员",
-  "@authRoleAdministrator": {"description": "Administrator role"},
+  "@authRoleAdministrator": {
+    "description": "Administrator role"
+  },
   "authRoleCustomerService": "客服",
-  "@authRoleCustomerService": {"description": "Customer service role"},
+  "@authRoleCustomerService": {
+    "description": "Customer service role"
+  },
   "authRoleTechnicalSupport": "技术支持",
-  "@authRoleTechnicalSupport": {"description": "Technical support role"},
+  "@authRoleTechnicalSupport": {
+    "description": "Technical support role"
+  },
   "authRoleEmployee": "普通员工",
-  "@authRoleEmployee": {"description": "Employee role"},
+  "@authRoleEmployee": {
+    "description": "Employee role"
+  },
   "authRoleMember": "成员",
-  "@authRoleMember": {"description": "Member role"},
+  "@authRoleMember": {
+    "description": "Member role"
+  },
   "authRoleEnterpriseCustomer": "企业空户",
-  "@authRoleEnterpriseCustomer": {"description": "Enterprise customer account role"},
+  "@authRoleEnterpriseCustomer": {
+    "description": "Enterprise customer account role"
+  },
   "authUnavailablePrefix": "不可用 · ",
-  "@authUnavailablePrefix": {"description": "Unavailable account prefix"},
+  "@authUnavailablePrefix": {
+    "description": "Unavailable account prefix"
+  },
   "authUnassignedService": "未分配客服",
-  "@authUnassignedService": {"description": "No assigned service staff"},
+  "@authUnassignedService": {
+    "description": "No assigned service staff"
+  },
   "authAssignedService": "归属{staff}",
-  "@authAssignedService": {"description": "Assigned service staff", "placeholders": {"staff": {"type": "String"}}},
+  "@authAssignedService": {
+    "description": "Assigned service staff",
+    "placeholders": {
+      "staff": {
+        "type": "String"
+      }
+    }
+  },
   "authCustomerIdentity": "客户 · {assignment}",
-  "@authCustomerIdentity": {"description": "Quick account customer identity", "placeholders": {"assignment": {"type": "String"}}},
+  "@authCustomerIdentity": {
+    "description": "Quick account customer identity",
+    "placeholders": {
+      "assignment": {
+        "type": "String"
+      }
+    }
+  },
   "authEmployeeIdentity": "员工 · {tenant}",
-  "@authEmployeeIdentity": {"description": "Quick account employee identity", "placeholders": {"tenant": {"type": "String"}}},
+  "@authEmployeeIdentity": {
+    "description": "Quick account employee identity",
+    "placeholders": {
+      "tenant": {
+        "type": "String"
+      }
+    }
+  },
   "authUserCount": "{count} 个用户",
-  "@authUserCount": {"description": "User count", "placeholders": {"count": {"type": "int"}}},
+  "@authUserCount": {
+    "description": "User count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "authMetaPhone": "电话",
-  "@authMetaPhone": {"description": "Phone metadata label"},
+  "@authMetaPhone": {
+    "description": "Phone metadata label"
+  },
   "authMetaIdentity": "身份",
-  "@authMetaIdentity": {"description": "Identity metadata label"},
+  "@authMetaIdentity": {
+    "description": "Identity metadata label"
+  },
   "authRegisterTitle": "注册",
-  "@authRegisterTitle": {"description": "Registration page title"},
+  "@authRegisterTitle": {
+    "description": "Registration page title"
+  },
   "authNickname": "昵称",
-  "@authNickname": {"description": "Nickname label"},
+  "@authNickname": {
+    "description": "Nickname label"
+  },
   "authNicknameHint": "设置昵称",
-  "@authNicknameHint": {"description": "Nickname hint"},
+  "@authNicknameHint": {
+    "description": "Nickname hint"
+  },
   "authPassword": "密码",
-  "@authPassword": {"description": "Password label"},
+  "@authPassword": {
+    "description": "Password label"
+  },
   "authPasswordSetHint": "设置密码（至少6位）",
-  "@authPasswordSetHint": {"description": "Password setup hint"},
+  "@authPasswordSetHint": {
+    "description": "Password setup hint"
+  },
   "authConfirmPassword": "确认密码",
-  "@authConfirmPassword": {"description": "Confirm password label"},
+  "@authConfirmPassword": {
+    "description": "Confirm password label"
+  },
   "authConfirmPasswordHint": "再次输入密码",
-  "@authConfirmPasswordHint": {"description": "Confirm password hint"},
+  "@authConfirmPasswordHint": {
+    "description": "Confirm password hint"
+  },
   "authVerificationCode": "验证码",
-  "@authVerificationCode": {"description": "Verification code label"},
+  "@authVerificationCode": {
+    "description": "Verification code label"
+  },
   "authRegisterAndLogin": "注册并登录",
-  "@authRegisterAndLogin": {"description": "Register and login button"},
+  "@authRegisterAndLogin": {
+    "description": "Register and login button"
+  },
   "authHaveAccount": "已有账户？",
-  "@authHaveAccount": {"description": "Existing account prompt"},
+  "@authHaveAccount": {
+    "description": "Existing account prompt"
+  },
   "authGoLogin": "去登录",
-  "@authGoLogin": {"description": "Return to login"},
+  "@authGoLogin": {
+    "description": "Return to login"
+  },
   "authEmailVerificationUnavailable": "邮箱验证码服务暂不可用，请改用手机号注册",
-  "@authEmailVerificationUnavailable": {"description": "Email verification unavailable"},
+  "@authEmailVerificationUnavailable": {
+    "description": "Email verification unavailable"
+  },
   "authSmsVerificationUnavailable": "短信验证码服务暂不可用，请改用邮箱注册",
-  "@authSmsVerificationUnavailable": {"description": "SMS verification unavailable"},
+  "@authSmsVerificationUnavailable": {
+    "description": "SMS verification unavailable"
+  },
   "authSendFailed": "发送失败，请重试",
-  "@authSendFailed": {"description": "Verification send failed"},
+  "@authSendFailed": {
+    "description": "Verification send failed"
+  },
   "authErrorEmptyNickname": "请输入昵称",
-  "@authErrorEmptyNickname": {"description": "Empty nickname error"},
+  "@authErrorEmptyNickname": {
+    "description": "Empty nickname error"
+  },
   "authErrorInvalidMobile": "手机号格式不正确",
-  "@authErrorInvalidMobile": {"description": "Invalid mobile error"},
+  "@authErrorInvalidMobile": {
+    "description": "Invalid mobile error"
+  },
   "authErrorInvalidEmail": "邮箱格式不正确",
-  "@authErrorInvalidEmail": {"description": "Invalid email error"},
+  "@authErrorInvalidEmail": {
+    "description": "Invalid email error"
+  },
   "authErrorPasswordTooShort": "密码至少6位",
-  "@authErrorPasswordTooShort": {"description": "Short password error"},
+  "@authErrorPasswordTooShort": {
+    "description": "Short password error"
+  },
   "authErrorPasswordMismatch": "两次密码不一致",
-  "@authErrorPasswordMismatch": {"description": "Password mismatch error"},
+  "@authErrorPasswordMismatch": {
+    "description": "Password mismatch error"
+  },
   "authErrorVerificationRequired": "请先获取并填写验证码",
-  "@authErrorVerificationRequired": {"description": "Verification required error"},
+  "@authErrorVerificationRequired": {
+    "description": "Verification required error"
+  },
   "authRegisterErrorTitle": "注册失败",
-  "@authRegisterErrorTitle": {"description": "Registration error title"},
+  "@authRegisterErrorTitle": {
+    "description": "Registration error title"
+  },
   "authGotIt": "知道了",
-  "@authGotIt": {"description": "Dismiss registration error"},
+  "@authGotIt": {
+    "description": "Dismiss registration error"
+  },
   "authJoinCredentialHint": "请输入邀请码",
-  "@authJoinCredentialHint": {"description": "Tenant or invitation code hint"},
+  "@authJoinCredentialHint": {
+    "description": "Tenant or invitation code hint"
+  },
   "authTenantNotFound": "未找到企业「{code}」，请确认企业码是否正确",
-  "@authTenantNotFound": {"description": "Tenant code not found", "placeholders": {"code": {"type": "String"}}},
+  "@authTenantNotFound": {
+    "description": "Tenant code not found",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "authTenantSearchFailed": "搜索失败，请重试",
-  "@authTenantSearchFailed": {"description": "Tenant search failed"},
+  "@authTenantSearchFailed": {
+    "description": "Tenant search failed"
+  },
   "authInvitationInvalid": "邀请码无效，请确认后重试",
-  "@authInvitationInvalid": {"description": "Invitation invalid"},
+  "@authInvitationInvalid": {
+    "description": "Invitation invalid"
+  },
   "authCollapseJoin": "收起加入信息",
-  "@authCollapseJoin": {"description": "Collapse join section"},
+  "@authCollapseJoin": {
+    "description": "Collapse join section"
+  },
   "authExpandJoin": "加入企业？输入邀请码（可选）",
-  "@authExpandJoin": {"description": "Expand optional join section"},
+  "@authExpandJoin": {
+    "description": "Expand optional join section"
+  },
   "authInvitationValid": "邀请码有效：{name}",
-  "@authInvitationValid": {"description": "Invitation preview success", "placeholders": {"name": {"type": "String"}}},
+  "@authInvitationValid": {
+    "description": "Invitation preview success",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "authTenantFound": "找到企业：{name}",
-  "@authTenantFound": {"description": "Tenant preview success", "placeholders": {"name": {"type": "String"}}},
+  "@authTenantFound": {
+    "description": "Tenant preview success",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "authJoinNotFound": "邀请码无效或不存在",
-  "@authJoinNotFound": {"description": "Join credential not found"},
+  "@authJoinNotFound": {
+    "description": "Join credential not found"
+  },
   "authJoinHelp": "输入企业提供的邀请码，可在注册后加入对应企业",
-  "@authJoinHelp": {"description": "Join credential help"},
+  "@authJoinHelp": {
+    "description": "Join credential help"
+  },
   "authSelectOrganization": "选择组织",
-  "@authSelectOrganization": {"description": "Tenant selection title"},
+  "@authSelectOrganization": {
+    "description": "Tenant selection title"
+  },
   "authNoOrganization": "暂无可用组织",
-  "@authNoOrganization": {"description": "No organization"},
+  "@authNoOrganization": {
+    "description": "No organization"
+  },
   "authNoOrganizationHint": "请联系管理员邀请您加入组织",
-  "@authNoOrganizationHint": {"description": "No organization guidance"},
+  "@authNoOrganizationHint": {
+    "description": "No organization guidance"
+  },
   "authPersonalSpace": "个人空间",
-  "@authPersonalSpace": {"description": "Personal space entry"},
+  "@authPersonalSpace": {
+    "description": "Personal space entry"
+  },
   "authPersonalSpaceSubtitle": "好友聊天、个人收藏",
-  "@authPersonalSpaceSubtitle": {"description": "Personal space description"},
+  "@authPersonalSpaceSubtitle": {
+    "description": "Personal space description"
+  },
   "authSpaceIdentityValidationFailed": "空间身份校验失败，请重试",
-  "@authSpaceIdentityValidationFailed": {"description": "Space identity validation failure"},
+  "@authSpaceIdentityValidationFailed": {
+    "description": "Space identity validation failure"
+  },
   "authPersonalSpaceRestoreFailed": "个人空间恢复失败，请重试",
-  "@authPersonalSpaceRestoreFailed": {"description": "Personal space restore failure"},
+  "@authPersonalSpaceRestoreFailed": {
+    "description": "Personal space restore failure"
+  },
   "authJoinEnterpriseFailed": "加入企业失败，请稍后重试",
-  "@authJoinEnterpriseFailed": {"description": "Join enterprise failure"},
+  "@authJoinEnterpriseFailed": {
+    "description": "Join enterprise failure"
+  },
   "homeTitle": "消息",
   "@homeTitle": {
     "description": "Home page title"
@@ -738,14 +1027,14 @@
     "description": "Translate not configured"
   },
   "chatVoiceToTextFailed": "转文字失败，请重试",
-  "chatTextToSpeechFailed": "朗读失败，请重试",
-  "chatVoiceToText": "转文字",
   "@chatVoiceToTextFailed": {
     "description": "Voice to text failed"
   },
+  "chatTextToSpeechFailed": "朗读失败，请重试",
   "@chatTextToSpeechFailed": {
     "description": "Text to speech failed"
   },
+  "chatVoiceToText": "转文字",
   "chatForwardSuccess": "已转发",
   "@chatForwardSuccess": {
     "description": "Forward success"
@@ -2871,62 +3160,151 @@
     "description": "Call cancelled"
   },
   "callUnknownPeer": "未知",
-  "@callUnknownPeer": {"description": "Unknown call peer"},
+  "@callUnknownPeer": {
+    "description": "Unknown call peer"
+  },
   "callVideoInvitation": "视频通话邀请",
-  "@callVideoInvitation": {"description": "Video call invitation"},
+  "@callVideoInvitation": {
+    "description": "Video call invitation"
+  },
   "callAudioInvitation": "语音通话邀请",
-  "@callAudioInvitation": {"description": "Audio call invitation"},
+  "@callAudioInvitation": {
+    "description": "Audio call invitation"
+  },
   "callAnswerAudio": "语音接听",
-  "@callAnswerAudio": {"description": "Answer without video"},
+  "@callAnswerAudio": {
+    "description": "Answer without video"
+  },
   "callAnswerVideo": "视频接听",
-  "@callAnswerVideo": {"description": "Answer with video"},
+  "@callAnswerVideo": {
+    "description": "Answer with video"
+  },
   "callViewProfile": "看他的近况",
-  "@callViewProfile": {"description": "View peer profile"},
+  "@callViewProfile": {
+    "description": "View peer profile"
+  },
   "callOpeningCamera": "正在打开摄像头...",
-  "@callOpeningCamera": {"description": "Opening camera"},
+  "@callOpeningCamera": {
+    "description": "Opening camera"
+  },
   "callWaitingRemoteVideo": "等待远端视频...",
-  "@callWaitingRemoteVideo": {"description": "Waiting for remote video"},
+  "@callWaitingRemoteVideo": {
+    "description": "Waiting for remote video"
+  },
   "callCameraOff": "摄像头已关闭",
-  "@callCameraOff": {"description": "Camera is off"},
+  "@callCameraOff": {
+    "description": "Camera is off"
+  },
   "callCameraOn": "摄像头已开",
-  "@callCameraOn": {"description": "Camera is on"},
+  "@callCameraOn": {
+    "description": "Camera is on"
+  },
   "callMicrophoneOff": "麦克风已关",
-  "@callMicrophoneOff": {"description": "Microphone is off"},
+  "@callMicrophoneOff": {
+    "description": "Microphone is off"
+  },
   "callMicrophoneOn": "麦克风已开",
-  "@callMicrophoneOn": {"description": "Microphone is on"},
+  "@callMicrophoneOn": {
+    "description": "Microphone is on"
+  },
   "callSpeakerOff": "扬声器已关",
-  "@callSpeakerOff": {"description": "Speaker is off"},
+  "@callSpeakerOff": {
+    "description": "Speaker is off"
+  },
   "callSpeakerOn": "扬声器已开",
-  "@callSpeakerOn": {"description": "Speaker is on"},
+  "@callSpeakerOn": {
+    "description": "Speaker is on"
+  },
   "callVideoPermissionFailure": "视频通话无法建立，请检查摄像头或麦克风权限后重试",
-  "@callVideoPermissionFailure": {"description": "Video media permission failure"},
+  "@callVideoPermissionFailure": {
+    "description": "Video media permission failure"
+  },
   "callAudioPermissionFailure": "语音通话无法建立，请检查麦克风权限后重试",
-  "@callAudioPermissionFailure": {"description": "Audio media permission failure"},
+  "@callAudioPermissionFailure": {
+    "description": "Audio media permission failure"
+  },
   "callIncompleteIncoming": "来电信息不完整，无法接听",
-  "@callIncompleteIncoming": {"description": "Incomplete incoming call"},
+  "@callIncompleteIncoming": {
+    "description": "Incomplete incoming call"
+  },
   "callInProgress": "通话中",
-  "@callInProgress": {"description": "Call in progress"},
+  "@callInProgress": {
+    "description": "Call in progress"
+  },
   "callCalling": "呼叫中...",
-  "@callCalling": {"description": "Calling status"},
+  "@callCalling": {
+    "description": "Calling status"
+  },
   "callEndedMedia": "{media}已结束",
-  "@callEndedMedia": {"description": "Ended call title", "placeholders": {"media": {"type": "String"}}},
+  "@callEndedMedia": {
+    "description": "Ended call title",
+    "placeholders": {
+      "media": {
+        "type": "String"
+      }
+    }
+  },
   "callRejectedMedia": "{media}已被拒绝",
-  "@callRejectedMedia": {"description": "Rejected call title", "placeholders": {"media": {"type": "String"}}},
+  "@callRejectedMedia": {
+    "description": "Rejected call title",
+    "placeholders": {
+      "media": {
+        "type": "String"
+      }
+    }
+  },
   "callUnansweredMedia": "{media}无人接听",
-  "@callUnansweredMedia": {"description": "Unanswered call title", "placeholders": {"media": {"type": "String"}}},
+  "@callUnansweredMedia": {
+    "description": "Unanswered call title",
+    "placeholders": {
+      "media": {
+        "type": "String"
+      }
+    }
+  },
   "callCancelledMedia": "{media}已取消",
-  "@callCancelledMedia": {"description": "Cancelled call title", "placeholders": {"media": {"type": "String"}}},
+  "@callCancelledMedia": {
+    "description": "Cancelled call title",
+    "placeholders": {
+      "media": {
+        "type": "String"
+      }
+    }
+  },
   "callConnectionLost": "通话连接中断",
-  "@callConnectionLost": {"description": "Call connection lost"},
+  "@callConnectionLost": {
+    "description": "Call connection lost"
+  },
   "callAdminEnded": "通话已被结束",
-  "@callAdminEnded": {"description": "Call ended by administrator"},
+  "@callAdminEnded": {
+    "description": "Call ended by administrator"
+  },
   "callFailedMedia": "{media}失败",
-  "@callFailedMedia": {"description": "Failed call title", "placeholders": {"media": {"type": "String"}}},
+  "@callFailedMedia": {
+    "description": "Failed call title",
+    "placeholders": {
+      "media": {
+        "type": "String"
+      }
+    }
+  },
   "callBusy": "对方忙线中",
-  "@callBusy": {"description": "Peer is busy"},
+  "@callBusy": {
+    "description": "Peer is busy"
+  },
   "callDurationValue": "通话时长 {duration}",
-  "@callDurationValue": {"description": "Call duration value", "placeholders": {"duration": {"type": "String"}}},
+  "@callDurationValue": {
+    "description": "Call duration value",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "callNotConnected": "未接通",
+  "@callNotConnected": {
+    "description": "Call did not connect"
+  },
   "callDialed": "已拨出",
   "callAnswered": "已接听",
   "callRejectedByPeer": "对方已拒绝",
@@ -2946,9 +3324,43 @@
   "notificationLocationPreview": "分享了一个位置",
   "notificationLinkPreview": "分享了一个链接",
   "notificationMentionMe": "@了你：{body}",
+  "@notificationMentionMe": {
+    "placeholders": {
+      "body": {
+        "type": "String"
+      }
+    }
+  },
   "notificationMentionMeBy": "{sender} @了你：{body}",
+  "@notificationMentionMeBy": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      },
+      "body": {
+        "type": "String"
+      }
+    }
+  },
   "notificationMentionAll": "@所有人：{body}",
+  "@notificationMentionAll": {
+    "placeholders": {
+      "body": {
+        "type": "String"
+      }
+    }
+  },
   "notificationMentionAllBy": "{sender} @所有人：{body}",
+  "@notificationMentionAllBy": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      },
+      "body": {
+        "type": "String"
+      }
+    }
+  },
   "notificationSecurityTitle": "账号安全提醒",
   "notificationSecurityBody": "你的微界账号出现安全变更，请及时查看。",
   "notificationFriendAcceptedTitle": "好友申请已通过",
@@ -2958,7 +3370,21 @@
   "notificationVideoCallTitle": "视频通话邀请",
   "notificationAudioCallTitle": "语音通话邀请",
   "notificationVideoCallBody": "{caller}邀请你进行视频通话",
+  "@notificationVideoCallBody": {
+    "placeholders": {
+      "caller": {
+        "type": "String"
+      }
+    }
+  },
   "notificationAudioCallBody": "{caller}邀请你进行语音通话",
+  "@notificationAudioCallBody": {
+    "placeholders": {
+      "caller": {
+        "type": "String"
+      }
+    }
+  },
   "notificationMessageChannelName": "消息通知",
   "notificationMessageChannelDescription": "聊天消息、通话记录和系统消息提醒",
   "notificationCallChannelName": "通话通知",
@@ -2966,13 +3392,6 @@
   "notificationSecurityChannelName": "账号安全通知",
   "notificationSecurityChannelDescription": "账号登录、密码和手机号变更提醒",
   "notificationUnknownCaller": "未知来电人",
-  "@notificationMentionMe": {"placeholders": {"body": {"type": "String"}}},
-  "@notificationMentionMeBy": {"placeholders": {"sender": {"type": "String"}, "body": {"type": "String"}}},
-  "@notificationMentionAll": {"placeholders": {"body": {"type": "String"}}},
-  "@notificationMentionAllBy": {"placeholders": {"sender": {"type": "String"}, "body": {"type": "String"}}},
-  "@notificationVideoCallBody": {"placeholders": {"caller": {"type": "String"}}},
-  "@notificationAudioCallBody": {"placeholders": {"caller": {"type": "String"}}},
-  "@callNotConnected": {"description": "Call did not connect"},
   "pendingJoinRequestsTitle": "新的申请",
   "@pendingJoinRequestsTitle": {
     "description": "Pending join requests title"
@@ -3286,6 +3705,13 @@
   "diagnosticsDay": "最近24小时",
   "diagnosticsWeek": "最近7天",
   "diagnosticsEventCount": "可用记录：{count}条",
+  "@diagnosticsEventCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diagnosticsPersistent": "日志已保存在本机，重启后可继续导出。",
   "diagnosticsNotPersistent": "部分日志尚未持久化，请稍后刷新。",
   "diagnosticsExport": "导出并分享",
@@ -3295,12 +3721,5 @@
   "diagnosticsShared": "已完成系统分享操作，请在目标应用确认文件。",
   "diagnosticsCancelled": "已取消分享，可再次导出。",
   "diagnosticsUnconfirmed": "无法确认分享结果，请在目标应用检查。",
-  "diagnosticsFailed": "操作失败，请重试。",
-  "@diagnosticsEventCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
+  "diagnosticsFailed": "操作失败，请重试。"
 }

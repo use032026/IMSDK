@@ -1,0 +1,226 @@
+{
+  "generatedBy": "scripts/write_localization_manifest.py",
+  "schemaVersion": 1,
+  "catalogVersion": "0.3.0",
+  "localeCount": 35,
+  "keysPerLocale": 1040,
+  "locales": [
+    {
+      "locale": "zh-CN",
+      "resourceLocale": "zh",
+      "arbSha256": "80127d67c8e6913e92d676f46f1b2bb8053c12bee8eeefc690fdf3cb5ee1ffa5"
+    },
+    {
+      "locale": "zh-TW",
+      "resourceLocale": "zh_TW",
+      "arbSha256": "4b0c8c9f3a98228a6655934788665fe64253c4229acc8ec48299b599ab4451c6"
+    },
+    {
+      "locale": "en",
+      "resourceLocale": "en",
+      "arbSha256": "6bbb622dbde2dc8c0a08c934b546fa60d5cd2221650d8715dd6bb6495c00277c"
+    },
+    {
+      "locale": "ja",
+      "resourceLocale": "ja",
+      "arbSha256": "4f0a826ad8495fd4bb0cedb1b71a953adcce051ee3b995a80e05007e40c07470"
+    },
+    {
+      "locale": "ko",
+      "resourceLocale": "ko",
+      "arbSha256": "89b14a7113108c00b094f1e8ddf770977d20883a0a6694c6934b86bff90ae225"
+    },
+    {
+      "locale": "vi",
+      "resourceLocale": "vi",
+      "arbSha256": "515348e151a62d9f06e105a40bb70047de230aa361513b0202b64d62d2f44bd2"
+    },
+    {
+      "locale": "ar",
+      "resourceLocale": "ar",
+      "arbSha256": "e7b1181b91b595f69a3fb2934dc2d9b05debde485b7d628ff53ae1aa25e76e57"
+    },
+    {
+      "locale": "bg",
+      "resourceLocale": "bg",
+      "arbSha256": "fa3964ac3678c63844df714b5ecbfa1f10865fcfbe39a7d58a5f1107115647b5"
+    },
+    {
+      "locale": "cs",
+      "resourceLocale": "cs",
+      "arbSha256": "04e926760f2f47998a37a11fc3a9eb14c7170b72ee941d988194b8644bbd15d2"
+    },
+    {
+      "locale": "da",
+      "resourceLocale": "da",
+      "arbSha256": "43cd492e3bd38755f36358dc82c3c74a33c9d1369332040a38004e85737dad94"
+    },
+    {
+      "locale": "de",
+      "resourceLocale": "de",
+      "arbSha256": "9660f74ba2b0b410972abd20ebd4a2248e3bbb99136b20c77c0f7e47061b8672"
+    },
+    {
+      "locale": "el",
+      "resourceLocale": "el",
+      "arbSha256": "e9980e14b4b9036812ab3ae7520541e8543449ea1a4e17118362d90d69b428ca"
+    },
+    {
+      "locale": "es",
+      "resourceLocale": "es",
+      "arbSha256": "bb5d6f314ad97bff2cf8fae13f8af759a3fcd36468d4f80d7f4cdacdf787716d"
+    },
+    {
+      "locale": "fi",
+      "resourceLocale": "fi",
+      "arbSha256": "d8f92d87c8504beda667ca440b8bf27f9073ff86e10cb09710922887813d6ba3"
+    },
+    {
+      "locale": "fil",
+      "resourceLocale": "fil",
+      "arbSha256": "907a37ede9c414b5af84b59cc0d0e4ec019db31e6145aea235f68d5eed70a347"
+    },
+    {
+      "locale": "fr",
+      "resourceLocale": "fr",
+      "arbSha256": "db9176f1fa7c846bee71b9c1bb52144c653dcb5070e4043459a2682930eeda5c"
+    },
+    {
+      "locale": "hi",
+      "resourceLocale": "hi",
+      "arbSha256": "32b26778f1e91e756fa055d4afd98cf13bd38f847f93d44761f1b803753d5286"
+    },
+    {
+      "locale": "hr",
+      "resourceLocale": "hr",
+      "arbSha256": "008000debbac2f40e2509ce0d46940fb24eec61fd513a8ef73edb9ce709c4630"
+    },
+    {
+      "locale": "hu",
+      "resourceLocale": "hu",
+      "arbSha256": "3bf15d37e5a5f0cfdc3438ad5ae3394e8f1bb2fd6e892a9301926ddaf9fb314b"
+    },
+    {
+      "locale": "id",
+      "resourceLocale": "id",
+      "arbSha256": "b27242146b799254657a3f21bc5ed31a78ca12414dd96d7bd14128ec01cc3304"
+    },
+    {
+      "locale": "it",
+      "resourceLocale": "it",
+      "arbSha256": "a5e0fe91a27091e71660f38cb8878b91034480cd8e19fee73c2595418af9911c"
+    },
+    {
+      "locale": "ms",
+      "resourceLocale": "ms",
+      "arbSha256": "92a9a7e182785bb5f962b824ea83c6052d10a4bf13b30bad77d1d3ed8c4d863a"
+    },
+    {
+      "locale": "nb",
+      "resourceLocale": "nb",
+      "arbSha256": "3b3af78681497aee6499ee199209f6ae15e8f670fec40e0e29bb58c1e9bbb8d1"
+    },
+    {
+      "locale": "nl",
+      "resourceLocale": "nl",
+      "arbSha256": "8fab1435f31033b7d78b037e4d0d91087fd32f85a4bfeeb430e20c86b891ed10"
+    },
+    {
+      "locale": "pl",
+      "resourceLocale": "pl",
+      "arbSha256": "b7b60d36cc6328029676ac827fd16bda23418560ec2303ce744f8d6ba1fccc50"
+    },
+    {
+      "locale": "pt-BR",
+      "resourceLocale": "pt",
+      "arbSha256": "e25a78a7884e93e4e779be974cadcc87701f64a9a2c1f5de5e5b7da30c1cd0f4"
+    },
+    {
+      "locale": "pt-PT",
+      "resourceLocale": "pt_PT",
+      "arbSha256": "70d90805766426d0d915375cda9e296875a57b0e5b6cea718330c0888fba0596"
+    },
+    {
+      "locale": "ro",
+      "resourceLocale": "ro",
+      "arbSha256": "d7e89e17b117cb14fab0b5982ea499048f3323d18c3be03458d61b0bff18db6b"
+    },
+    {
+      "locale": "ru",
+      "resourceLocale": "ru",
+      "arbSha256": "2f386105ac5506598ed45361a94217fd0b83b47ef2886457481876548fa083f7"
+    },
+    {
+      "locale": "si",
+      "resourceLocale": "si",
+      "arbSha256": "063b8631d4367dc35f746df49be50abd49c992b8e94f8ab382ad512e398f5f8a"
+    },
+    {
+      "locale": "sk",
+      "resourceLocale": "sk",
+      "arbSha256": "561629f3c1d2ea85a71da99ec3972989545a70ab841e81f3f9c24e884022cf93"
+    },
+    {
+      "locale": "sv",
+      "resourceLocale": "sv",
+      "arbSha256": "e06f84a6252ece7f1fadd8bcc8e0eabe34c7311bf467f1dd7a5a1251859fc63d"
+    },
+    {
+      "locale": "th",
+      "resourceLocale": "th",
+      "arbSha256": "ca93ee11049411df87b40bc5cf251d5881cb95ef903bd5d08cda771fe871e1b1"
+    },
+    {
+      "locale": "tr",
+      "resourceLocale": "tr",
+      "arbSha256": "14011a8b309c2da9a4d3761098d72e51028b6798189988916f33aa908312fd0f"
+    },
+    {
+      "locale": "uk",
+      "resourceLocale": "uk",
+      "arbSha256": "ac25e49b91d63b4d9f2cee42d731abf8711ee8f11ded80943c32459a7bd7ed1b"
+    }
+  ],
+  "generatedSourceSha256": {
+    "lib/l10n/app_localizations.dart": "77bdf7ce2ff9a92f9e821c4a514bdce6bd8075426a0dfa9da51f77eb3f0db92d",
+    "lib/l10n/app_localizations_ar.dart": "33d35da4fb9d02cb422b802961ef8002dcae3e922a120f01507f231e767fc701",
+    "lib/l10n/app_localizations_bg.dart": "a439be2550cb272479826c6a0be4a9aef30c47196996710ce2d256ee5699251b",
+    "lib/l10n/app_localizations_cs.dart": "24ffb09add3d120968f14532c3d1540e05d543ce422a61d9ce4e8ebe01fc57c4",
+    "lib/l10n/app_localizations_da.dart": "3507ab8f7b733dedb60072d060e889fefc1c837f0880df89d8c305e728619f16",
+    "lib/l10n/app_localizations_de.dart": "c5df8cb99e83b2f71f84c5a5bd889aec78eb1c18fc8fc95e652c183646b7a4c4",
+    "lib/l10n/app_localizations_el.dart": "b5761136644518f41ed6c34f6c9406729fd47c3b592716a5de0719dffda8d7af",
+    "lib/l10n/app_localizations_en.dart": "e33f7f1dbed5ac54b4a2703d93536df08ed9cdf1d793212bd223dc7f4fcdd27c",
+    "lib/l10n/app_localizations_es.dart": "60f95c0ef84d8c14bf98c4096f5e3d3b4b29dc71a1ad6ae7d5e75b375c780a43",
+    "lib/l10n/app_localizations_fi.dart": "25733400275ee0be538f71101af966b940604dc02dfd307d1d55180dfe0c6936",
+    "lib/l10n/app_localizations_fil.dart": "d4297c5bf21c1435eb101587b25cdcbba99209120faf82c6e4e0793a41466dfd",
+    "lib/l10n/app_localizations_fr.dart": "c5627238d2427e17a08638d038d40722fcbe4e10405ad8d2191cbd2ff69d18c0",
+    "lib/l10n/app_localizations_hi.dart": "72b7ab5728e879c7f9bb5c16fa8008a5736deb21bf4145bd504001f015e4037e",
+    "lib/l10n/app_localizations_hr.dart": "1b889a3d040fd76f40884ecf105c3b9941e441320de2e1341f3acb42588110ef",
+    "lib/l10n/app_localizations_hu.dart": "03d1ca8b2fdef28e1082f62a54436dccaed348ffa8bda6c7406b8fee3fe3a9bc",
+    "lib/l10n/app_localizations_id.dart": "a50ffe54f4b11bd3357964e468e0740d3891fe3864c5c522cbd6e78ec7cd5e70",
+    "lib/l10n/app_localizations_it.dart": "293008731837c95b06599474e2531f156237708cb77f99c51bece041bf3974b2",
+    "lib/l10n/app_localizations_ja.dart": "84a784dffefdb31ff0a80eee2546764bc250cc85cac3215a1c7dcccb24ff8e5c",
+    "lib/l10n/app_localizations_ko.dart": "b684c00bd4cfff03c9c10fc65b2a987671e48065398d40c7e74c5d5261ee956c",
+    "lib/l10n/app_localizations_ms.dart": "94d4c41e63b1278bf18a97e820bf2ee82516369c76aeb4d980896d92ab888450",
+    "lib/l10n/app_localizations_nb.dart": "8b364630499790f9f21a4d2a1b11107dc9d74cb7f9d378870b80935bdae05676",
+    "lib/l10n/app_localizations_nl.dart": "51e33eb27f9521e240129738fbe2edad2a4ecef212df5a56cb67589404b3b1ac",
+    "lib/l10n/app_localizations_pl.dart": "ab394e956cb2cd8dab6633ecde4b7db8fd59fcd41855504383df3b301837f8a4",
+    "lib/l10n/app_localizations_pt.dart": "fc284774b965a4042adfb25bfb90b5a71b65aafef5eabb7936403b4ccdda9ed6",
+    "lib/l10n/app_localizations_ro.dart": "3552763b9a0095c1070bc75eac2bb7ccac5b57f88996971d63ef222e82ede0dd",
+    "lib/l10n/app_localizations_ru.dart": "4243359ed59a79a022dfb43f7d65ec81db0e580f5debbc9c5c669e2d4f4c3fff",
+    "lib/l10n/app_localizations_si.dart": "9852d1a41f15aa253d5ac41a03d0ab0bd7b526186ba1c2dea4daa781baac8cf3",
+    "lib/l10n/app_localizations_sk.dart": "4a68a6bc20f03cbd40d8b147c17b729a55e52c4c8deb9e4139907f75f2e5f610",
+    "lib/l10n/app_localizations_sv.dart": "5648aac348ab5e5ff52aeb6efac77f00297a31727115f873303200c6629f0bb4",
+    "lib/l10n/app_localizations_th.dart": "98e92b8223d2f596a39f6ba4f8cec93dde278c7b708ee38b1f75a0adba8aae44",
+    "lib/l10n/app_localizations_tr.dart": "f841aeff314376e57e4f40f6bd781f81f4521572db80ed4034894147d7c675db",
+    "lib/l10n/app_localizations_uk.dart": "02dd5bbb8f0a477273eca95b8c4e87004d088422bf67b46d98079a15f3cf133b",
+    "lib/l10n/app_localizations_vi.dart": "e97431b9f65bf27b2ec4eb610cf1edd6d44b8e13163b023e77fde82dc03a9097",
+    "lib/l10n/app_localizations_zh.dart": "bed210485609a319288fcd274be834f002b63fb16928460f7bc8cef97bd08471",
+    "lib/generated/l10n/sdk_coverage.json": "372ca4b97d4eff6afa1e34fe7a8c2745c8a6187f634ba87a90cfb3199a3171fe",
+    "lib/generated/l10n/sdk_legal_documents.g.dart": "0d8e29d3f3929b3356392fb02fc6aa1b12a7d5d060edb3a1fb51f1cffd40d23b",
+    "lib/generated/l10n/sdk_resources.dart": "8389d2b42e6c64ac07226127067e1a1e1d974856c55997a50db4cff6e9016b53"
+  },
+  "bundleReceiptSha256": "6fcb9a8c7ddc5c6bec9e7d42bdfa42c65732de3b5c9d4c021303661295cfc74b",
+  "fallbackPolicy": "SDK/Web exclusive missing translations use English. Existing legal bodies retain their original selection and fallback.",
+  "coverageSha256": "372ca4b97d4eff6afa1e34fe7a8c2745c8a6187f634ba87a90cfb3199a3171fe"
+}

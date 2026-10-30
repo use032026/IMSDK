@@ -1,6 +1,8 @@
 import 'package:im_sdk/core/storage/hive_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:im_sdk/generated/l10n/sdk_resources.dart'
+    show sdkSupportedLocales;
 
 const _kLocaleKey = 'app_locale';
 
@@ -43,52 +45,92 @@ Locale resolveInitialLocale(Locale platformLocale) {
 }
 
 /// 支持的语言列表
-const kSupportedLocales = [
-  (Locale('zh', 'CN'), '简体中文'),
-  (Locale('zh', 'TW'), '繁體中文'),
-  (Locale('en'), 'English'),
-  (Locale('ja'), '日本語'),
-  (Locale('ko'), '한국어'),
-  (Locale('vi'), 'Tiếng Việt'),
-];
+const kSupportedLocales = sdkSupportedLocales;
 
 const _simplifiedChineseLocale = Locale('zh', 'CN');
 const _traditionalChineseLocale = Locale('zh', 'TW');
 
 Locale? supportedLocaleFromTag(String? value) {
-  final normalized = value?.trim().replaceAll('-', '_');
+  var normalized = value?.trim().replaceAll('_', '-');
   if (normalized == null || normalized.isEmpty) return null;
-  final parts = normalized.split('_');
-  if (parts.length > 2 || parts.first.isEmpty) return null;
-  return normalizedSupportedLocale(
-    Locale(parts.first, parts.length == 2 ? parts.last : null),
-  );
+  // Historical host codes use ptBR/ptPT as well as BCP-47 separators.
+  final compactPortuguese =
+      RegExp(r'^pt(br|pt)$', caseSensitive: false).firstMatch(normalized);
+  if (compactPortuguese != null) {
+    normalized = 'pt-${compactPortuguese.group(1)}';
+  }
+  final parts = normalized.split('-');
+  if (parts.length > 3 || !RegExp(r'^[a-zA-Z]{2,3}$').hasMatch(parts.first))
+    return null;
+  final hasScript =
+      parts.length > 1 && RegExp(r'^[a-zA-Z]{4}$').hasMatch(parts[1]);
+  if (parts.length == 3 && !hasScript) return null;
+  final country = hasScript
+      ? (parts.length == 3 ? parts[2] : null)
+      : (parts.length == 2 ? parts[1] : null);
+  if (country != null &&
+      !RegExp(r'^(?:[a-zA-Z]{2}|[0-9]{3})$').hasMatch(country)) return null;
+  return normalizedSupportedLocale(Locale.fromSubtags(
+    languageCode: parts.first,
+    scriptCode: hasScript ? parts[1] : null,
+    countryCode: country,
+  ));
 }
 
-Locale supportedLocaleOrFallback(Locale locale) {
-  return normalizedSupportedLocale(locale) ?? _simplifiedChineseLocale;
-}
+Locale supportedLocaleOrFallback(Locale locale) =>
+    normalizedSupportedLocale(locale) ?? _simplifiedChineseLocale;
 
 Locale? normalizedSupportedLocale(Locale locale) {
-  final languageCode = locale.languageCode.trim().toLowerCase();
-  final countryCode = locale.countryCode?.trim().toUpperCase();
-  final scriptCode = locale.scriptCode?.trim().toLowerCase();
-  if (languageCode == 'zh') {
-    if (scriptCode == 'hant') return _traditionalChineseLocale;
-    if (scriptCode == 'hans') return _simplifiedChineseLocale;
-    return switch (countryCode) {
-      'TW' || 'HK' || 'MO' => _traditionalChineseLocale,
-      null || '' || 'CN' || 'SG' => _simplifiedChineseLocale,
-      _ => null,
-    };
-  }
-  return switch (languageCode) {
-    'en' => const Locale('en'),
-    'ja' => const Locale('ja'),
-    'ko' => const Locale('ko'),
-    'vi' => const Locale('vi'),
-    _ => null,
+  final language = switch (locale.languageCode.trim().toLowerCase()) {
+    'no' => 'nb',
+    'tl' => 'fil',
+    'in' => 'id',
+    final code => code,
   };
+  final country = locale.countryCode?.trim().toUpperCase();
+  final script = locale.scriptCode?.trim().toLowerCase();
+  if (country != null &&
+      country.isNotEmpty &&
+      !RegExp(r'^(?:[A-Z]{2}|[0-9]{3})$').hasMatch(country)) return null;
+  if (language == 'zh') {
+    if (country != null &&
+        country.isNotEmpty &&
+        !const {'CN', 'SG', 'TW', 'HK', 'MO'}.contains(country)) return null;
+    if (script == 'hant') return _traditionalChineseLocale;
+    if (script == 'hans') return _simplifiedChineseLocale;
+    if (script != null && script.isNotEmpty) return null;
+    return const {'TW', 'HK', 'MO'}.contains(country)
+        ? _traditionalChineseLocale
+        : _simplifiedChineseLocale;
+  }
+  if (script != null && script.isNotEmpty) {
+    const nonLatinScripts = {
+      'ar': 'arab',
+      'bg': 'cyrl',
+      'el': 'grek',
+      'hi': 'deva',
+      'ja': 'jpan',
+      'ko': 'kore',
+      'ru': 'cyrl',
+      'si': 'sinh',
+      'th': 'thai',
+      'uk': 'cyrl',
+    };
+    if (script != (nonLatinScripts[language] ?? 'latn')) return null;
+  }
+  if (language == 'pt') {
+    final selected = country == 'PT' ? 'PT' : 'BR';
+    for (final (candidate, _) in kSupportedLocales) {
+      if (candidate.languageCode == 'pt' && candidate.countryCode == selected) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+  for (final (candidate, _) in kSupportedLocales) {
+    if (candidate.languageCode == language) return candidate;
+  }
+  return null;
 }
 
 String translationTargetLanguageForLocale(Locale locale) {

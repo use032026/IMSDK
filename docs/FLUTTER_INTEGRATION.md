@@ -1,4 +1,4 @@
-# Flutter 宿主接入（0.1.2）
+# Flutter 宿主接入（0.1.3）
 
 主要流程为 **注册 / 登录 → 会话列表 → 添加好友 → 单聊 / 新建群聊及群聊**。注册完成后默认登录个人空间，服务端直接返回企业登录态时进入企业空间；不显示空间选择，同时只登录一个空间。已有账号的个人/企业登录方式由接入方配置，用户不填写 token、空间 ID 或会话 ID。
 
@@ -75,7 +75,7 @@ await client.registerWithPassword(
 
 宿主主题与语言使用初始化配置的 `themeMode` / `locale`，已打开页面通过 `client.updatePresentation(...)` 更新；详见 [主题与语言同步](HOST_PRESENTATION_SYNC.md)。
 
-需要跟随宿主自动登录 / 退出时，按 [宿主管理登录态](HOST_SESSION_SYNC.md) 启用 `hostManagedAuth` 并绑定 `ImSdkHostSessionProvider`。该模式从宿主会话与受信后端取票，不显示 SDK 密码登录页；以下主动 `authenticate` 用法适用于默认独立登录模式。新增接口属于本次修改后的源码，已有分发二进制尚未更新。
+需要跟随宿主自动登录 / 退出时，按 [宿主管理登录态](HOST_SESSION_SYNC.md) 启用 `hostManagedAuth` 并绑定 `ImSdkHostSessionProvider`。该模式从宿主会话与受信后端取票，不显示 SDK 密码登录页；以下主动 `authenticate` 用法适用于默认独立登录模式。相关接口已进入 0.1.3 原生交付包；真实宿主及后端联调仍需另行验收。
 
 其他 App 账号的打通由双方服务端完成：认证宿主用户、建立稳定 IM 身份映射、签发和刷新 IM 凭证，并校验联系人、会话及群成员权限。SDK 新增密码入口复用已有 IM 登录协议，不能据此认定其他 App 的账号已接通。
 
@@ -90,7 +90,11 @@ await client.registerWithPassword(
 
 `logout` 先停用本 SDK 的本地会话并安排凭证清理；后续认证会等待清理完成，`dispose` 会等待尚未完成的退出清理再释放资源。服务端令牌撤销和宿主账号退出策略由后端负责。推送、系统通知权限和后台恢复仍需要按宿主配置接入，不能以页面能打开推断后台连接可常驻。
 
-## 运行样例与验证
+## 当前版本验证范围
+
+0.1.3 包含 35 语资源，已通过构建、独立消费与逐文件校验；没有本版真实服务、原生宿主运行或实体设备验收，详见 [35 语交付说明](L10N35_DELIVERY-2026-10-29.md)。
+
+## 运行样例与历史验证
 
 示例仅引用公开入口 `package:im_sdk/im_sdk.dart`，通过构建配置指定服务及个人/企业聊天空间，不内置业务账号或假消息。详细运行参数见 [Flutter 示例](../examples/flutter_host/README.md)。Android/iOS 工程分别保留平台权限、Java desugaring 和 iOS 15 配置；实体 iPhone 签名由接入方配置，Android debug 签名只用于开发验证。
 

@@ -20,6 +20,9 @@ typedef void (^IMHostCompletion)(id _Nullable value, NSError * _Nullable error);
 - (void)openCustomerServiceFrom:(UIViewController *)presenter
                         target:(NSDictionary<NSString *, id> *)target
                     completion:(IMHostCompletion)completion;
+- (void)updatePresentationWithLocale:(NSString *)locale
+                          themeMode:(NSString *)themeMode
+                         completion:(IMHostCompletion)completion;
 - (void)logoutWithCompletion:(IMHostCompletion)completion;
 - (void)shutdownWithCompletion:(IMHostCompletion)completion;
 @end
@@ -71,6 +74,14 @@ typedef void (^IMHostCompletion)(id _Nullable value, NSError * _Nullable error);
                     completion:(IMHostCompletion)completion {
     [IMSDK shared].eventListener = self;
     [[IMSDK shared] openCustomerServiceFromViewController:presenter target:target completion:completion];
+}
+
+// 已初始化后同步宿主最终选择的语言与主题。
+- (void)updatePresentationWithLocale:(NSString *)locale
+                          themeMode:(NSString *)themeMode
+                         completion:(IMHostCompletion)completion {
+    [[IMSDK shared] updatePresentationWithSettings:@{@"locale": locale, @"themeMode": themeMode}
+                                       completion:completion];
 }
 
 // 宿主账号退出时协调调用；不会代替服务端 token 撤销。

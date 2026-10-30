@@ -9,6 +9,8 @@
 static NSString *IMSDKPresentationLocale(NSString *languageCode) {
   NSString *tag = [[languageCode ?: @"" stringByTrimmingCharactersInSet:
       NSCharacterSet.whitespaceAndNewlineCharacterSet] stringByReplacingOccurrencesOfString:@"_" withString:@"-"].lowercaseString;
+  if ([tag isEqualToString:@"ptbr"]) tag = @"pt-br";
+  if ([tag isEqualToString:@"ptpt"]) tag = @"pt-pt";
   NSArray<NSString *> *parts = [tag componentsSeparatedByString:@"-"];
   NSString *language = parts.firstObject;
   if ([language isEqualToString:@"zh"]) {
@@ -17,9 +19,18 @@ static NSString *IMSDKPresentationLocale(NSString *languageCode) {
     return [parts containsObject:@"tw"] || [parts containsObject:@"hk"] ||
         [parts containsObject:@"mo"] ? @"zh-TW" : @"zh-CN";
   }
-  if ([@[@"en", @"ja", @"ko", @"vi"] containsObject:language]) return language;
-  // The host ships more languages than this SDK. English is the explicit
-  // reference-adapter fallback; never pretend the missing resources exist.
+  if ([language isEqualToString:@"pt"]) {
+    // The catalog's bare pt resource is Brazilian Portuguese.
+    return [parts.lastObject isEqualToString:@"pt"] && parts.count > 1 ? @"pt-PT" : @"pt-BR";
+  }
+  if ([language isEqualToString:@"no"]) language = @"nb";
+  if ([language isEqualToString:@"tl"]) language = @"fil";
+  if ([language isEqualToString:@"in"]) language = @"id";
+  if ([@[@"en", @"ja", @"ko", @"vi", @"ar", @"bg", @"cs", @"da",
+        @"de", @"el", @"es", @"fi", @"fil", @"fr", @"hi", @"hr", @"hu",
+        @"id", @"it", @"ms", @"nb", @"nl", @"pl", @"ro", @"ru", @"si",
+        @"sk", @"sv", @"th", @"tr", @"uk"] containsObject:language]) return language;
+  // Unknown host language codes retain an explicit English fallback.
   return @"en";
 }
 

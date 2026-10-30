@@ -1,3 +1,6 @@
+import 'package:im_sdk/core/providers/locale_provider.dart'
+    show supportedLocaleFromTag;
+
 /// Configuration belongs to one SDK runtime in a Flutter isolate.
 class ImSdkConfig {
   const ImSdkConfig({
@@ -126,53 +129,15 @@ class ImSdkConfig {
 /// Canonical SDK language identifiers. Explicit unsupported languages fail
 /// closed rather than silently changing the user's selected language.
 String normalizeImSdkLocale(String value) {
-  final tag = value.trim().replaceAll('_', '-').toLowerCase();
-  if (tag == 'system') return tag;
-  final parts = tag.split('-');
-  if (parts.isEmpty || parts.length > 3 || parts.any((part) => part.isEmpty)) {
+  if (value.trim().toLowerCase() == 'system') return 'system';
+  final locale = supportedLocaleFromTag(value);
+  if (locale == null) {
     throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
   }
-  final language = parts.first;
-  if (!const {'zh', 'en', 'ja', 'ko', 'vi'}.contains(language)) {
-    throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
-  }
-  String? script;
-  String? region;
-  for (final part in parts.skip(1)) {
-    if (RegExp(r'^[a-z]{4}$').hasMatch(part) &&
-        script == null &&
-        region == null) {
-      script = part;
-    } else if (RegExp(r'^(?:[a-z]{2}|[0-9]{3})$').hasMatch(part) &&
-        region == null) {
-      region = part;
-    } else {
-      throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
-    }
-  }
-  if (language == 'zh') {
-    if (script != null && script != 'hans' && script != 'hant') {
-      throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
-    }
-    if (region != null &&
-        !const {'cn', 'sg', 'tw', 'hk', 'mo'}.contains(region)) {
-      throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
-    }
-    if (script == 'hant' ||
-        (script == null && const {'tw', 'hk', 'mo'}.contains(region)))
-      return 'zh-TW';
-    return 'zh-CN';
-  }
-  final allowedScript = switch (language) {
-    'en' || 'vi' => 'latn',
-    'ja' => 'jpan',
-    'ko' => 'kore',
-    _ => '',
-  };
-  if (script != null && script != allowedScript) {
-    throw const ImSdkException('INVALID_PRESENTATION', '语言配置无效');
-  }
-  return language;
+  final country = locale.countryCode;
+  return country == null || country.isEmpty
+      ? locale.languageCode
+      : '${locale.languageCode}-$country';
 }
 
 /// Fixed authentication routing supplied by the integrating app, never by the

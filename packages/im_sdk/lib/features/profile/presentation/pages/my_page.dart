@@ -90,7 +90,7 @@ class MyPage extends ConsumerWidget {
                 l.$1.countryCode == currentLocale.countryCode)
             .map((l) => l.$2)
             .firstOrNull ??
-        '简体中文';
+        kSupportedLocales.first.$2;
 
     // 根据空间类型构建不同菜单
     final menuRows = <_MenuRow>[];

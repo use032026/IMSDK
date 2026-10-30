@@ -1,6 +1,6 @@
 # 构建与交付
 
-本轮版本为原生 / Flutter **0.1.2**、Web **0.1.5**。源码真实服务注册、好友、会话及单 / 群聊流程与退出 / 立即释放增量验证通过；新二进制独立消费及 iOS / Android 专用模拟器宿主登录、已有单群历史显示与退出释放亦通过。具体构建、运行和真机边界分别记录，见交付包 MANIFEST 和 `logs/unification-release-20261028/validation.json`。
+当前版本为原生 / Flutter **0.1.3**、Web **0.1.6**，公共语言资源 **0.3.0**。本轮构建、语言资源、独立消费与逐文件校验通过，验证范围是 `localization-rebuild`，见 [35 语言交付说明](L10N35_DELIVERY-2026-10-29.md)。原生宿主未启动，未执行本版实服业务、实体设备或生产验收；旧版实服结果不能替代本版验收。
 
 ## 自包含边界
 
@@ -44,7 +44,7 @@ cd native/android
 ./gradlew -p example :app:assembleDebug --console=plain
 ```
 
-设置本机 `JAVA_HOME`（支持 Java 17+）和 `ANDROID_HOME`。原生调用层坐标为 `com.imsdk:im-sdk-native:0.1.2`，依赖 module 坐标 `com.startlink.im_sdk_module:flutter_release:0.1.2`。示例 APK 在 `native/android/example/app/build/outputs/apk/debug/app-debug.apk`；交付时复制到 `dist/android/example` 后重新计算 Android 校验清单。当前基线 minSdk 24、compileSdk 36、desugar 2.1.5。
+设置本机 `JAVA_HOME`（支持 Java 17+）和 `ANDROID_HOME`。原生调用层坐标为 `com.imsdk:im-sdk-native:0.1.3`，依赖 module 坐标 `com.startlink.im_sdk_module:flutter_release:0.1.3`。示例 APK 在 `native/android/example/app/build/outputs/apk/debug/app-debug.apk`；交付时复制到 `dist/android/example` 后重新计算 Android 校验清单。当前基线 minSdk 24、compileSdk 36、desugar 2.1.5。
 
 ## iOS
 
@@ -59,7 +59,7 @@ python3 scripts/write_checksums.py dist/ios
 
 使用锁定工具链的 `flutter build ios-framework`，输出在 `dist/ios/<构建类型>`。脚本补齐 Flutter 导出未包含的 vendored WebRTC，按设备和模拟器的 hook 输出生成 objective_c.xcframework，避免把模拟器 native asset 嵌入真机。其后单独编译 IMSDKNative 原生 facade。完整模式导出会替换该模式目录，所以必须在每次导出后再构建 facade。
 
-当前工具链的模拟器使用 debug/JIT bundle；Release 模式导出的模拟器 App 不含运行所需的 kernel_blob.bin。模拟器运行必须用完整 Debug 组及交付的 flutter_lldbinit/相邻 helper，不能把 Release 的编译/链接通过当作模拟器可运行。Release 的设备及两种模拟器架构仅做二进制消费编译/链接；本轮实际 iOS 运行使用 Debug、iOS 26.5。详见 native/ios/example/README.md。
+当前工具链的模拟器使用 debug/JIT bundle；Release 模式导出的模拟器 App 不含运行所需的 kernel_blob.bin。模拟器运行必须用完整 Debug 组及交付的 flutter_lldbinit/相邻 helper，不能把 Release 的编译/链接通过当作模拟器可运行。Release 的设备及两种模拟器架构仅做二进制消费编译/链接；0.1.2 历史 iOS 运行使用 Debug、iOS 26.5；本版仅完成编译与独立消费。详见 native/ios/example/README.md。
 
 完整原生 iOS 示例（没有 Flutter 源码或 podhelper 依赖）：
 
@@ -97,7 +97,11 @@ python3 scripts/verify_independence.py
 
 包内根目录为 IMSDK。机器专用路径文件、构建缓存、`.dart_tool`、生成 `.android/.ios`、Pods、日志、`.idea/.iml`、签名材料和私有配置不会进入源码归档。原生生成 wrapper 可由固定 Flutter 版本和 module 源码重新生成。完整源码归档在所有并行修改结束后再执行，避免交付半成品。
 
-## 组装版本化交付包
+## 35 语言交付包
+
+当前交付由 `scripts/package_localization_handoff.py` 组装：`prepare --platform ios|android|web` 后，对该目录执行独立消费和资源验证，再使用 `finalize --platform <平台> --validation-report logs/l10n35-handoff-20261029/validation.json` 完成打包。Web 另以 `--library dist/web-library-0.1.6` 指定已验证模块包。输出为 `IMSDK-iOS-0.1.3.zip`、`IMSDK-Android-0.1.3.zip`、`IMSDK-Web-H5-0.1.6.zip`。此入口明确标记 localization-rebuild，不复用旧版真实服务通过声明。
+
+## 真实服务完整发版流程（历史入口）
 
 先保存旧交付目录，再生成新版本，禁止混装不同版本的框架或 Maven 制品。版本来自 `packages/im_sdk/pubspec.yaml` 与 `web/package.json`；原生 facade、module、样例依赖和 npm lockfile 须同步。
 

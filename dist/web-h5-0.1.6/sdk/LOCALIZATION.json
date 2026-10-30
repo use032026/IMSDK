@@ -1,0 +1,499 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "0.1.6",
+  "catalogVersion": "0.3.0",
+  "supportedLocales": [
+    "zh-CN",
+    "zh-TW",
+    "en",
+    "ja",
+    "ko",
+    "vi",
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "es",
+    "fi",
+    "fil",
+    "fr",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ms",
+    "nb",
+    "nl",
+    "pl",
+    "pt-BR",
+    "pt-PT",
+    "ro",
+    "ru",
+    "si",
+    "sk",
+    "sv",
+    "th",
+    "tr",
+    "uk"
+  ],
+  "translatedColumnLocales": [
+    "zh-TW",
+    "en",
+    "ja",
+    "ko",
+    "vi",
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "es",
+    "fi",
+    "fil",
+    "fr",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ms",
+    "nb",
+    "nl",
+    "pl",
+    "pt-BR",
+    "pt-PT",
+    "ro",
+    "ru",
+    "si",
+    "sk",
+    "sv",
+    "th",
+    "tr",
+    "uk"
+  ],
+  "originalLocalesPreserved": [
+    "zh-CN",
+    "zh-TW",
+    "en",
+    "ja",
+    "ko",
+    "vi"
+  ],
+  "web": {
+    "sourceKeyCount": 146,
+    "sharedMappings": {
+      "消息": {
+        "module": "chat",
+        "key": "homeTitle"
+      },
+      "联系人": {
+        "module": "chat",
+        "key": "chatContactDefaultName"
+      },
+      "刷新": {
+        "module": "settings",
+        "key": "diagnosticsRefresh"
+      },
+      "退出登录": {
+        "module": "auth",
+        "key": "authLogout"
+      },
+      "关闭": {
+        "module": "common",
+        "key": "commonClose"
+      },
+      "账号": {
+        "module": "settings",
+        "key": "settingsSectionAccount"
+      },
+      "密码": {
+        "module": "auth",
+        "key": "authPassword"
+      },
+      "安全验证": {
+        "module": "auth",
+        "key": "authCaptchaTitle"
+      },
+      "登录": {
+        "module": "auth",
+        "key": "authLoginButton"
+      },
+      "重试": {
+        "module": "common",
+        "key": "commonRetry"
+      },
+      "昵称": {
+        "module": "auth",
+        "key": "authNickname"
+      },
+      "手机号": {
+        "module": "profile",
+        "key": "profileMobile"
+      },
+      "确认密码": {
+        "module": "auth",
+        "key": "authConfirmPassword"
+      },
+      "注册并登录": {
+        "module": "auth",
+        "key": "authRegisterAndLogin"
+      },
+      "验证码": {
+        "module": "auth",
+        "key": "authVerificationCode"
+      },
+      "邮箱": {
+        "module": "profile",
+        "key": "profileEmail"
+      },
+      "两次输入的密码不一致": {
+        "module": "auth",
+        "key": "authErrorPasswordMismatch"
+      },
+      "添加好友": {
+        "module": "organization",
+        "key": "organizationAddFriend"
+      },
+      "好友申请": {
+        "module": "contacts",
+        "key": "contactsFriendRequests"
+      },
+      "暂无消息": {
+        "module": "chat",
+        "key": "chatNoMessages"
+      },
+      "新建群聊": {
+        "module": "chat",
+        "key": "homeCreateGroup"
+      },
+      "暂无联系人。": {
+        "module": "chat",
+        "key": "chatNoContacts"
+      },
+      "已是好友": {
+        "module": "profile",
+        "key": "profilePageAlreadyFriend"
+      },
+      "好友申请已发送，等待对方同意": {
+        "module": "contacts",
+        "key": "scanFriendRequestPending"
+      },
+      "已成为好友": {
+        "module": "contacts",
+        "key": "friendAccepted"
+      },
+      "已拒绝": {
+        "module": "contacts",
+        "key": "friendRejected"
+      },
+      "同意": {
+        "module": "contacts",
+        "key": "friendAccept"
+      },
+      "拒绝": {
+        "module": "contacts",
+        "key": "friendReject"
+      },
+      "暂无好友申请": {
+        "module": "contacts",
+        "key": "friendNoRequests"
+      },
+      "群名称": {
+        "module": "organization",
+        "key": "groupName"
+      },
+      "聊天": {
+        "module": "chat",
+        "key": "chatSettingsTitle"
+      },
+      "输入消息…": {
+        "module": "chat",
+        "key": "chatInputHint"
+      },
+      "消息内容": {
+        "module": "chat",
+        "key": "chatMessageContent"
+      },
+      "发送": {
+        "module": "common",
+        "key": "commonSend"
+      },
+      "我": {
+        "module": "chat",
+        "key": "chatSelf"
+      },
+      "对方": {
+        "module": "chat",
+        "key": "chatPeer"
+      },
+      "[图片]": {
+        "module": "chat",
+        "key": "chatImageMessage"
+      },
+      "[文件]": {
+        "module": "chat",
+        "key": "chatFileMessage"
+      },
+      "[视频]": {
+        "module": "chat",
+        "key": "chatVideoMessage"
+      },
+      "[语音]": {
+        "module": "chat",
+        "key": "chatVoiceMessage"
+      },
+      "[系统消息]": {
+        "module": "chat",
+        "key": "chatSystemMessage"
+      },
+      "[通话记录]": {
+        "module": "chat",
+        "key": "chatCallLogMessage"
+      },
+      "[消息已撤回]": {
+        "module": "chat",
+        "key": "chatStatusRecalled",
+        "wrapper": "[{value}]"
+      },
+      "登录状态已失效，请重新登录": {
+        "module": "customer_service",
+        "key": "csSignInAgain"
+      },
+      "密码至少6位": {
+        "module": "auth",
+        "key": "authErrorPasswordTooShort"
+      }
+    },
+    "englishFallbackValues": {
+      "需要有效的聊天容器": "A valid chat container is required",
+      "IM 聊天": "IM chat",
+      "用户": "User",
+      "返回": "Back",
+      "操作未完成，请重试": "Could not complete the action. Try again.",
+      "聊天服务暂未就绪，请稍后重试": "Chat is not ready. Please try again shortly.",
+      "登录聊天": "Sign in to chat",
+      "欢迎使用": "Welcome",
+      "登录 IM 账号，即可查看你的消息。": "Sign in to your IM account to see your messages.",
+      "安全验证答案": "Security answer",
+      "注册新账号": "Create an account",
+      "登录后即可查看当前账号的单聊和群聊。": "Sign in to see this account’s direct and group chats.",
+      "换一个": "Try another",
+      "正在登录…": "Signing in…",
+      "请先在应用中登录": "Please sign in to the app first",
+      "聊天暂不可用，请重试": "Chat is unavailable. Please try again.",
+      "注册聊天账号": "Create a chat account",
+      "注册后即可开始聊天，无需选择空间。": "Create an account to start chatting. No workspace selection is needed.",
+      "注册方式": "Sign-up method",
+      "设置密码": "Set a password",
+      "注册验证码": "Registration code",
+      "发送验证码": "Send code",
+      "换一个安全验证": "New security challenge",
+      "重新加载注册方式": "Reload sign-up methods",
+      "手机号或邮箱": "Phone number or email",
+      "密码（至少6位）": "Password (at least 6 characters)",
+      "返回登录": "Back to sign in",
+      "暂未开放注册，请联系应用提供方": "Sign-up is unavailable. Contact the app provider.",
+      "验证码已发送，请稍后再试": "A code was sent. Please wait before trying again.",
+      "验证码已发送，请查收": "Verification code sent",
+      "发起单聊": "New chat",
+      "正在加载会话…": "Loading conversations…",
+      "暂时无法加载会话，请点击刷新重试。": "Could not load conversations. Refresh to try again.",
+      "群": "G",
+      "聊": "C",
+      "群聊": "Group chat",
+      "还没有会话。可以发起单聊，或等待新的消息。": "No conversations yet. Start a chat or wait for a message.",
+      "加载更多会话": "More conversations",
+      "搜索好友名字": "Search friends by name",
+      "刷新好友": "Refresh friends",
+      "选择好友开始聊天": "Choose a friend to chat",
+      "友": "F",
+      "没有找到匹配的好友。": "No matching friends.",
+      "返回会话": "Back to conversations",
+      "正在加载好友…": "Loading friends…",
+      "好友加载失败，请刷新重试。": "Could not load friends. Please refresh.",
+      "搜索账号、手机号或邮箱": "Search account, phone or email",
+      "好友申请消息（可选）": "Friend request message (optional)",
+      "搜索用户": "Search users",
+      "查找用户": "Find a user",
+      "申请消息": "Request message",
+      "查看好友申请": "View friend requests",
+      "已申请": "Requested",
+      "没有找到可添加的用户": "No users available to add",
+      "已成为好友，可返回发起单聊": "You are now friends. Start a chat from the list.",
+      "刷新好友申请": "Refresh requests",
+      "待处理": "Pending",
+      "已发送，等待对方同意": "Sent, awaiting approval",
+      "已取消": "Cancelled",
+      "状态待确认": "Status unconfirmed",
+      "好友申请状态已更新": "Friend request status updated",
+      "创建群聊": "Create group",
+      "刷新可选好友": "Refresh available friends",
+      "选择好友加入群聊，也可以先创建空群。": "Choose friends to invite, or create an empty group.",
+      "暂无好友，可先添加好友。": "No friends yet. Add a friend first.",
+      "聊天界面已关闭": "Chat view is closed",
+      "请先登录": "Please sign in first",
+      "正在加载消息…": "Loading messages…",
+      "无法打开会话，请返回列表后重试。": "Could not open the chat. Return to the list and try again.",
+      "消息加载失败，请点击刷新重试。": "Could not load messages. Please refresh.",
+      "聊天消息": "Chat messages",
+      "加载更早消息": "Load earlier messages",
+      "暂无消息，发一句问候吧。": "No messages yet. Say hello.",
+      "联系客服": "Contact support",
+      "正在连接客服…": "Connecting to support…",
+      "客服": "Support",
+      "正在排队": "In the queue",
+      "客服尚未接入": "Support is not connected yet",
+      "你的请求已提交。客服接入后才能开始聊天。": "Your request was submitted. Chat will start when support joins.",
+      "暂时还无法开始聊天，请稍后刷新状态。": "Chat cannot start yet. Refresh the status shortly.",
+      "刷新客服状态": "Refresh support status",
+      "客服请求未完成，请点击刷新重试。": "Support request failed. Please refresh.",
+      "已连接": "Connected",
+      "正在恢复连接…": "Reconnecting…",
+      "正在连接…": "Connecting…",
+      "连接暂不可用，可手动刷新": "Connection unavailable. You can refresh manually.",
+      "正在更新消息…": "Updating messages…",
+      "客服状态有更新，请刷新查看": "Support status changed. Refresh to see it.",
+      "[此消息类型暂不支持显示]": "[Unsupported message type]",
+      "{name}，{count} 条未读消息": "{name}, {count} unread messages",
+      "与{name}聊天": "Chat with {name}",
+      "邀请{name}": "Invite {name}",
+      "网络连接失败，请检查网络和跨域配置": "Connection failed. Check your network and try again.",
+      "请求超时，请重试": "The request timed out. Please try again.",
+      "请完成安全验证后重试": "Complete the security check and try again.",
+      "请求未完成，请重试或联系应用提供方": "The request failed. Try again or contact the app provider.",
+      "账号已注册，暂未能完成登录，请返回登录重试": "Account created. Return to sign in and try again.",
+      "账号已注册，尚需服务端审核后才能登录": "Account created. Approval is required before sign-in.",
+      "显示设置无效": "Invalid display settings",
+      "请填写必填项": "Please fill in the required fields",
+      "输入内容格式不正确": "Please check the input format"
+    },
+    "newLocaleCoverage": {
+      "ar": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "bg": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "cs": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "da": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "de": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "el": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "es": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "fi": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "fil": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "fr": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "hi": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "hr": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "hu": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "id": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "it": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "ms": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "nb": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "nl": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "pl": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "pt": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "pt_PT": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "ro": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "ru": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "si": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "sk": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "sv": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "th": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "tr": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      },
+      "uk": {
+        "englishFallback": 101,
+        "sharedArb": 45
+      }
+    }
+  },
+  "policy": "Existing six-language values are unchanged. Only reviewed shared keys are localized for new locales; unmapped SDK phrases use their existing English value, not an invented translation.",
+  "legalAndExamples": "Existing document bodies, examples and their existing fallback logic are unchanged. No 35-language legal translation is claimed.",
+  "bundleSha256": "2e70b4e50a9a5eed9c1d7313293bf4afbefc679593df52951e3deeb44750372b",
+  "generatedCatalogSha256": "9d6b8e4b81917108586692c2d0d8d4cbdc6f0fe57c7826b4f45f59bd9dd6ca1c",
+  "coverageSourceSha256": "372ca4b97d4eff6afa1e34fe7a8c2745c8a6187f634ba87a90cfb3199a3171fe",
+  "realServiceValidationForThisVersion": "not_run"
+}

@@ -1,10 +1,10 @@
 # 原生团队交付入口
 
-主题和语言的新增源码接入见 [宿主呈现设置同步](../../docs/HOST_PRESENTATION_SYNC.md)，公开入口为 `updatePresentation(settings:completion:)` / `updatePresentationWithSettings:completion:`。已有二进制需重新构建后使用。
+主题和语言的新增源码接入见 [宿主呈现设置同步](../../docs/HOST_PRESENTATION_SYNC.md)，公开入口为 `updatePresentation(settings:completion:)` / `updatePresentationWithSettings:completion:`。0.1.3 完整交付包已包含该接口；旧版需升级对应完整包。
 
 当前源码的默认聊天职能已统一为注册、登录、会话列表、添加好友、单聊和新建群聊 / 群聊。`openMessenger` 内提供手机号 / 邮箱注册与好友申请处理；注册默认自动登录个人空间；服务端返回企业登录态时直接进入企业空间，无需选择，同时只登录一个空间。iOS 和 Android 使用同一套移动 SDK 页面。
 
-本轮版本为 **0.1.2**，示例已预置与 Web 相同的真实服务，启动即可注册 / 登录，无需手动修改服务配置。新二进制的原生 UI 注册、好友发送与接受、单聊和两端分别建群的双向真实验收、构建及独立消费结果见 [独立交付包说明](handoff/README.md) 和包内 `MANIFEST.json`；旧版交付物保留为历史快照。
+当前版本为 **0.1.3**，包含 35 语资源。构建、独立消费和清单一致性见 [独立交付包说明](handoff/README.md) 与包内 MANIFEST；本版未执行原生宿主运行、真实服务业务或实体设备验收。旧版真实服务结果仅是历史记录。
 
 # Native iOS integration
 

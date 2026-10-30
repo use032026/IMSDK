@@ -2,7 +2,7 @@
 
 `openMessenger` 页面承载注册 / 登录、会话列表、添加好友及申请处理、单聊和新建群聊 / 群聊。注册使用手机号或邮箱验证，默认进入个人空间；服务端直接返回企业登录态时进入该企业空间，无需选择，同时仅登录一个空间；原生调用签名保持不变。本包构建及消费验证结果见 `MANIFEST.json`。
 
-SDK：`0.1.2` · 更新：2026-10-28 · 入口：`com.imsdk.nativebridge.ImSdk`
+SDK：`0.1.3` · 更新：2026-10-29 · 入口：`com.imsdk.nativebridge.ImSdk`
 
 ## 调用约定
 
@@ -136,3 +136,9 @@ fun interface EventListener {
 | `ACTIVITY_DETACHED` | 待页面重新附着后重试选择器或权限操作 |
 
 其他 Dart 业务错误会继续传递给宿主。shutdown 或超时释放引擎时，未完成操作也会收到结束错误。不要无限自动重试登录或页面打开；让宿主根据错误码和用户操作决定恢复。
+
+## 宿主同步主题与35语
+
+初始化支持 `themeMode: light/dark/system` 和 `locale`（默认zh-CN，支持35语或system）。运行时通过 `ImSdk.updatePresentation(settings, callback)` 更新，保留现有账号、页面及输入。`pt`/`pt-BR`选择巴西葡语，`pt-PT`选择葡萄牙葡语；非法值返回INVALID_PRESENTATION且不部分应用。
+
+语言及缺译来源见包内 `localization/`。用户昵称、消息正文和宿主自定义标题保持原文。主题只作用SDK视图。

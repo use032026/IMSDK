@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Complete iOS binary closure, including vendored and Dart code assets."""
 from pathlib import Path
+import argparse
 import plistlib
 import shutil
 import subprocess
@@ -8,11 +9,13 @@ import sys
 import time
 
 root = Path(__file__).resolve().parents[1]
-mode = sys.argv[1] if len(sys.argv) > 1 else 'Release'
-if mode not in {'Release', 'Profile', 'Debug'}:
-    raise SystemExit('Expected Release, Profile, or Debug.')
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('mode', choices=['Release', 'Profile', 'Debug'], nargs='?', default='Release')
+parser.add_argument('--work', type=Path, default=root / 'native/ios/build/distribution')
+arguments = parser.parse_args()
+mode = arguments.mode
 release = root / 'dist/ios' / mode
-work = root / 'native/ios/build/distribution' / mode
+work = arguments.work / mode
 work.mkdir(parents=True, exist_ok=True)
 
 def run(*args):

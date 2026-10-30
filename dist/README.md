@@ -1,21 +1,18 @@
 # IM SDK 最新交付包
 
-原生版本 0.1.2，Web / H5 版本 0.1.5，更新日期 2026-10-28。
+iOS / Android / Flutter **0.1.3**，Web / H5 **0.1.6**；公共语言资源 **0.3.0**，35 种语言。构建与验收日期 2026-10-29，远程发布日期 2026-10-30。
 
-`main` 只提交当前版本的文档、样例源码、Web 成品与校验清单。iOS `binary/`、Android `maven/` 和完整 ZIP 通过对应 GitHub Release 分发，下载后解压可取得完整目录。`MANIFEST.json` 和 `SHA256SUMS` 校验的是完整交付包。历史版本见 [版本分支说明](../docs/VERSIONING.md)，机器可读的当前版本入口见 [versions.json](versions.json)。
-
-| 平台 | 交付 ZIP | 接入入口 |
+| 平台 | 完整交付 | 接入资料 |
 | --- | --- | --- |
-| iOS | [IMSDK-iOS-0.1.2.zip](https://github.com/use032026/IMSDK/releases/download/ios-v0.1.2/IMSDK-iOS-0.1.2.zip) | [README](ios-native-0.1.2/README.md) |
-| Android | [IMSDK-Android-0.1.2.zip](https://github.com/use032026/IMSDK/releases/download/android-v0.1.2/IMSDK-Android-0.1.2.zip) | [README](android-native-0.1.2/README.md) |
-| Web / H5 | [IMSDK-Web-H5-0.1.5.zip](https://github.com/use032026/IMSDK/releases/download/web-v0.1.5/IMSDK-Web-H5-0.1.5.zip) | [README](web-h5-0.1.5/README.md) |
+| iOS | [IMSDK-iOS-0.1.3.zip](https://github.com/use032026/IMSDK/releases/download/ios-v0.1.3/IMSDK-iOS-0.1.3.zip) | [README](ios-native-0.1.3/README.md) |
+| Android | [IMSDK-Android-0.1.3.zip](https://github.com/use032026/IMSDK/releases/download/android-v0.1.3/IMSDK-Android-0.1.3.zip) | [README](android-native-0.1.3/README.md) |
+| Web / H5 | [IMSDK-Web-H5-0.1.6.zip](https://github.com/use032026/IMSDK/releases/download/web-v0.1.6/IMSDK-Web-H5-0.1.6.zip) | [README](web-h5-0.1.6/README.md) |
+| Flutter / 源码 | [版本源码归档](https://github.com/use032026/IMSDK/archive/refs/tags/flutter-v0.1.3.tar.gz) | [接入说明](../docs/FLUTTER_INTEGRATION.md) |
 
-iOS / Android 0.1.2 示例也已预置同一真实服务，安装启动自动显示登录 / 注册，无需修改服务配置。Web 0.1.5 已连接现有真实服务，解压后双击 `web-h5-0.1.5/index.html` 即可注册或登录，已认证实例进入会话列表，无需修改配置。包内包含本次授权的服务连接信息，不含测试账号、密码或 token。各包包含完整库、接入/API/验收说明、MANIFEST 和 SHA256SUMS；ZIP 旁另有 .zip.sha256。此目录的 SHA256SUMS 校验以上三个最新 ZIP。
+Git 只保留当前版接入资料、样例源码、语言清单与 Web 成品。原生 `binary/`、`maven/` 和完整 ZIP 从 Release 获取；旧版本由对应平台分支和 Release 保留。下载索引见 [versions.json](versions.json)，最新三个 ZIP 的摘要见 [SHA256SUMS](SHA256SUMS)。
 
-本轮 iOS UIKit / Android Java 新二进制宿主在专用模拟器验证新注册、自动登录、重新登录、两端好友发送及接受、单聊及两端分别建群的双向文本。两个新主要账号、一个已有专用好友辅助身份，单聊与两群共六条本轮新消息由原生 UI 操作，并由独立身份读取服务端确认。iOS 自身 Keychain 组配置已补齐，首次失败账号仅作诊断，修后新主要账号重新验证自动进入。实际通过项以各包 MANIFEST 为准。
+本轮范围为 `localization-rebuild`：35 种语言、每语 1040 个公共词条、资源与包内清单一致，独立二进制消费和逐文件校验通过。SDK / Web 专属缺译明确回退英语；法律正文沿用原选择和回退策略。详见 [35 语言交付与验证范围](../docs/L10N35_DELIVERY-2026-10-29.md)。
 
-iOS Debug / Release 各 35 框架，Swift / Objective-C 六组合及独立工程编译通过；Android 完整 Maven 仓库、Java / Kotlin 消费通过；Web 官方 npm 包的 ESM、CommonJS、类型及浏览器独立接入通过。
+iOS 验证覆盖六组 Swift / ObjC 消费及 UIKit 模拟器、未签名设备编译；Android 覆盖独立 Maven 宿主、Java / Kotlin 编译和三 ABI 符号剥离复现；Web 覆盖 35 语隔离浏览器与 npm ESM / CJS / 类型消费。原生宿主未运行，本版没有真实后端、实体设备或生产业务验收；旧版实服报告不代表本版通过。
 
-注册不选择空间，默认个人；服务端返回有效企业登录态时直接进入企业，同时只有一个活跃空间。本轮实际新账号进入个人空间，企业直返及强制验证码分支仅有契约回归；未执行实体设备、媒体、推送或新版 Safari / 微信验收。
-
-历史包位于各平台版本分支及对应 Release。before / draft 工作备份不作为正式版本发布；当前移动源码为 0.1.2。原生本轮报告位于 ../logs/native-connected-20261028/validation.json；此前报告保存在 ../logs/unification-release-20261028/validation.json；Web 0.1.5 预接真实服务与本轮完整验收报告位于 ../logs/web-connected-20261028/validation.json。
+`MANIFEST.json` / 包内 `SHA256SUMS` 对应完整 Release 包，不能对省略原生二进制的 Git 目录直接宣称全包校验通过。包内远程发布字段记录打包时状态；当前远程状态见本索引与对应 Release。服务连接配置沿用已授权公开的内容，不包含测试账号或 token。

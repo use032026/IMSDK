@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "0.3.0",
+  "renderer": "sdk",
+  "flutterBundle": "packages/im_sdk/l10n.bundle.json"
+}

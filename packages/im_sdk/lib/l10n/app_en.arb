@@ -1038,6 +1038,13 @@
   "diagnosticsDay": "Last 24 hours",
   "diagnosticsWeek": "Last 7 days",
   "diagnosticsEventCount": "Available events: {count}",
+  "@diagnosticsEventCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diagnosticsPersistent": "Logs are saved on this device and remain available after restart.",
   "diagnosticsNotPersistent": "Some logs have not been saved. Refresh to retry.",
   "diagnosticsExport": "Export and share",
@@ -1047,12 +1054,5 @@
   "diagnosticsShared": "System sharing completed. Confirm the file in the receiving app.",
   "diagnosticsCancelled": "Sharing cancelled. You can export again.",
   "diagnosticsUnconfirmed": "Sharing could not be confirmed. Check the receiving app.",
-  "diagnosticsFailed": "The operation failed. Please retry.",
-  "@diagnosticsEventCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
+  "diagnosticsFailed": "The operation failed. Please retry."
 }

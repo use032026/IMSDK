@@ -1038,6 +1038,13 @@
   "diagnosticsDay": "最近24小時",
   "diagnosticsWeek": "最近7天",
   "diagnosticsEventCount": "可用記錄：{count}筆",
+  "@diagnosticsEventCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diagnosticsPersistent": "日誌已儲存在本機，重新啟動後可繼續匯出。",
   "diagnosticsNotPersistent": "部分日誌尚未儲存，請稍後重新整理。",
   "diagnosticsExport": "匯出並分享",
@@ -1047,12 +1054,5 @@
   "diagnosticsShared": "已完成系統分享操作，請在目標應用確認檔案。",
   "diagnosticsCancelled": "已取消分享，可再次匯出。",
   "diagnosticsUnconfirmed": "無法確認分享結果，請在目標應用檢查。",
-  "diagnosticsFailed": "操作失敗，請重試。",
-  "@diagnosticsEventCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
+  "diagnosticsFailed": "操作失敗，請重試。"
 }

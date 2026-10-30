@@ -1,10 +1,10 @@
 # 原生团队交付入口
 
-主题和语言的新增源码接入见 [宿主呈现设置同步](../../docs/HOST_PRESENTATION_SYNC.md)，公开入口为 `ImSdk.updatePresentation(settings, callback)`。已有二进制需重新构建后使用。
+主题和语言的新增源码接入见 [宿主呈现设置同步](../../docs/HOST_PRESENTATION_SYNC.md)，公开入口为 `ImSdk.updatePresentation(settings, callback)`。0.1.3 完整交付包已包含该接口；旧版需升级对应完整包。
 
 当前源码的默认聊天职能已统一为注册、登录、会话列表、添加好友、单聊和新建群聊 / 群聊。`openMessenger` 内提供手机号 / 邮箱注册与好友申请处理；注册默认自动登录个人空间；服务端返回企业登录态时直接进入企业空间，无需选择，同时只登录一个空间。Android 和 iOS 使用同一套移动 SDK 页面。
 
-本轮版本为 **0.1.2**，示例已预置与 Web 相同的真实服务，启动即可注册 / 登录，无需手动修改服务配置。新二进制的原生 UI 注册、好友发送与接受、单聊和两端分别建群的双向真实验收、构建及独立消费结果见 [独立交付包说明](handoff/README.md) 和包内 `MANIFEST.json`；旧版交付物保留为历史快照。
+当前版本为 **0.1.3**，包含 35 语资源。构建、独立消费和清单一致性见 [独立交付包说明](handoff/README.md) 与包内 MANIFEST；本版未执行原生宿主运行、真实服务业务或实体设备验收。旧版真实服务结果仅是历史记录。
 
 # Native Android integration
 
@@ -14,7 +14,7 @@ This directory contains the native library, a standalone pure Java host example,
 
 1. Build the independent Flutter module using the root Android build script. Its full Maven repository must exist at `../../dist/android/maven` relative to this directory, including Flutter/plugin dependencies.
 2. Use JDK 17, Android SDK 36 and the included Gradle wrapper. Set `ANDROID_HOME` or provide this directory's own untracked `local.properties` with `sdk.dir`.
-3. In this directory run `./gradlew publishReleasePublicationToMavenRepository`. The native artifact `com.imsdk:im-sdk-native:0.1.2` is published into the same local Maven repository.
+3. In this directory run `./gradlew publishReleasePublicationToMavenRepository`. The native artifact `com.imsdk:im-sdk-native:0.1.3` is published into the same local Maven repository.
 4. Build the pure native host with `./gradlew -p example :app:assembleDebug`. The example has only the Maven SDK dependency and Android code; no Flutter source or Flutter Gradle plugin is included in its host project.
 
 If module coordinates change, use `-PimSdkFlutterArtifact=<group>:flutter_release:<version>`. If the Maven repository location changes, use `-PimSdkFlutterRepository=<directory>` when building the native facade and update the host repository declaration.
@@ -23,7 +23,7 @@ The example's `com.example.imsdkhost` is an explicit development example identit
 
 ## Host dependency
 
-The host repositories must include the delivered Maven repository, Google's repository, Maven Central, `https://jitpack.io` (WebRTC's audioswitch dependency), and `https://storage.googleapis.com/download.flutter.io`. The host dependency is `implementation("com.imsdk:im-sdk-native:0.1.2")`. Enable AndroidX, Java 17 and core-library desugaring with `com.android.tools:desugar_jdk_libs:2.1.5`. The tested baseline is **minSdk 24 / compileSdk 36**. Repository mirrors in the example are optional network configuration; keep the dependency coordinates and versions intact.
+The host repositories must include the delivered Maven repository, Google's repository, Maven Central, `https://jitpack.io` (WebRTC's audioswitch dependency), and `https://storage.googleapis.com/download.flutter.io`. The host dependency is `implementation("com.imsdk:im-sdk-native:0.1.3")`. Enable AndroidX, Java 17 and core-library desugaring with `com.android.tools:desugar_jdk_libs:2.1.5`. The tested baseline is **minSdk 24 / compileSdk 36**. Repository mirrors in the example are optional network configuration; keep the dependency coordinates and versions intact.
 
 Binary consumers need Android build tools and the delivered Maven repository plus public transitive dependencies; they do not need Flutter tools, module source or the original App checkout. Do not copy only `flutter_release.aar`, because its POM and plugin dependencies are required. The compiled example APK is `dist/android/example/im-sdk-native-host-debug.apk` at the SDK root.
 

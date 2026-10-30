@@ -1,6 +1,6 @@
 # IM SDK Web / H5 交付包
 
-SDK **0.1.5** · 文档整理日期 **2026-10-28**
+SDK **0.1.6** · 文档整理日期 **2026-10-29**
 
 本版默认入口已预置现有真实 IM 服务。解压后直接双击根目录 `index.html`，即可注册或登录，无需手动修改配置。已认证的宿主实例直接显示会话列表。注册不选择空间：默认进入个人空间，服务端返回有效企业登录态时进入该企业，同时只保留一个活跃空间。
 
@@ -10,7 +10,7 @@ SDK **0.1.5** · 文档整理日期 **2026-10-28**
 
 1. 直接打开 [聊天入口](index.html)，新用户注册，已有用户输入 IM 账号密码登录。
 2. 登录后从会话列表添加好友、发起单聊或选择好友新建群聊。
-3. 将 SDK 嵌入其他 H5 工程时，普通网页使用 `sdk/im-sdk.js`，Vue / React / TypeScript 工程安装 `npm/imsdk-web-0.1.5.tgz`；按 [接入说明](docs/INTEGRATION.md) 使用或覆盖服务配置。
+3. 将 SDK 嵌入其他 H5 工程时，普通网页使用 `sdk/im-sdk.js`，Vue / React / TypeScript 工程安装 `npm/imsdk-web-0.1.6.tgz`；按 [接入说明](docs/INTEGRATION.md) 使用或覆盖服务配置。
 
 已有用户在 SDK 界面输入 IM 账号和密码，新用户可注册；好友与会话操作均在 SDK 内完成。包内包含本次授权的真实服务连接信息，不包含测试账号、密码或 token。
 
@@ -22,13 +22,14 @@ SDK **0.1.5** · 文档整理日期 **2026-10-28**
 | `sdk/im-sdk.js` | 普通 `<script>` 全量包，包含 SignalR 浏览器依赖 |
 | `sdk/index.js` / `sdk/index.cjs` / `sdk/types/` | ESM / CommonJS / TypeScript 声明 |
 | `sdk/THIRD_PARTY_NOTICES.txt` | 第三方声明，随 SDK 保留 |
-| `npm/imsdk-web-0.1.5.tgz` | 本地 npm 安装包，未发布公共 npm registry |
+| `npm/imsdk-web-0.1.6.tgz` | 本地 npm 安装包，未发布公共 npm registry |
 | [普通 HTML 示例](examples/plain-html/index.html) | 自动进入登录 / 会话列表的聊天页面 |
 | [Vue 示例](examples/vue/ImChat.vue) | Vue 3 生命周期挂载模板 |
 | [React 示例](examples/react/ImChat.tsx) | React hooks 生命周期挂载模板 |
 | [接入说明](docs/INTEGRATION.md) | 最小接入、配置、认证、跨域及排错 |
 | [API 参考](docs/API.md) | 方法、类型、事件与错误处理 |
 | [接入验收](docs/ACCEPTANCE.md) | 可执行检查项、已验证和未验证范围 |
+| `LOCALIZATION.json` / `sdk/LOCALIZATION.json` | 35语言与逐条英语回退说明 |
 | `MANIFEST.json` / `SHA256SUMS` | SDK 版本、JS 校验值和包内文件校验 |
 
 ## 打开 HTML 示例
@@ -48,7 +49,7 @@ python3 -m http.server 8080 --bind 127.0.0.1
 工程的 npm 安装环境需要 **Node.js 20+**（与包内 `engines` 一致）。普通 `<script>` 接入不需要 Node.js。把交付包中的 `.tgz` 放入 H5 工程，例如 `vendor/`，然后执行：
 
 ```sh
-npm install ./vendor/imsdk-web-0.1.5.tgz
+npm install ./vendor/imsdk-web-0.1.6.tgz
 ```
 
 ```ts
@@ -68,8 +69,10 @@ const view = mountMessenger(client, document.getElementById('chat')!);
 
 ## 当前验收范围
 
-本版从实际默认页面直接连接真实服务进行新账号注册、登录、好友申请与接受、单聊和新建双人群的双向文本收发。使用两个新测试账号及唯一消息标记，独立身份读回核对发送者、群成员和持久化；没有借用旧消息替代本轮收发。本版真实验收、构建、独立消费与文件摘要见 `MANIFEST.json`。
+0.1.6 本轮为语言扩展与重新打包验收：构建、35 个语言标识和区域别名、原有六语保值、宿主主题/语言同步、IIFE / ESM / CommonJS / TypeScript 与独立 npm / 浏览器消费。页面验证使用显式隔离配置和模拟响应，没有新建真实账号、发送验证码或写入真实消息。
 
-本轮服务端验证码非必需，没有发送短信 / 邮件验证码。强制验证码、安全验证及企业分配只有契约回归；真实企业分配、更新版 Safari、微信、手机软键盘和生产 H5 域名均未据此验收。2026-10-27 的旧版 Safari 结果仅为历史。
+`LOCALIZATION.json`（根目录和 `sdk/` 下）记录 35 个可选语言、共享译文映射与英语回退。新增 29 语中，45 条 SDK Web 界面文案使用已有共享译文，101 条 SDK 专属文案沿用既有英语，不能将“支持35种选择”理解成全部 SDK 文案、示例或法务正文均有35语翻译。
 
-媒体上传 / 预览、音视频通话、推送、群管理和完整离线数据库不在本版 Web 能力范围。接入方按 [接入验收](docs/ACCEPTANCE.md) 验证实际投放环境。
+0.1.5 曾于 2026-10-28 完成真实双账号注册、登录、好友及单聊/群聊验收，属于历史版本记录，不自动覆盖本次 0.1.6。当前版本真实后端、更新版 Safari、微信、手机软键盘、生产 H5 Origin 及实体设备未据本轮结果验收。正式接入方应按 [接入验收](docs/ACCEPTANCE.md) 补验。
+
+媒体上传 / 预览、音视频通话、推送、群管理和完整离线数据库不在本版 Web 能力范围。交付尚未上传远程仓库、Release 或 npm registry。

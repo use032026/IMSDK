@@ -2,7 +2,7 @@
 
 `openMessenger` 页面承载注册 / 登录、会话列表、添加好友及申请处理、单聊和新建群聊 / 群聊。注册使用手机号或邮箱验证，默认进入个人空间；服务端直接返回企业登录态时进入该企业空间，无需选择，同时仅登录一个空间；原生调用签名保持不变。本包构建及消费验证结果见 `MANIFEST.json`。
 
-SDK 0.1.2 · 2026-10-28 · 模块 `IMSDKNative`
+SDK 0.1.3 · 2026-10-29 · 模块 `IMSDKNative`
 
 ## 调用约定
 
@@ -50,7 +50,7 @@ Swift 使用 `IMSDK.shared`，Objective-C 使用 `[IMSDK shared]`。异步 compl
 | 个人账号 | `{"space":"personal","loginType":"lpp_id"}`，不传 `tenantCode` |
 | 固定企业 | `{"space":"tenant","loginType":"login_name","tenantCode":"your-tenant-code"}`；按服务端约定也可用 `lpp_id` |
 
-`passwordLogin` 未填写时，外部凭证路径仍可用；账号密码页请求验证码 / 登录会报告 `PASSWORD_LOGIN_NOT_CONFIGURED`。企业模式必须有 `tenantCode`。初始化后不能直接切换配置，先 `shutdown` 再初始化。
+`passwordLogin` 未填写时，外部凭证路径仍可用；账号密码页请求验证码 / 登录会报告 `PASSWORD_LOGIN_NOT_CONFIGURED`。企业模式必须有 `tenantCode`。运行时配置不可直接切换；主题与语言可通过updatePresentation更新，其他配置先 `shutdown` 再初始化。
 
 ## credentials：仅外部凭证认证需要
 
@@ -150,3 +150,9 @@ NSError 的 `domain` 为 `IMSDK`，数值 `code` 为通用值；**业务判断�
 | `SESSION_CHANGED` | 本次操作账号上下文已改变，重新确认当前账号 |
 
 后端 / SDK 还可能返回认证、网络或业务错误码。保留字符串码和复现步骤，避免仅按上述列表断言全部错误。
+
+## 宿主同步主题与35语
+
+初始化支持 `themeMode: light/dark/system` 和 `locale`（默认zh-CN，支持35语或system）。运行时通过 `updatePresentation(settings:completion:)`（ObjC `updatePresentationWithSettings:completion:`） 更新，保留现有账号、页面及输入。`pt`/`pt-BR`选择巴西葡语，`pt-PT`选择葡萄牙葡语；非法值返回INVALID_PRESENTATION且不部分应用。
+
+语言及缺译来源见包内 `localization/`。用户昵称、消息正文和宿主自定义标题保持原文。主题只作用SDK视图。

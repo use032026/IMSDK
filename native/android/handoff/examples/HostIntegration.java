@@ -105,6 +105,14 @@ public final class HostIntegration implements ImSdk.EventListener {
         // Do not retain an Activity or log complete event/credential/backend payloads here.
     }
 
+    /** Synchronize the host's selected locale/theme after initialization. */
+    public void updatePresentation(String locale, String themeMode, ImSdk.Callback result) {
+        Map<String, Object> settings = new LinkedHashMap<>();
+        settings.put("locale", locale);
+        settings.put("themeMode", themeMode);
+        ImSdk.updatePresentation(settings, result);
+    }
+
     public void logout(ImSdk.Callback result) {
         ImSdk.logout(result);
     }

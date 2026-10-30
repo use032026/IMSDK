@@ -18,6 +18,7 @@ required = [
     'packages/im_sdk/ios/im_sdk.podspec',
     'module/pubspec.yaml', 'module/pubspec.lock', 'module/lib/main.dart',
     'examples/flutter_host/pubspec.yaml', 'examples/flutter_host/lib/main.dart',
+    'l10n.resources.json', 'l10n.resources.lock.json',
     'scripts/build_android.sh', 'scripts/build_ios.sh',
     'scripts/resolve_dependencies.sh', 'README.md', '.flutter-version',
 ]
@@ -36,7 +37,7 @@ for relative in ('packages/im_sdk/pubspec.yaml', 'module/pubspec.yaml', 'example
 excluded_dirs = {'.git', '.dart_tool', '.gradle', '.idea', '.android', '.ios', '.symlinks', 'build', 'Pods', 'dist', 'logs', '__pycache__'}
 excluded_files = {'.packages', '.flutter-plugins', '.flutter-plugins-dependencies', 'local.properties', 'key.properties', 'Generated.xcconfig', 'flutter_export_environment.sh', 'pubspec_overrides.yaml', 'google-services.json', 'GoogleService-Info.plist', '.DS_Store'}
 excluded_patterns = ('*.iml', '.env', '.env.*', '*.jks', '*.keystore', '*.p12', '*.pfx', '*.mobileprovision', '*.p8', '*.pem', '*.key', '*.cer', '*.crt')
-roots = ('packages', 'module', 'native', 'examples', 'scripts', 'docs', 'test', 'README.md', '.gitignore', '.flutter-version')
+roots = ('packages', 'module', 'native', 'examples', 'scripts', 'docs', 'test', 'README.md', '.gitignore', '.flutter-version', 'l10n.resources.json', 'l10n.resources.lock.json')
 files = []
 for entry in roots:
     start = root / entry

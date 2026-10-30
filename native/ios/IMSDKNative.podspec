@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'IMSDKNative'
-  s.version = '0.1.2'
+  s.version = '0.1.3'
   s.summary = 'Native iOS facade for the independent IM SDK.'
   s.description = 'Embeds one Flutter engine and exposes a Swift/Objective-C chat interface.'
   s.homepage = 'https://localhost/imsdk'

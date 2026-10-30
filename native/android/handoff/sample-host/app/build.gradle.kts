@@ -8,7 +8,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 3
-        versionName = "0.1.2"
+        versionName = "0.1.3"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -18,6 +18,6 @@ android {
 }
 
 dependencies {
-    implementation("com.imsdk:im-sdk-native:0.1.2")
+    implementation("com.imsdk:im-sdk-native:0.1.3")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

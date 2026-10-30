@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:im_sdk/l10n/app_localizations.dart';
+import 'package:im_sdk/generated/l10n/sdk_resources.dart'
+    show sdkNetworkErrorMessages;
 
 // ---------------------------------------------------------------------------
 // AppError sealed class 层级
@@ -215,151 +217,39 @@ class ErrorHandler {
     if (error is AuthError) {
       switch (error.code) {
         case _ErrorCodes.authInvalidCredentials:
-          return _localizedByLocale(
-            l10n,
-            zh: '账号或密码错误',
-            zhTw: '帳號或密碼錯誤',
-            en: 'Incorrect account or password',
-            ja: 'アカウントまたはパスワードが正しくありません',
-            ko: '계정 또는 비밀번호가 올바르지 않습니다',
-            vi: 'Sai tài khoản hoặc mật khẩu',
-          );
+          return _localizedByLocale(l10n, '账号或密码错误');
         case _ErrorCodes.authInvalidToken:
-          return _localizedByLocale(
-            l10n,
-            zh: '登录已失效，请重新登录',
-            zhTw: '登入已失效，請重新登入',
-            en: 'Your session has expired. Please sign in again.',
-            ja: 'ログインの有効期限が切れました。再度ログインしてください。',
-            ko: '로그인이 만료되었습니다. 다시 로그인해 주세요.',
-            vi: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
-          );
+          return _localizedByLocale(l10n, '登录已失效，请重新登录');
       }
     }
     if (error is! ServerError) return error.toString();
     if (_isDuplicateEmail(error)) {
-      return _localizedByLocale(
-        l10n,
-        zh: '该邮箱已注册，请直接登录',
-        zhTw: '此電子郵件已註冊，請直接登入',
-        en: 'This email is already registered. Please sign in.',
-        ja: 'このメールアドレスは登録済みです。ログインしてください。',
-        ko: '이미 등록된 이메일입니다. 로그인해 주세요.',
-        vi: 'Email này đã được đăng ký. Vui lòng đăng nhập.',
-      );
+      return _localizedByLocale(l10n, '该邮箱已注册，请直接登录');
     }
     if (_isDuplicateMobile(error)) {
-      return _localizedByLocale(
-        l10n,
-        zh: '该手机号已注册，请直接登录',
-        zhTw: '此手機號碼已註冊，請直接登入',
-        en: 'This mobile number is already registered. Please sign in.',
-        ja: 'この携帯電話番号は登録済みです。ログインしてください。',
-        ko: '이미 등록된 휴대폰 번호입니다. 로그인해 주세요.',
-        vi: 'Số điện thoại này đã được đăng ký. Vui lòng đăng nhập.',
-      );
+      return _localizedByLocale(l10n, '该手机号已注册，请直接登录');
     }
     switch (error.code) {
       case _ErrorCodes.authInvalidCredentials:
-        return _localizedByLocale(
-          l10n,
-          zh: '账号或密码错误',
-          zhTw: '帳號或密碼錯誤',
-          en: 'Incorrect account or password',
-          ja: 'アカウントまたはパスワードが正しくありません',
-          ko: '계정 또는 비밀번호가 올바르지 않습니다',
-          vi: 'Sai tài khoản hoặc mật khẩu',
-        );
+        return _localizedByLocale(l10n, '账号或密码错误');
       case _ErrorCodes.authInvalidToken:
-        return _localizedByLocale(
-          l10n,
-          zh: '登录已失效，请重新登录',
-          zhTw: '登入已失效，請重新登入',
-          en: 'Your session has expired. Please sign in again.',
-          ja: 'ログインの有効期限が切れました。再度ログインしてください。',
-          ko: '로그인이 만료되었습니다. 다시 로그인해 주세요.',
-          vi: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
-        );
+        return _localizedByLocale(l10n, '登录已失效，请重新登录');
       case _ErrorCodes.authCaptchaRequired:
-        return _localizedByLocale(
-          l10n,
-          zh: '请先完成图形验证码',
-          zhTw: '請先完成圖形驗證碼',
-          en: 'Please complete the captcha first.',
-          ja: '先に画像認証を完了してください。',
-          ko: '먼저 캡차 인증을 완료해 주세요.',
-          vi: 'Vui lòng hoàn thành mã xác thực hình ảnh trước.',
-        );
+        return _localizedByLocale(l10n, '请先完成图形验证码');
       case _ErrorCodes.authVerificationRequired:
-        return _localizedByLocale(
-          l10n,
-          zh: '请先获取并填写验证码',
-          zhTw: '請先取得並填寫驗證碼',
-          en: 'Please request and enter the verification code first.',
-          ja: '先に認証コードを取得して入力してください。',
-          ko: '먼저 인증 코드를 받아 입력해 주세요.',
-          vi: 'Vui lòng lấy và nhập mã xác minh trước.',
-        );
+        return _localizedByLocale(l10n, '请先获取并填写验证码');
       case _ErrorCodes.verifyTooFrequent:
-        return _localizedByLocale(
-          l10n,
-          zh: '验证码发送过于频繁，请稍后再试',
-          zhTw: '驗證碼發送過於頻繁，請稍後再試',
-          en: 'Verification requests are too frequent. Please try again later.',
-          ja: '認証コードの送信が多すぎます。しばらくしてから再度お試しください。',
-          ko: '인증 코드 요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.',
-          vi: 'Yêu cầu mã xác minh quá thường xuyên. Vui lòng thử lại sau.',
-        );
+        return _localizedByLocale(l10n, '验证码发送过于频繁，请稍后再试');
       case _ErrorCodes.verifyHourlyLimit:
-        return _localizedByLocale(
-          l10n,
-          zh: '本小时验证码发送已达上限',
-          zhTw: '本小時驗證碼發送已達上限',
-          en: 'The hourly verification limit has been reached.',
-          ja: '1時間あたりの認証コード送信上限に達しました。',
-          ko: '시간당 인증 코드 전송 한도에 도달했습니다.',
-          vi: 'Đã đạt giới hạn gửi mã xác minh trong giờ này.',
-        );
+        return _localizedByLocale(l10n, '本小时验证码发送已达上限');
       case _ErrorCodes.verifyDailyLimit:
-        return _localizedByLocale(
-          l10n,
-          zh: '今日验证码发送已达上限',
-          zhTw: '今日驗證碼發送已達上限',
-          en: 'The daily verification limit has been reached.',
-          ja: '本日の認証コード送信上限に達しました。',
-          ko: '오늘 인증 코드 전송 한도에 도달했습니다.',
-          vi: 'Đã đạt giới hạn gửi mã xác minh trong ngày.',
-        );
+        return _localizedByLocale(l10n, '今日验证码发送已达上限');
       case _ErrorCodes.tenantNotMember:
-        return _localizedByLocale(
-          l10n,
-          zh: '当前账号不属于该租户，请确认企业后再试',
-          zhTw: '目前帳號不屬於該租戶，請確認企業後再試',
-          en: 'This account does not belong to the selected tenant.',
-          ja: 'このアカウントは選択したテナントに所属していません。',
-          ko: '이 계정은 선택한 테넌트에 속해 있지 않습니다.',
-          vi: 'Tài khoản này không thuộc tenant đã chọn.',
-        );
+        return _localizedByLocale(l10n, '当前账号不属于该租户，请确认企业后再试');
       case _ErrorCodes.tenantSuspended:
-        return _localizedByLocale(
-          l10n,
-          zh: '当前租户已停用，请联系管理员',
-          zhTw: '目前租戶已停用，請聯絡管理員',
-          en: 'The selected tenant has been suspended.',
-          ja: '選択したテナントは停止されています。',
-          ko: '선택한 테넌트가 비활성화되었습니다.',
-          vi: 'Tenant đã chọn đã bị tạm ngưng.',
-        );
+        return _localizedByLocale(l10n, '当前租户已停用，请联系管理员');
       case _ErrorCodes.rateLimited:
-        return _localizedByLocale(
-          l10n,
-          zh: '操作过于频繁，请稍后再试',
-          zhTw: '操作過於頻繁，請稍後再試',
-          en: 'Too many requests. Please try again later.',
-          ja: '操作が多すぎます。しばらくしてから再度お試しください。',
-          ko: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.',
-          vi: 'Thao tác quá thường xuyên. Vui lòng thử lại sau.',
-        );
+        return _localizedByLocale(l10n, '操作过于频繁，请稍后再试');
       case _ErrorCodes.teenInvalidResponse:
         return l10n.teenModeInvalidResponse;
       default:
@@ -389,21 +279,18 @@ class ErrorHandler {
         text.contains('手机号已存在');
   }
 
-  static String _localizedByLocale(
-    AppLocalizations l10n, {
-    required String zh,
-    required String zhTw,
-    required String en,
-    required String ja,
-    required String ko,
-    required String vi,
-  }) {
+  // Source phrases identify the existing message; locale/fallback order stays here.
+  static String _localizedByLocale(AppLocalizations l10n, String source) {
+    final messages = sdkNetworkErrorMessages[source]!;
     final locale = l10n.localeName.toLowerCase();
-    if (locale.startsWith('zh_tw')) return zhTw;
-    if (locale.startsWith('zh')) return zh;
-    if (locale.startsWith('ja')) return ja;
-    if (locale.startsWith('ko')) return ko;
-    if (locale.startsWith('vi')) return vi;
-    return en;
+    if (locale.startsWith('zh_tw')) return messages['zhTw']!;
+    if (locale.startsWith('zh')) return messages['zh']!;
+    if (locale.startsWith('ja')) return messages['ja']!;
+    if (locale.startsWith('ko')) return messages['ko']!;
+    if (locale.startsWith('vi')) return messages['vi']!;
+    return messages[l10n.localeName] ??
+        messages[l10n.localeName.replaceAll('-', '_')] ??
+        messages[locale.split(RegExp('[-_]')).first] ??
+        messages['en']!;
   }
 }

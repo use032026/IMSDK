@@ -1,6 +1,6 @@
 # Android 原生接入示例
 
-本示例通过 Maven 坐标 `com.imsdk:im-sdk-native:0.1.2` 消费交付包。保留 `sample-host/` 与 `maven/` 为同级目录，用 Android Studio 打开此目录；不需要父 IMSDK 仓库或 Flutter 工程。
+本示例通过 Maven 坐标 `com.imsdk:im-sdk-native:0.1.3` 消费交付包。保留 `sample-host/` 与 `maven/` 为同级目录，用 Android Studio 打开此目录；不需要父 IMSDK 仓库或 Flutter 工程。
 
 1. 默认 `app/src/main/assets/im_sdk_configuration.json` 已预置与 Web 相同、已获本轮授权的真实服务连接，不含测试账号、密码或 token。使用现有服务无需编辑或复制配置。
 2. 示例直接读取该资源。接入其他环境时才需要由宿主修改服务配置并接入自己的隐私同意流程；SDK 的同意及身份校验保持不变。

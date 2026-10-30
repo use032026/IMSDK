@@ -1,6 +1,6 @@
 # Android SDK 接入说明
 
-SDK：`0.1.2` · 更新：2026-10-28
+SDK：`0.1.3` · 更新：2026-10-29
 
 ## 1. 环境与工程要求
 
@@ -11,7 +11,7 @@ SDK：`0.1.2` · 更新：2026-10-28
 | 构建工具 | AGP 8.11.1、Gradle 8.14 |
 | Java | source / target 17，开启 core library desugaring |
 | desugar | `com.android.tools:desugar_jdk_libs:2.1.5` |
-| SDK 坐标 | `com.imsdk:im-sdk-native:0.1.2` |
+| SDK 坐标 | `com.imsdk:im-sdk-native:0.1.3` |
 
 SDK 基于预编译 Flutter add-to-app 模块，接入方使用常规 Android 工具即可。宿主保留自己的 `Application`、启动 Activity、applicationId、任务栈与签名；SDK 的 `ImSdkActivity` 由库清单合并，无需让宿主继承 `FlutterActivity`。若宿主已有其他 Flutter 引擎或预编译模块，应先验证引擎、插件与依赖版本共存。
 
@@ -48,7 +48,7 @@ android {
 }
 
 dependencies {
-    implementation("com.imsdk:im-sdk-native:0.1.2")
+    implementation("com.imsdk:im-sdk-native:0.1.3")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 ```

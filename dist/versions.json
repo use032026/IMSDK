@@ -1,36 +1,42 @@
 {
   "defaultBranch": "main",
+  "publishedOn": "2026-10-30",
+  "catalogVersion": "0.3.0",
   "latest": [
     {
       "platform": "ios",
-      "version": "0.1.2",
-      "branch": "ios/v0.1.2",
-      "releaseTag": "ios-v0.1.2",
-      "download": "https://github.com/use032026/IMSDK/releases/download/ios-v0.1.2/IMSDK-iOS-0.1.2.zip",
-      "sha256": "cdb6a7512d4295521dda6c4dd01cc788b0625bce61632a9bb0eeeb6412b94a41"
+      "version": "0.1.3",
+      "branch": "ios/v0.1.3",
+      "releaseTag": "ios-v0.1.3",
+      "download": "https://github.com/use032026/IMSDK/releases/download/ios-v0.1.3/IMSDK-iOS-0.1.3.zip",
+      "sha256": "d3fc7c4452cc7325efed8ff23e0231cc6c2ab0211196d74b96525060fc8341c0",
+      "validationScope": "localization-rebuild"
     },
     {
       "platform": "android",
-      "version": "0.1.2",
-      "branch": "android/v0.1.2",
-      "releaseTag": "android-v0.1.2",
-      "download": "https://github.com/use032026/IMSDK/releases/download/android-v0.1.2/IMSDK-Android-0.1.2.zip",
-      "sha256": "2c9158eb40f1acc3e28e3acd55f61ef0fe1dc00d6b0ec7e6521e3e804ca854a4"
+      "version": "0.1.3",
+      "branch": "android/v0.1.3",
+      "releaseTag": "android-v0.1.3",
+      "download": "https://github.com/use032026/IMSDK/releases/download/android-v0.1.3/IMSDK-Android-0.1.3.zip",
+      "sha256": "434175a4e5a120d83b966d441ab9a47e65722ecd267903bd555b5a47dfbfd8d9",
+      "validationScope": "localization-rebuild"
     },
     {
       "platform": "web",
-      "version": "0.1.5",
-      "branch": "web/v0.1.5",
-      "releaseTag": "web-v0.1.5",
-      "download": "https://github.com/use032026/IMSDK/releases/download/web-v0.1.5/IMSDK-Web-H5-0.1.5.zip",
-      "sha256": "bc13b12cc6034c7f3fca441b0ac6159071d4d55a98c97659c5fd9fc811738555"
+      "version": "0.1.6",
+      "branch": "web/v0.1.6",
+      "releaseTag": "web-v0.1.6",
+      "download": "https://github.com/use032026/IMSDK/releases/download/web-v0.1.6/IMSDK-Web-H5-0.1.6.zip",
+      "sha256": "f49ad382435ff3c590bb6f8389d854cca181c2a589826ae231342952eeb4ea03",
+      "validationScope": "localization-rebuild"
     },
     {
       "platform": "flutter",
-      "version": "0.1.2",
-      "branch": "flutter/v0.1.2",
-      "releaseTag": "flutter-v0.1.2",
-      "download": "https://github.com/use032026/IMSDK/releases/download/flutter-v0.1.2/IMSDK-Flutter-0.1.2.tar.gz"
+      "version": "0.1.3",
+      "branch": "flutter/v0.1.3",
+      "releaseTag": "flutter-v0.1.3",
+      "download": "https://github.com/use032026/IMSDK/archive/refs/tags/flutter-v0.1.3.tar.gz",
+      "deliveryKind": "git-tag-source-archive"
     }
   ]
 }

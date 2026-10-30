@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.imsdk"
-version = "0.1.2"
+version = "0.1.3"
 
 android {
     namespace = "com.imsdk.nativebridge"
@@ -27,7 +27,7 @@ android {
 dependencies {
     // Override when the generated module uses a different Maven group/version.
     api(providers.gradleProperty("imSdkFlutterArtifact")
-        .orElse("com.startlink.im_sdk_module:flutter_release:0.1.2").get())
+        .orElse("com.startlink.im_sdk_module:flutter_release:0.1.3").get())
 }
 
 afterEvaluate {

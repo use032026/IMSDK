@@ -17,12 +17,15 @@ const artifact = resolve(option('--package') ?? resolve(root, `dist/web/imsdk-we
 const work = resolve(option('--work') ?? resolve(root, '.codex-build/web-connected-20261028/web-consumer'));
 const evidence = resolve(option('--evidence') ?? resolve(root, 'logs/web-connected-20261028'));
 const livePath = resolve(option('--live-report') ?? resolve(evidence, 'source-default-entry-live.json'));
+const validationScope = option('--validation-scope') ?? 'real-service';
+assert(['real-service', 'localization'].includes(validationScope), 'Unknown consumer validation scope');
+const localizationPath = option('--localization-report');
 assert(work.startsWith(resolve(root, '.codex-build') + sep), 'Consumer extraction must stay in this task build directory');
 await mkdir(work, { recursive: true });
 assert.equal((await readdir(work)).length, 0, 'Use a fresh empty consumer directory');
 await mkdir(evidence, { recursive: true });
 const hash = data => createHash('sha256').update(data).digest('hex');
-const report = { status: 'running', sdkVersion: version, artifactSha256: hash(await readFile(artifact)), standaloneExtractedOfficialPackage: true, dependencyInstalls: 0, checks: {}, errors: [] };
+const report = { status: 'running', sdkVersion: version, validationScope, artifactSha256: hash(await readFile(artifact)), standaloneExtractedOfficialPackage: true, dependencyInstalls: 0, checks: {}, errors: [] };
 let browser, server;
 async function files(directory) {
   const found = [];
@@ -45,9 +48,31 @@ with tarfile.open(sys.argv[1],'r:gz') as archive:
   assert.deepEqual(pkg.exports['.'], { types: './dist/types/index.d.ts', import: './dist/index.js', require: './dist/index.cjs' });
   for (const file of await files(resolve(work, 'package/dist'))) assert.equal(hash(await readFile(file)), hash(await readFile(resolve(web, 'dist', relative(resolve(work, 'package/dist'), file)))));
   report.bundleSha256 = hash(await readFile(resolve(work, 'package/dist/im-sdk.js')));
-  const live = JSON.parse(await readFile(livePath, 'utf8'));
-  assert.equal(live.passed, true); assert.equal(live.bundleSha256, report.bundleSha256);
-  report.checks.packageExportManifest = report.checks.officialRuntimeAndTypesMatchCurrentBuild = report.checks.sameBundleAsActualRealServiceValidation = true;
+  if (validationScope === 'localization') {
+    assert(localizationPath, 'Localization scope needs an explicit localization report');
+    const local = JSON.parse(await readFile(resolve(localizationPath), 'utf8'));
+    assert.equal(local.passed, true); assert.equal(local.sdkVersion, version);
+    assert.equal(local.bundleSha256, report.bundleSha256);
+    assert.equal(local.realBackend, false);
+    assert.equal(local.supportedLocales.length, 35); assert.equal(new Set(local.supportedLocales).size, 35);
+    for (const key of ['localeSwitch35', 'oldSixValuesPreserved', 'sdkSpecificEnglishFallbackDocumented']) assert.equal(local.checks[key], true);
+    const localization = JSON.parse(await readFile(resolve(work, 'package/dist/LOCALIZATION.json'), 'utf8'));
+    assert.equal(localization.sdkVersion, version); assert.equal(localization.bundleSha256, report.bundleSha256);
+    assert.deepEqual(localization.supportedLocales, local.supportedLocales);
+    assert.equal(localization.realServiceValidationForThisVersion, 'not_run');
+    assert.equal(localization.web.sourceKeyCount, 146);
+    assert.equal(Object.keys(localization.web.sharedMappings).length, 45);
+    assert.equal(Object.keys(localization.web.englishFallbackValues).length, 101);
+    report.checks.sameBundleAsLocalizationValidation = true;
+    report.checks.delivered35LocaleCoverageAndFallbackDisclosure = true;
+    report.realServiceValidationForThisVersion = 'not_run';
+    report.supportedLocales = local.supportedLocales;
+  } else {
+    const live = JSON.parse(await readFile(livePath, 'utf8'));
+    assert.equal(live.passed, true); assert.equal(live.bundleSha256, report.bundleSha256);
+    report.checks.sameBundleAsActualRealServiceValidation = true;
+  }
+  report.checks.packageExportManifest = report.checks.officialRuntimeAndTypesMatchCurrentBuild = true;
   const esm = await import(pathToFileURL(resolve(work, 'package/dist/index.js')).href);
   const cjs = createRequire(import.meta.url)(resolve(work, 'package'));
   for (const [kind, sdk] of [['esm', esm], ['commonjs', cjs]]) {
@@ -56,10 +81,16 @@ with tarfile.open(sys.argv[1],'r:gz') as archive:
     client.on(event => { if (event.type === 'ready') ready++; });
     client.initialize({ apiBaseUrl: 'https://sdk-consumer.example.invalid', serviceRealmId: 'standalone-consumer', privacyConsentGranted: true, realtime: false });
     for (const name of ['registerWithPassword', 'loginWithPassword', 'getRegistrationVerificationSettings', 'sendRegistrationCode', 'listConversations', 'listMessages', 'sendText', 'searchUsers', 'sendFriendRequest', 'listFriendRequests', 'handleFriendRequest', 'createGroup']) assert.equal(typeof client[name], 'function');
+    if (validationScope === 'localization') {
+      for (const locale of report.supportedLocales) {
+        client.updatePresentation({ locale }); assert.equal(client.config.locale, locale);
+      }
+      report.checks[kind + 'All35LocaleSelections'] = true;
+    }
     assert.equal(ready, 1); assert.equal(client.isAuthenticated, false); await client.shutdown(); assert.equal(client.isInitialized, false);
     report.checks[kind + 'StandaloneRuntime'] = true;
   }
-  await writeFile(resolve(work, 'consumer.mts'), `import {ImSdkClient,mountMessenger,type RegistrationRequest,type RegistrationCodeRequest,type RegistrationVerificationSettings,type CreateGroupRequest,type Conversation,type FriendRequest,type FriendRequestSubmission,type UserSearchResult} from './package/dist/types/index.js';
+  await writeFile(resolve(work, 'consumer.mts'), `import {ImSdkClient,mountMessenger,type RegistrationRequest,type RegistrationCodeRequest,type RegistrationVerificationSettings,type CreateGroupRequest,type Conversation,type FriendRequest,type FriendRequestSubmission,type UserSearchResult,type ImSdkPresentation,type HostSessionProvider} from './package/dist/types/index.js';
 const client=new ImSdkClient();
 const register:(r:RegistrationRequest)=>Promise<void>=client.registerWithPassword.bind(client);
 const code:(r:RegistrationCodeRequest)=>Promise<void>=client.sendRegistrationCode.bind(client);
@@ -68,7 +99,9 @@ const group:(r:CreateGroupRequest)=>Promise<Conversation>=client.createGroup.bin
 const search:(q:string)=>Promise<UserSearchResult[]>=client.searchUsers.bind(client);
 const request:(id:string,message?:string)=>Promise<FriendRequestSubmission>=client.sendFriendRequest.bind(client);
 const requests:()=>Promise<FriendRequest[]>=client.listFriendRequests.bind(client);
-void [register,code,settings,group,search,request,requests,mountMessenger];`);
+const display:(value:ImSdkPresentation)=>void=client.updatePresentation.bind(client);
+const provider:HostSessionProvider={readSession:async()=>null,fetchCredentials:async()=>{throw Error('not called')}};
+void [register,code,settings,group,search,request,requests,mountMessenger,display,provider];`);
   execFileSync(process.execPath, [resolve(web, 'node_modules/typescript/bin/tsc'), '--noEmit', '--strict', '--target', 'ES2020', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--lib', 'ES2020,DOM,DOM.Iterable', '--skipLibCheck', resolve(work, 'consumer.mts')], { cwd: work, stdio: 'pipe' });
   report.checks.standalonePublicTypeConsumer = true;
   const hostConfigText = await readFile(resolve(work, 'package/example/host-config.js'), 'utf8');

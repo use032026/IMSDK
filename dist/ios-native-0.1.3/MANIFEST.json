@@ -1,0 +1,113 @@
+{
+  "product": "IM SDK iOS",
+  "sdkVersion": "0.1.3",
+  "validatedOn": "2026-10-29",
+  "validationScope": "localization-rebuild",
+  "localization": {
+    "catalogVersion": "0.3.0",
+    "localeCount": 35,
+    "keysPerLocale": 1040,
+    "nativeManifestSha256": "2fbd4dc8f5b44eba26d69e99f8d1015c57c0645854101b70126e754c2d936938",
+    "coverageSha256": "372ca4b97d4eff6afa1e34fe7a8c2745c8a6187f634ba87a90cfb3199a3171fe",
+    "locales": [
+      "zh-CN",
+      "zh-TW",
+      "en",
+      "ja",
+      "ko",
+      "vi",
+      "ar",
+      "bg",
+      "cs",
+      "da",
+      "de",
+      "el",
+      "es",
+      "fi",
+      "fil",
+      "fr",
+      "hi",
+      "hr",
+      "hu",
+      "id",
+      "it",
+      "ms",
+      "nb",
+      "nl",
+      "pl",
+      "pt-BR",
+      "pt-PT",
+      "ro",
+      "ru",
+      "si",
+      "sk",
+      "sv",
+      "th",
+      "tr",
+      "uk"
+    ],
+    "fallbackPolicy": "SDK/Web exclusive missing translations use English. Existing legal bodies retain their original selection and fallback."
+  },
+  "binaryTreeSha256": "520d08e627370f0721a98979d306ed2b8922a821f48e710c443557c7ea48a237",
+  "validation": {
+    "status": "passed",
+    "sdkVersion": "0.1.3",
+    "build": {
+      "status": "passed",
+      "modes": [
+        "Debug",
+        "Release"
+      ],
+      "frameworksPerMode": 35,
+      "platformSlices": 140,
+      "localeManifestCopies": 4,
+      "matchingCurrent35LocaleManifest": true
+    },
+    "binaryTreeSha256": "520d08e627370f0721a98979d306ed2b8922a821f48e710c443557c7ea48a237",
+    "sampleHostTreeSha256": "c649b165756db816eaeb3c8d8845a840a5b995f07549dadb2c5e9e42701b1455",
+    "consumerValidation": {
+      "status": "passed",
+      "sdkVersion": "0.1.3",
+      "swiftAndObjCCombinations": 6,
+      "newPresentationAPICompiled": true,
+      "independentUIKitBuilds": [
+        {
+          "configuration": "Debug",
+          "sdk": "iphonesimulator",
+          "result": "BUILD SUCCEEDED",
+          "embeddedDynamicFrameworks": 32,
+          "embeddedLocaleManifestByteEqual": true,
+          "localeCount": 35,
+          "codeSigningAllowed": false,
+          "runtimeExecuted": false,
+          "backendRequests": false
+        },
+        {
+          "configuration": "Release",
+          "sdk": "iphoneos",
+          "result": "BUILD SUCCEEDED",
+          "embeddedDynamicFrameworks": 32,
+          "embeddedLocaleManifestByteEqual": true,
+          "localeCount": 35,
+          "codeSigningAllowed": false,
+          "runtimeExecuted": false,
+          "backendRequests": false
+        }
+      ],
+      "packageInputsUnchanged": true,
+      "digestNormalization": "Each captured file hash matches the before/after consumer map; delivery tree uses standard SHA256SUMS lines."
+    },
+    "realBackend": "not_run",
+    "physicalDevice": "not_run"
+  },
+  "realServiceValidation": {
+    "status": "not_run_for_this_rebuild"
+  },
+  "physicalDeviceValidation": "not_run",
+  "remotelyPublished": false,
+  "modes": [
+    "Debug",
+    "Release"
+  ],
+  "frameworksPerMode": 35
+}

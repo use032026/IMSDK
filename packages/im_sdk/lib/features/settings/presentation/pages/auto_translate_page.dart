@@ -4,38 +4,15 @@ import 'package:im_sdk/core/widgets/setting_tile.dart';
 import 'package:im_sdk/features/chat/application/providers/auto_translate_preferences_provider.dart';
 import 'package:im_sdk/features/chat/presentation/models/translation_language_options.dart';
 import 'package:im_sdk/l10n/app_localizations.dart';
+import 'package:im_sdk/generated/l10n/sdk_resources.dart'
+    show translationExampleMessages;
 
 class AutoTranslatePage extends ConsumerWidget {
   const AutoTranslatePage({super.key});
 
-  String _translatedExample(String targetLanguage) {
-    switch (targetLanguage) {
-      case 'zh-CN':
-        return '你好，你好吗？';
-      case 'zh-TW':
-        return '你好，你好嗎？';
-      case 'en':
-        return 'Hello, how are you?';
-      case 'ja':
-        return 'こんにちは、お元気ですか？';
-      case 'ko':
-        return '안녕하세요, 어떻게 지내세요?';
-      case 'vi':
-        return 'Xin chào, bạn khỏe không?';
-      case 'es':
-        return '¡Hola, cómo estás?';
-      case 'fr':
-        return 'Bonjour, comment allez-vous ?';
-      case 'de':
-        return 'Hallo, wie geht es dir?';
-      case 'ru':
-        return 'Привет, как дела?';
-      case 'ar':
-        return 'مرحبا، كيف حالك؟';
-      default:
-        return '你好，你好吗？';
-    }
-  }
+  String _translatedExample(String targetLanguage) =>
+      translationExampleMessages[targetLanguage] ??
+      translationExampleMessages['zh-CN']!;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -98,7 +75,7 @@ class AutoTranslatePage extends ConsumerWidget {
                                 color: colorScheme.onSurface
                                     .withValues(alpha: 0.55))),
                         const SizedBox(height: 4),
-                        Text('Hello, how are you?',
+                        Text(translationExampleMessages['en']!,
                             style: TextStyle(
                                 fontSize: 14, color: colorScheme.onSurface)),
                       ],

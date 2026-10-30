@@ -1,6 +1,6 @@
 {
   "name": "@imsdk/web",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Embeddable IM SDK for H5 with personal and tenant messaging",
   "type": "module",
   "main": "./dist/index.cjs",

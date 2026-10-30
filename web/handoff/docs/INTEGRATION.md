@@ -1,6 +1,6 @@
-# Web SDK 0.1.5 接入说明
+# Web SDK 0.1.6 接入说明
 
-文档整理日期：2026-10-28。本文面向 H5 接入方，普通网页、Vue 和 React 均可使用。SDK 已编译，使用交付文件无需 Flutter 或原生 iOS / Android 工具链。
+文档整理日期：2026-10-29。本文面向 H5 接入方，普通网页、Vue 和 React 均可使用。SDK 已编译，使用交付文件无需 Flutter 或原生 iOS / Android 工具链。
 
 ## 直接使用现有真实服务
 
@@ -43,7 +43,7 @@
 
 `/assets/im-sdk.js` 是宿主部署后的资源路径，需要按项目实际目录调整；示例域名也需要替换。传入 `privacyConsentGranted: true` 须对应宿主已实际取得的同意。
 
-交付包中的 [普通网页示例](../examples/plain-html/index.html) 已连接本轮真实服务，直接双击即可使用。也可按部署需要在**解压后的交付包根目录**启动静态服务：
+交付包中的 [普通网页示例](../examples/plain-html/index.html) 保留既有获授权服务配置，直接双击即可使用。也可按部署需要在**解压后的交付包根目录**启动静态服务：
 
 ```sh
 python3 -m http.server 8080 --bind 127.0.0.1
@@ -57,10 +57,10 @@ python3 -m http.server 8080 --bind 127.0.0.1
 
 ## 方式二：npm / TypeScript
 
-本版本以本地 npm 安装包交付，尚未发布到公共 npm registry。npm 安装环境使用 **Node.js 20+**，与包内 `engines` 一致；普通 script 接入无需 Node.js。把交付目录放入 H5 工程的 `vendor/IMSDK-Web-H5-0.1.5/` 后，在 **H5 工程根目录**执行：
+本版本以本地 npm 安装包交付，尚未发布到公共 npm registry。npm 安装环境使用 **Node.js 20+**，与包内 `engines` 一致；普通 script 接入无需 Node.js。把交付目录放入 H5 工程的 `vendor/IMSDK-Web-H5-0.1.6/` 后，在 **H5 工程根目录**执行：
 
 ```sh
-npm install ./vendor/IMSDK-Web-H5-0.1.5/npm/imsdk-web-0.1.5.tgz
+npm install ./vendor/IMSDK-Web-H5-0.1.6/npm/imsdk-web-0.1.6.tgz
 ```
 
 也可将命令中的路径替换为安装包的实际位置。安装后的模块名为 `@imsdk/web`，包含 ESM、CommonJS 和 TypeScript 类型声明。
@@ -157,7 +157,7 @@ async function enterWithImCredentials(credentials: ImSdkCredentials) {
 
 ## 宿主账号自动同步（源码新增）
 
-此模式面向已有宿主账号的会话列表入口。需使用包含这些接口的新构建；现有版本化交付快照和已发布包不会自动更新。先初始化 `hostManagedAuth: true`，再绑定宿主提供者，最后挂载界面：
+此模式面向已有宿主账号的会话列表入口，已包含在本次 0.1.6 本地交付；旧 0.1.5 快照和远程包保持原样。先初始化 `hostManagedAuth: true`，再绑定宿主提供者，最后挂载界面：
 
 ```ts
 import { ImSdkClient, mountMessenger, type HostSessionProvider } from '@imsdk/web';
@@ -193,7 +193,7 @@ client.initialize({ ...configuration, themeMode: 'system', locale: 'zh-CN' });
 client.updatePresentation({ themeMode: 'dark', locale: 'en-US' });
 ```
 
-`themeMode` 支持 `system`、`light`、`dark`，默认为 `system`；`system` 通过浏览器媒体设置实时跟随系统外观。`locale` 默认 `zh-CN`，支持 `zh-CN`、`zh-TW`、`en`、`ja`、`ko`、`vi` 和 `system`。合法区域/脚本别名会归一化，例如 `zh_CN` / `zh-Hans-TW` → `zh-CN`、`zh-Hant-CN` / `zh-HK` → `zh-TW`、`en-US` → `en`；明确脚本优先于地区。`system` 按浏览器语言优先级选择支持语言，没有匹配时回退简体中文，并在 `languagechange` 后实时更新。
+`themeMode` 支持 `system`、`light`、`dark`，默认为 `system`；`system` 通过浏览器媒体设置实时跟随系统外观。`locale` 默认 `zh-CN`，支持 LOCALIZATION.json 列出的 35 个语言标识及 `system`，包括 `pt-BR` 和 `pt-PT` 两个葡语变体。原六语值保持不变；新29语中45条Web文案复用共享译文，101条SDK特有文案明确英语回退。合法区域/脚本别名会归一化，例如 `zh_CN` / `zh-Hans-TW` → `zh-CN`、`zh-Hant-CN` / `zh-HK` → `zh-TW`、`en-US` → `en`、`pt` / `ptBR` → `pt-BR`、`ptPT` → `pt-PT`；合法中文地区内明确脚本优先于地区。`system` 按浏览器语言优先级选择支持语言，没有匹配时回退简体中文，并在 `languagechange` 后实时更新。
 
 `updatePresentation` 为同步原子更新：两字段先整体校验；未知主题、不支持语言或非法 tag 返回 `INVALID_PRESENTATION`，另一字段也不会生效。`client.config` 反映当前规范化值；`presentationChanged` 事件携带完整的 `themeMode` 与 `locale`。主题字符串允许前后空格及大小写别名；语言的 `_` 分隔符兼容常见宿主设置。
 
@@ -223,7 +223,7 @@ const unsubscribe = client.on(event => {
 - 放通 `/api/platform/v1/...` 与 `/api/client/v1/...`。若 `apiBaseUrl` 配置路径前缀，反向代理也需对应路由该前缀后的 `/api/...`。
 - 网关根地址会追加 `/ws/client`；需同时支持 negotiate 请求和 WebSocket Upgrade，避免把其返回为 H5 的 HTML 页面。按实际网关心跳与超时配置代理，服务端日志隐藏 `access_token` 查询参数。
 - CSP 的 `script-src` 允许宿主加载 SDK 文件，`connect-src` 允许实际 API / 网关的 HTTPS 和 WSS 地址。保留宿主现有策略，在现有策略中合并所需来源。
-- 当前内置 UI 在 Shadow DOM 内注入样式；宿主样式策略需允许该样式生效。0.1.5 没有可传入 CSP nonce 的配置项。
+- 当前内置 UI 在 Shadow DOM 内注入样式；宿主样式策略需允许该样式生效。0.1.6 没有可传入 CSP nonce 的配置项。
 - 宿主提供明确容器高度，最小420px。首次接入先使用固定高度确认布局，再接入路由、抽屉或全屏容器。外层页面样式不应直接依赖 Shadow DOM 内部结构。
 
 ## 常见问题排查

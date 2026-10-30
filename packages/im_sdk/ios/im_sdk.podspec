@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'im_sdk'
-  s.version          = '0.1.2'
+  s.version          = '0.1.3'
   s.summary          = 'IM SDK platform media adapters.'
   s.description      = 'Platform media and diagnostics adapters for the independent IM SDK.'
   s.homepage         = 'https://localhost/imsdk'

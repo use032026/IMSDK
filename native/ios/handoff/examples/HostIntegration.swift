@@ -58,6 +58,11 @@ final class SwiftIMIntegration: NSObject, IMSDKEventListener {
         )
     }
 
+    /// 已初始化后同步宿主最终选择的语言与主题，保留当前页面和账号。
+    func updatePresentation(locale: String, themeMode: String, completion: @escaping IMSDK.Completion) {
+        IMSDK.shared.updatePresentation(settings: ["locale": locale, "themeMode": themeMode], completion: completion)
+    }
+
     /// 宿主账号退出时协调调用；这不是服务端 token 撤销接口。
     func logout(completion: @escaping IMSDK.Completion) {
         IMSDK.shared.logout(completion: completion)

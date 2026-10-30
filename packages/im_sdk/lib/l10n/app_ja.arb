@@ -1038,6 +1038,13 @@
   "diagnosticsDay": "過去24時間",
   "diagnosticsWeek": "過去7日間",
   "diagnosticsEventCount": "利用可能な記録：{count}件",
+  "@diagnosticsEventCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diagnosticsPersistent": "ログは端末に保存され、再起動後も書き出せます。",
   "diagnosticsNotPersistent": "一部のログが保存されていません。更新してください。",
   "diagnosticsExport": "書き出して共有",
@@ -1047,12 +1054,5 @@
   "diagnosticsShared": "システムの共有操作が完了しました。共有先でファイルを確認してください。",
   "diagnosticsCancelled": "共有をキャンセルしました。再度書き出せます。",
   "diagnosticsUnconfirmed": "共有結果を確認できません。共有先で確認してください。",
-  "diagnosticsFailed": "操作に失敗しました。再試行してください。",
-  "@diagnosticsEventCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
+  "diagnosticsFailed": "操作に失敗しました。再試行してください。"
 }

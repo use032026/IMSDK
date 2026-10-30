@@ -31,6 +31,8 @@ import 'package:im_sdk/features/customer_service/presentation/providers/customer
 import 'package:im_sdk/features/customer_service/presentation/widgets/customer_service_ai_reply_sheet.dart';
 import 'package:im_sdk/features/settings/presentation/providers/chat_input_settings_provider.dart';
 import 'package:im_sdk/l10n/app_localizations.dart';
+import 'package:im_sdk/generated/l10n/sdk_resources.dart'
+    show sdkFileAttachmentMessages;
 import 'package:path/path.dart' as p;
 
 enum _InputMode { text, voice, emoji, tools }
@@ -754,18 +756,22 @@ class _ChatInputToolbarState extends ConsumerState<ChatInputToolbar> {
     );
   }
 
-  String _filePickFailedText(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
-    if (languageCode == 'en') {
-      return 'Unable to read the file. Download it to this device and retry';
-    }
-    if (languageCode == 'ja') return 'ファイルを端末にダウンロードしてから、もう一度お試しください';
-    if (languageCode == 'ko') return '파일을 기기에 다운로드한 후 다시 시도해 주세요';
-    if (languageCode == 'vi') {
-      return 'Không thể đọc tệp. Hãy tải tệp về thiết bị rồi thử lại';
-    }
-    return '无法读取文件，请确认文件已下载到本机后重试';
+  String _fileMessageText(BuildContext context, String message,
+      {String extension = ''}) {
+    final locale = Localizations.localeOf(context);
+    final languageCode = locale.languageCode;
+    final messages = sdkFileAttachmentMessages[message]!;
+    final localeKey = locale.countryCode == null
+        ? languageCode
+        : '${languageCode}_${locale.countryCode}';
+    return (messages[localeKey] ??
+            messages[languageCode] ??
+            messages['en']!)
+        .replaceAll('{extension}', extension);
   }
+
+  String _filePickFailedText(BuildContext context) =>
+      _fileMessageText(context, 'filePickFailed');
 
   String _fileValidationErrorText(
     BuildContext context,
@@ -775,55 +781,23 @@ class _ChatInputToolbarState extends ConsumerState<ChatInputToolbar> {
     if (rejection == ChatFileAttachmentRejection.tooLarge) {
       return AppLocalizations.of(context).chatFileTooLarge;
     }
-    final languageCode = Localizations.localeOf(context).languageCode;
     if (rejection == ChatFileAttachmentRejection.mediaUsePhotos) {
-      if (languageCode == 'en') return 'Send images and videos from Photos';
-      if (languageCode == 'ja') return '画像と動画は「写真」から送信してください';
-      if (languageCode == 'ko') return '사진과 동영상은 “사진”에서 보내 주세요';
-      if (languageCode == 'vi') {
-        return 'Vui lòng gửi ảnh và video từ mục “Ảnh”';
-      }
-      return '图片和视频请通过“照片”入口发送';
+      return _fileMessageText(context, 'mediaUsePhotos');
     }
     if (rejection == ChatFileAttachmentRejection.unrecognizedType) {
-      if (languageCode == 'en') return 'Unable to identify the file type';
-      if (languageCode == 'ja') return 'ファイル形式を識別できません';
-      if (languageCode == 'ko') return '파일 형식을 확인할 수 없습니다';
-      if (languageCode == 'vi') return 'Không thể xác định loại tệp';
-      return '无法识别文件类型';
+      return _fileMessageText(context, 'unrecognizedType');
     }
     if (rejection == ChatFileAttachmentRejection.typeMismatch) {
-      if (languageCode == 'en') {
-        return 'The file type does not match its extension';
-      }
-      if (languageCode == 'ja') return 'ファイル形式と拡張子が一致しないため送信できません';
-      if (languageCode == 'ko') return '파일 형식과 확장자가 일치하지 않아 보낼 수 없습니다';
-      if (languageCode == 'vi') {
-        return 'Loại tệp không khớp với phần mở rộng nên không thể gửi';
-      }
-      return '文件类型与扩展名不一致，无法发送';
+      return _fileMessageText(context, 'typeMismatch');
     }
     final normalizedExtension = extension.trim().toLowerCase();
     if (normalizedExtension.isEmpty) return _unsupportedFileTypeText(context);
-    if (languageCode == 'en') {
-      return '.$normalizedExtension files are not supported yet';
-    }
-    if (languageCode == 'ja') return '.$normalizedExtension ファイルはまだ送信できません';
-    if (languageCode == 'ko') return '.$normalizedExtension 파일은 아직 보낼 수 없습니다';
-    if (languageCode == 'vi') {
-      return 'Chưa hỗ trợ gửi tệp .$normalizedExtension';
-    }
-    return '暂不支持发送 .$normalizedExtension 文件';
+    return _fileMessageText(context, 'unsupportedExtension',
+        extension: normalizedExtension);
   }
 
-  String _unsupportedFileTypeText(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
-    if (languageCode == 'en') return 'This file type is not supported yet';
-    if (languageCode == 'ja') return 'このファイル形式はまだ対応していません';
-    if (languageCode == 'ko') return '아직 지원하지 않는 파일 형식입니다';
-    if (languageCode == 'vi') return 'Chưa hỗ trợ loại tệp này';
-    return '暂不支持发送此类型文件';
-  }
+  String _unsupportedFileTypeText(BuildContext context) =>
+      _fileMessageText(context, 'unsupportedType');
 
   void _insertEmoji(String emoji) {
     if (_isMutedForUser) return;

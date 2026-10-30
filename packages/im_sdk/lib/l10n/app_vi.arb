@@ -1038,6 +1038,13 @@
   "diagnosticsDay": "24 giờ qua",
   "diagnosticsWeek": "7 ngày qua",
   "diagnosticsEventCount": "Số bản ghi: {count}",
+  "@diagnosticsEventCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diagnosticsPersistent": "Nhật ký đã lưu trên thiết bị và có thể xuất sau khi khởi động lại.",
   "diagnosticsNotPersistent": "Một số nhật ký chưa được lưu. Vui lòng làm mới.",
   "diagnosticsExport": "Xuất và chia sẻ",
@@ -1047,12 +1054,5 @@
   "diagnosticsShared": "Thao tác chia sẻ đã hoàn tất. Hãy kiểm tra tệp trong ứng dụng nhận.",
   "diagnosticsCancelled": "Đã hủy chia sẻ. Bạn có thể xuất lại.",
   "diagnosticsUnconfirmed": "Không thể xác nhận kết quả chia sẻ. Hãy kiểm tra ứng dụng nhận.",
-  "diagnosticsFailed": "Thao tác thất bại. Vui lòng thử lại.",
-  "@diagnosticsEventCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
+  "diagnosticsFailed": "Thao tác thất bại. Vui lòng thử lại."
 }

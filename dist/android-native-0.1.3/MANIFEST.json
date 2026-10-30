@@ -1,0 +1,119 @@
+{
+  "product": "IM SDK Android",
+  "sdkVersion": "0.1.3",
+  "validatedOn": "2026-10-29",
+  "validationScope": "localization-rebuild",
+  "localization": {
+    "catalogVersion": "0.3.0",
+    "localeCount": 35,
+    "keysPerLocale": 1040,
+    "nativeManifestSha256": "2fbd4dc8f5b44eba26d69e99f8d1015c57c0645854101b70126e754c2d936938",
+    "coverageSha256": "372ca4b97d4eff6afa1e34fe7a8c2745c8a6187f634ba87a90cfb3199a3171fe",
+    "locales": [
+      "zh-CN",
+      "zh-TW",
+      "en",
+      "ja",
+      "ko",
+      "vi",
+      "ar",
+      "bg",
+      "cs",
+      "da",
+      "de",
+      "el",
+      "es",
+      "fi",
+      "fil",
+      "fr",
+      "hi",
+      "hr",
+      "hu",
+      "id",
+      "it",
+      "ms",
+      "nb",
+      "nl",
+      "pl",
+      "pt-BR",
+      "pt-PT",
+      "ro",
+      "ru",
+      "si",
+      "sk",
+      "sv",
+      "th",
+      "tr",
+      "uk"
+    ],
+    "fallbackPolicy": "SDK/Web exclusive missing translations use English. Existing legal bodies retain their original selection and fallback."
+  },
+  "binaryTreeSha256": "374c3a814ddb000dbe48450a82dcd0cd2873d252c4f8fc5ccc7e69f87684a202",
+  "validation": {
+    "status": "passed",
+    "sdkVersion": "0.1.3",
+    "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.3",
+    "hostMode": "Debug",
+    "sdkMode": "Release",
+    "consumerValidation": {
+      "status": "passed",
+      "javaHostAssembleDebug": "passed",
+      "packagedJavaSnippetCompile": "passed",
+      "packagedKotlinSnippetCompile": "passed",
+      "hostSessionAndPresentationPublicApiCompile": "passed",
+      "kotlinCompilerVersion": "2.2.20",
+      "jvmTarget": "17",
+      "sourceProjectSdkDependency": false,
+      "packageSourcesUnchanged": true,
+      "packageBuildCachesAbsent": true
+    },
+    "binaryTreeSha256": "374c3a814ddb000dbe48450a82dcd0cd2873d252c4f8fc5ccc7e69f87684a202",
+    "sampleHostTreeSha256": "119a6e5c18cb7b26de2e82f73bec26f867806d9641c20faf715311f6cddbc672",
+    "apkSha256": "860a0c7651d6517eaf758fa79f196feaafbaf3fd6d4198f7b799483e71c27660",
+    "flutterReleaseAarSha256": "dde9f9ff6858a095dc90fbf090f2d711eaef37673202211f780c4598ed5af8b5",
+    "nativeFacadeAarSha256": "1e36fcfe5401c317311198d3bd32bfc4ffd511e5aef936f1f57e5bb105d0f3bf",
+    "localeManifestSha256": "2fbd4dc8f5b44eba26d69e99f8d1015c57c0645854101b70126e754c2d936938",
+    "aarAndApkLocaleManifestsMatchSource": true,
+    "localeCount": 35,
+    "keysPerLocale": 1040,
+    "catalogVersion": "0.3.0",
+    "appLibraryPackaging": {
+      "status": "passed",
+      "transform": "NDK llvm-strip --strip-unneeded",
+      "ndkVersionUsedForIndependentReproduction": "27.0.12077973",
+      "requiresAarEqualsMergedAndReproducedStripEqualsGradleStripEqualsApk": true,
+      "architectures": {
+        "arm64-v8a": {
+          "aarAndMergedSha256": "a24aed2bf06b75aa4b283cd588816c34c85981cb347d86664771633428798a65",
+          "apkAndStrippedSha256": "6f2d8c168cef408e3bb384f29f36defdcc77d1037179d688f9dc4587ed15effc",
+          "independentStripMatchesApk": true
+        },
+        "armeabi-v7a": {
+          "aarAndMergedSha256": "26ee410c9ee70692eb6fef4f379577dae6ae4d662a365fff94ef7b7f75b1b367",
+          "apkAndStrippedSha256": "430fa485dbaf914364b13ec8543fc3090366d483a0b41e6dfa618301ba05d5b6",
+          "independentStripMatchesApk": true
+        },
+        "x86_64": {
+          "aarAndMergedSha256": "d2885e4e70d8c986286fe454fa4cc124f59c3d2bb51eff1ca74d2c1964f235f0",
+          "apkAndStrippedSha256": "268b3efa8642b10423ef4d77ddeb542bc1b766110eeb5de0fee1a22ce3f3cf6a",
+          "independentStripMatchesApk": true
+        }
+      }
+    },
+    "aarCount": 27,
+    "publicTransitiveDependenciesRequired": true,
+    "runtimeLanguageUiAcceptance": "not_run",
+    "realServiceValidation": "not_run_for_this_rebuild",
+    "physicalDeviceValidation": "not_run",
+    "currentRuntimeInputsUnchanged": true,
+    "runtimeBuildInputSha256": "e8473f586fa5f3965cc0d550b08f5e9eb6598f243299d8a22a1a6c4426e85e8a",
+    "runtimeBuildInputFileCount": 656
+  },
+  "realServiceValidation": {
+    "status": "not_run_for_this_rebuild"
+  },
+  "physicalDeviceValidation": "not_run",
+  "remotelyPublished": false,
+  "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.3",
+  "publicTransitiveDependenciesRequired": true
+}

@@ -99,6 +99,9 @@ class HostIntegration : ImSdk.EventListener {
         // Page-open callbacks are not login/message-delivery receipts; do not log raw payloads.
     }
 
+    fun updatePresentation(locale: String, themeMode: String, result: ImSdk.Callback) =
+        ImSdk.updatePresentation(mapOf("locale" to locale, "themeMode" to themeMode), result)
+
     fun logout(result: ImSdk.Callback) = ImSdk.logout(result)
 
     /** Clear when this owner is released, even if the SDK runtime remains active. */
