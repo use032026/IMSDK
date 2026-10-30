@@ -6,11 +6,18 @@ import json
 import re
 import sys
 
+sys.dont_write_bytecode = True
+from l10n_pending import PendingChangeError, check_pending
+
 root = Path(__file__).resolve().parents[1]
 original = Path('/Users/starburst') / 'chat-im-cs'
 errors = []
 checked = {'pubspecs': 0, 'local_dependencies': 0, 'dart_files': 0, 'assets': 0, 'symlinks': 0}
-excluded = {'.git', '.dart_tool', '.gradle', '.idea', '.android', '.ios', 'build', 'Pods', '.symlinks', 'dist', 'logs', '__pycache__'}
+excluded = {'.git', '.dart_tool', '.gradle', '.idea', '.android', '.ios', 'build', 'Pods', '.symlinks', 'dist', 'logs', '__pycache__', '.work', '.local', '.l10n-cache'}
+try:
+    check_pending(root)
+except PendingChangeError as error:
+    errors.append(str(error))
 
 
 def internal(path, label, *, must_exist=True):
@@ -73,7 +80,7 @@ for lock in sorted(root.rglob('pubspec.lock')):
 # package cache. They must still never point back to the original App checkout.
 for path in root.rglob('*'):
     relative = path.relative_to(root)
-    if any(part in {'.git', 'build', 'dist', 'logs'} for part in relative.parts[:-1]):
+    if any(part in {'.git', 'build', 'dist', 'logs', '.work', '.local', '.l10n-cache'} for part in relative.parts[:-1]):
         continue
     if path.is_symlink() and path.resolve().is_relative_to(original):
         errors.append(f'{relative}: symlink points into original App checkout')

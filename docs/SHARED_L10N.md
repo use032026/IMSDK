@@ -56,6 +56,40 @@ catalog source or the consumer's explicit override, regenerate and verify the
 result. Generated resources are shipped so consuming hosts never need the
 generator or the full catalog.
 
+## Local update automation
+
+Use `l10n.changes.json` for pending SDK words. Each entry has `module`, `key`,
+`values` keyed by locale, and optional ARB `metadata`. New words require every
+catalog locale; existing words may specify only changed locales. Translations
+and placeholder metadata are explicit inputs, never guessed.
+
+```sh
+python3 scripts/l10n_update.py prepare --consumer-root .
+# Review the printed temporary Ln18 checkout and manually commit/push it:
+python3 scripts/l10n_update.py adopt --plan /path/from/prepare/plan.json
+python3 scripts/l10n_update.py check --consumer-root . --offline
+```
+
+Prepare chooses the next patch version by default and handles catalog keys,
+SDK profile metadata, archive and plan. Pending work stays in the ignored
+`.work/l10n-updates/` directory; retain it until its source changes are published
+and adopted. Adopt verifies the archive from a fresh remote download before
+updating pins and generating/checking resources. It clears the matching draft
+only after every target succeeds, and restores language-owned files/configs on
+failure without changing Git's index or unrelated code. No command commits or
+pushes. `--dry-run` preflights adoption; `--revision` pins a specific full remote
+commit instead of discovering remote HEAD.
+
+Drafts and local generated-resource drift block ordinary sync/check. The source
+independence check also rejects unpublished drafts without adding network access
+to normal builds. Existing SDK-specific override entries require explicit source
+maintenance; an input that would be swallowed by an override is rejected.
+
+For a mobile-led change that the SDK needs, run prepare from chat-im-cs with
+`--sdk-root`, marking new shared words `sdk: true`. Updates to shared words already
+selected by the SDK also require including that target, so they cannot silently
+be omitted. This does not import entire App modules into the SDK.
+
 ## Adding features and adopting a catalog update
 
 New chat-im-cs features can be developed in that repository while their new

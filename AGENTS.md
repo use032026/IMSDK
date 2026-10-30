@@ -1,5 +1,9 @@
 # IMSDK 工作约定
 
+## 多语言更新交付
+
+新增或修改 SDK 文案时，维护 `l10n.changes.json` 并运行 `python3 scripts/l10n_update.py prepare --consumer-root .`。准备工具处理词源、SDK profile、版本与归档；用户手动提交推送 Ln18 后，再运行 `python3 scripts/l10n_update.py adopt --plan <plan.json>` 自动固定已发布来源、生成并检查。chat-im-cs 词条供 SDK 使用时由发起方标记 `sdk: true` 并提供 SDK 根目录，不自动扩大整个 SDK 词条范围。不得为绕过检查删除草稿或覆盖未回补的生成资源；Git 提交和推送仍由用户操作。
+
 ## 构建与验证结束后清理
 
 使用 `/Users/starburst/.codex/skills/post-build-cleanup/SKILL.md`。完成验证、保存必要结论与诊断证据后，核对精确路径、打开文件、内存映射和相关任务，再直接清理已确认闲置且可重新生成的当前项目构建输出与缓存，无需重复询问。

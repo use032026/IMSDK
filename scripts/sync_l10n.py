@@ -14,6 +14,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 from l10n_source import SourceError, add_source_arguments, ensure_dart_dependencies, resolve_catalog
+from l10n_pending import PendingChangeError, check_pending
 
 
 def require_executable(value, label):
@@ -52,6 +53,7 @@ def main():
     parser.add_argument("--flutter", help="Flutter executable; must match .flutter-version")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    planned_update = check_pending(root)
     flutter = flutter_tool(root, args.flutter)
     dart = require_executable(args.dart or str(Path(flutter).parent / ("dart.bat" if os.name == "nt" else "dart")), "Dart")
     catalog = resolve_catalog(root, args.catalog_root, cache_dir=args.cache_dir, offline=args.offline)
@@ -59,6 +61,11 @@ def main():
     command = [sys.executable, str(catalog / "tools/sync.py"), "--consumer-root", str(root), "--dart", dart]
     if args.check:
         command.append("--check")
+    elif not planned_update and not args.catalog_root and not os.environ.get("IM_L10N_CATALOG_ROOT"):
+        try:
+            subprocess.run([*command, "--check"], check=True)
+        except subprocess.CalledProcessError as error:
+            raise SourceError("Local language files differ from the pinned catalog. Record intended changes in l10n.changes.json and run prepare; no files were overwritten.") from error
     subprocess.run(command, check=True)
     if not args.check:
         subprocess.run([flutter, "--no-version-check", "gen-l10n"], cwd=root / "packages/im_sdk", check=True)
@@ -67,6 +74,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except (SourceError, OSError, ValueError, subprocess.CalledProcessError) as error:
+    except (SourceError, PendingChangeError, OSError, ValueError, subprocess.CalledProcessError) as error:
         print(f"SDK language sync failed: {error}", file=sys.stderr)
         raise SystemExit(1)
