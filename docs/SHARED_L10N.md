@@ -1,18 +1,34 @@
 # Shared language resources
 
-The private `im_l10n_catalog` package owns the SDK's versioned translation
+The `im_l10n_catalog` package in the remote Ln18 repository owns the SDK's versioned translation
 sources. `l10n.resources.json` selects version 0.3.0 and the SDK renderer;
 `packages/im_sdk/l10n.bundle.json` preserves the Flutter language/key subset.
 The generated resources remain in this repository and source deliveries.
 
-Maintainers regenerate explicitly:
+`l10n.source.json` pins the GitHub repository, a full commit revision, the
+0.3.0 archive and its SHA256. The maintenance command downloads only that
+language package into the ignored `.l10n-cache/`; no desktop Ln18 checkout is
+required. It validates the archive and cached source before running its generator.
+The Flutter toolchain must match `.flutter-version` (or set `FLUTTER_BIN` /
+`--flutter` to that version).
+
+Maintainers regenerate explicitly; normal sync also runs `flutter gen-l10n`:
 
 ```sh
-python3 scripts/sync_l10n.py --catalog-root /path/to/im_l10n_catalog
-python3 scripts/sync_l10n.py --catalog-root /path/to/im_l10n_catalog --check
+python3 scripts/sync_l10n.py
+python3 scripts/sync_l10n.py --check
+# Reuse an existing verified package and locally available Dart dependencies:
+python3 scripts/sync_l10n.py --offline --check
 ```
 
-`IM_L10N_CATALOG_ROOT` can supply the package checkout instead. Normal Flutter,
+`--check` does not regenerate SDK outputs; a cold cache may download the pinned
+archive and resolve the generator's locked Dart dependencies. `--offline` fails
+if those inputs are not already available. The cache can be removed and fetched
+again at the next maintenance run. Corrupt or mismatched sources fail without
+falling back to `main` or a desktop directory. `--cache-dir` selects a separate
+cache for CI. To test unpublished catalog edits, explicitly pass
+`--catalog-root /path/to/im_l10n_catalog` or set `IM_L10N_CATALOG_ROOT`.
+Normal Flutter,
 native and Web builds consume the retained generated files; they do not need
 Ln18 or an external path dependency. The SDK public version and presentation API
 are retained. The locale selection now accepts the shared catalog's 35 locales,
@@ -39,3 +55,21 @@ Do not edit generated Dart/TypeScript or ARB files directly. Update the pinned
 catalog source or the consumer's explicit override, regenerate and verify the
 result. Generated resources are shipped so consuming hosts never need the
 generator or the full catalog.
+
+## Adding features and adopting a catalog update
+
+New chat-im-cs features can be developed in that repository while their new
+language keys are added to Ln18's module ARB files, module index and
+`chat_mobile` profile. When the SDK adopts a module or needs the same wording,
+also add the relevant keys to the `im_sdk` profile and its selected modules;
+retain SDK-specific overrides and supplementary datasets. A mobile feature does
+not automatically expand the SDK's selected key set. PC uses its separate JSON
+dataset in Ln18.
+
+Create a new catalog version and archive, verify it, and commit/push it to Ln18
+before consumers adopt it. Update `l10n.source.json` with that exact commit,
+archive path and SHA256; update `catalogVersion` in both `l10n.resources.json`
+and `packages/im_sdk/l10n.bundle.json`. Run sync and check, then test the affected
+SDK interfaces and commit the generated ARB/Dart/Web files and both receipts
+with the source pin. Published archives remain unchanged. The initial remote
+pin deliberately uses the existing 0.3.0 archive and changes no translations.
