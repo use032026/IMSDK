@@ -11,6 +11,7 @@ import 'package:im_sdk/features/chat/presentation/pages/chat_settings_page.dart'
 import 'package:im_sdk/features/chat/presentation/pages/favorites_page.dart';
 import 'package:im_sdk/features/chat/presentation/pages/complaint_page.dart';
 import 'package:im_sdk/features/contacts/presentation/pages/profile_page.dart';
+import 'package:im_sdk/features/official_account/domain/entities/official_account_card.dart';
 import 'package:im_sdk/features/teen_mode/presentation/widgets/teen_mode_gate.dart';
 import 'package:im_sdk/features/teen_mode/presentation/widgets/teen_mode_runtime_service.dart';
 import 'package:im_sdk/l10n/app_localizations.dart';
@@ -38,6 +39,7 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
   bool _closing = false;
   late int _boundSessionRevision;
   bool _hostChecked = false;
+  bool _hasBoundSession = false;
   bool _hostCheckFailed = false;
   bool _hostChecking = false;
 
@@ -46,6 +48,7 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
     super.initState();
     widget.target.validate();
     _boundSessionRevision = widget.client.sessionRevision;
+    _hasBoundSession = widget.client.isAuthenticated;
     _router = _createRouter();
     _router.routerDelegate.addListener(_onRoute);
     _hostChecked = widget.client.config?.hostManagedAuth != true;
@@ -58,7 +61,6 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
   Future<void> _verifyHostEntry() async {
     if (_hostChecking || _closing) return;
     _hostChecking = true;
-    final wasChecked = _hostChecked;
     setState(() {
       _hostChecked = false;
       _hostCheckFailed = false;
@@ -67,13 +69,14 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
       final ready = await widget.client.synchronizeHostSession();
       if (!mounted || _closing) return;
       if (!ready ||
-          (wasChecked &&
+          (_hasBoundSession &&
               _boundSessionRevision != widget.client.sessionRevision)) {
         _close();
         return;
       }
       setState(() {
         _boundSessionRevision = widget.client.sessionRevision;
+        _hasBoundSession = true;
         _hostChecked = true;
         _hostCheckFailed = false;
       });
@@ -93,7 +96,8 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
   void didUpdateWidget(covariant ImSdkChatView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.client, widget.client) ||
-        _boundSessionRevision != widget.client.sessionRevision) {
+        (_hasBoundSession &&
+            _boundSessionRevision != widget.client.sessionRevision)) {
       _close();
       return;
     }
@@ -132,7 +136,12 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
                                   'conversationId': state.pathParameters['id']!
                                 })
                               : widget.target;
+                      final official =
+                          extra is Map ? extra['officialAccount'] : null;
                       return ChatPage(
+                          allowOfficialProfileRoute: false,
+                          initialOfficialAccount:
+                              official is OfficialAccountCard ? official : null,
                           conversationId: state.pathParameters['id']!,
                           title: sdkConversationTitle(context, target),
                           peerUserId: target.peerUserId,
@@ -144,8 +153,8 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
                         ChatSettingsPage(chatId: s.pathParameters['id']!)),
                 GoRoute(
                     path: 'profile/:id',
-                    builder: (_, s) =>
-                        ProfilePage(userId: s.pathParameters['id']!)),
+                    builder: (_, s) => ProfilePage(
+                        userId: s.pathParameters['id']!, sdkSingleSpace: true)),
                 GoRoute(
                     path: 'favorites',
                     builder: (_, __) => const FavoritesPage()),
@@ -193,7 +202,10 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
         valueListenable: widget.client.revision,
         builder: (context, _, __) {
-          if (!_hostChecked || _hostCheckFailed) {
+          final sessionChanged = _hasBoundSession &&
+              _boundSessionRevision != widget.client.sessionRevision;
+          if (sessionChanged) _close();
+          if (!sessionChanged && (!_hostChecked || _hostCheckFailed)) {
             return SdkPresentationApp(
                 client: widget.client,
                 homeBuilder: (context) => Scaffold(
@@ -206,10 +218,9 @@ class _ImSdkChatViewState extends State<ImSdkChatView>
                         : const SizedBox.expand()));
           }
           final container = widget.client.accountContainer;
-          if (_boundSessionRevision != widget.client.sessionRevision) _close();
-          if (!widget.client.isAuthenticated ||
-              container == null ||
-              _boundSessionRevision != widget.client.sessionRevision) {
+          if (sessionChanged ||
+              !widget.client.isAuthenticated ||
+              container == null) {
             return SdkPresentationApp(
                 client: widget.client,
                 homeBuilder: (context) => Scaffold(

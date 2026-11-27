@@ -2,6 +2,8 @@ import 'package:im_sdk/features/chat/domain/entities/message.dart';
 
 enum ConversationType { direct, group, tempSession }
 
+enum OfficialAccountKind { service, broadcast }
+
 class Conversation {
   final String conversationId;
   final ConversationType type;
@@ -18,11 +20,25 @@ class Conversation {
   final String? peerUserId;
   final int? memberCount;
   final String? ownerUserId;
+
   /// 单聊对方的 userType：1=客户, 2=员工（来自 API peerUserType 字段）
   final int? peerUserType;
   final bool isOfficialServiceUser;
+  final OfficialAccountKind? officialAccountKind;
+  final bool peerOfficialVerified;
+  final bool customerCanReply;
+
+  bool get isCustomerReadOnly => !customerCanReply;
+  bool get isEnterpriseOfficialAccount =>
+      isOfficialServiceUser || officialAccountKind != null;
+  bool get showsPeerOfficialVerification =>
+      type == ConversationType.direct &&
+      peerOfficialVerified &&
+      !isEnterpriseOfficialAccount;
+
   /// 群成员头像 URL 列表（用于生成微信宫格群头像，最多 9 个）
   final List<String?>? memberAvatarUrls;
+
   /// 群成员名字列表（无头像时显示首字母）
   final List<String>? memberNames;
 
@@ -44,6 +60,9 @@ class Conversation {
     this.ownerUserId,
     this.peerUserType,
     this.isOfficialServiceUser = false,
+    this.officialAccountKind,
+    this.peerOfficialVerified = false,
+    this.customerCanReply = true,
     this.memberAvatarUrls,
     this.memberNames,
   });
@@ -67,6 +86,9 @@ class Conversation {
     String? ownerUserId,
     int? peerUserType,
     bool? isOfficialServiceUser,
+    OfficialAccountKind? officialAccountKind,
+    bool? peerOfficialVerified,
+    bool? customerCanReply,
     List<String?>? memberAvatarUrls,
     List<String>? memberNames,
   }) {
@@ -89,6 +111,9 @@ class Conversation {
       peerUserType: peerUserType ?? this.peerUserType,
       isOfficialServiceUser:
           isOfficialServiceUser ?? this.isOfficialServiceUser,
+      officialAccountKind: officialAccountKind ?? this.officialAccountKind,
+      peerOfficialVerified: peerOfficialVerified ?? this.peerOfficialVerified,
+      customerCanReply: customerCanReply ?? this.customerCanReply,
       memberAvatarUrls: memberAvatarUrls ?? this.memberAvatarUrls,
       memberNames: memberNames ?? this.memberNames,
     );

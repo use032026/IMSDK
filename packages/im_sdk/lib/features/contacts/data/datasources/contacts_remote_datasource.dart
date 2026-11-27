@@ -219,6 +219,9 @@ class ContactsRemoteDataSourceImpl implements ContactsRemoteDataSource {
       avatarUrl: avatarUrl,
       customerTag: roleTag, // 复用 customerTag 存储角色标识
       userType: userType ?? (isCustomer ? 1 : 2),
+      isOfficial: json['isOfficial'] == true || json['officialAccount'] != null,
+      isOfficialVerified: json['isOfficialVerified'] == true,
+      officialAccountKind: _nonEmptyString(json['officialAccountKind']),
     );
   }
 
@@ -392,6 +395,9 @@ class ContactsRemoteDataSourceImpl implements ContactsRemoteDataSource {
       isFriend: json['isFriend'] as bool?,
       userType: userType,
       officialAccount: optionalOfficialAccountCard(json['officialAccount']),
+      isOfficial: json['isOfficial'] == true || json['officialAccount'] != null,
+      isOfficialVerified: json['isOfficialVerified'] == true,
+      officialAccountKind: _nonEmptyString(json['officialAccountKind']),
     );
   }
 
@@ -448,7 +454,8 @@ class ContactsRemoteDataSourceImpl implements ContactsRemoteDataSource {
       Map<String, dynamic> json) {
     final requestId = (json['requestId'] as String?)?.trim() ?? '';
     final status = FriendRequestStatus.fromWire(json['status']);
-    final officialAccount = optionalOfficialAccountCard(json['officialAccount']);
+    final officialAccount =
+        optionalOfficialAccountCard(json['officialAccount']);
     if (requestId.isEmpty ||
         (status != FriendRequestStatus.pending &&
             status != FriendRequestStatus.accepted)) {
@@ -457,7 +464,8 @@ class ContactsRemoteDataSourceImpl implements ContactsRemoteDataSource {
     if (officialAccount != null &&
         (status != FriendRequestStatus.accepted ||
             !officialAccount.canOpenConversation)) {
-      throw StateError('Official account acceptance is missing its conversation');
+      throw StateError(
+          'Official account acceptance is missing its conversation');
     }
     return FriendRequestSubmission(
       requestId: requestId,

@@ -55,7 +55,7 @@ PODS:
   - flutter_webrtc (1.4.0):
     - Flutter
     - WebRTC-SDK (= 144.7559.01)
-  - im_sdk (0.1.0):
+  - im_sdk (0.1.4):
     - Flutter
   - image_picker_ios (0.0.1):
     - Flutter
@@ -210,7 +210,7 @@ SPEC CHECKSUMS:
   flutter_local_notifications: 643a3eda1ce1c0599413ca31672536d423dee214
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   flutter_webrtc: ec91d94b484ad49cf191ef93413f64a40ffd3b4c
-  im_sdk: de1dd80897b5006eebcfb4b3f08f28e0df9599bb
+  im_sdk: 24e0003bc84da640eccd2fc5e8efc94f7802d275
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed

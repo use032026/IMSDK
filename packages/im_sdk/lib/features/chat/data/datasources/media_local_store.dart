@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:im_sdk/core/database/app_database.dart';
 import 'package:im_sdk/core/runtime/account_operation_guard.dart';
 import 'package:im_sdk/core/runtime/account_write_gate.dart';
@@ -6,7 +8,7 @@ import 'package:im_sdk/features/chat/domain/entities/media_local_file.dart';
 import 'package:sqflite/sqflite.dart';
 
 class MediaLocalStore {
-  const MediaLocalStore({
+  MediaLocalStore({
     required this.databaseProvider,
     this.writeGate,
     this.operationContext,
@@ -15,6 +17,70 @@ class MediaLocalStore {
   final ConversationDatabaseProvider databaseProvider;
   final AccountWriteGate? writeGate;
   final AccountOperationContext? operationContext;
+  final _changes = StreamController<MediaLocalFile>.broadcast(sync: true);
+  var _disposed = false;
+
+  /// Observes this account store's existing media identity without another
+  /// persisted status owner. Subscribe before reading so a commit cannot be
+  /// lost, and discard a late initial snapshot if a newer commit was observed.
+  Stream<MediaLocalFile?> watch({
+    required String spaceId,
+    required String conversationId,
+    required String messageId,
+    required MediaKind mediaKind,
+    required MediaVariant variant,
+  }) {
+    late final StreamController<MediaLocalFile?> controller;
+    StreamSubscription<MediaLocalFile>? subscription;
+    var active = true;
+    var revision = 0;
+    controller = StreamController<MediaLocalFile?>(onListen: () {
+      if (_disposed) {
+        unawaited(controller.close());
+        return;
+      }
+      subscription = _changes.stream.listen((file) {
+        if (file.spaceId != spaceId ||
+            file.conversationId != conversationId ||
+            file.messageId != messageId ||
+            file.mediaKind != mediaKind ||
+            file.variant != variant) {
+          return;
+        }
+        revision++;
+        controller.add(file);
+      }, onDone: () {
+        active = false;
+        unawaited(controller.close());
+      });
+      final initialRevision = revision;
+      unawaited(get(
+        spaceId: spaceId,
+        conversationId: conversationId,
+        messageId: messageId,
+        mediaKind: mediaKind,
+        variant: variant,
+      ).then((file) {
+        if (active && !_disposed && revision == initialRevision) {
+          controller.add(file);
+        }
+      }, onError: (Object error, StackTrace stack) {
+        if (active && !_disposed && revision == initialRevision) {
+          controller.addError(error, stack);
+        }
+      }));
+    }, onCancel: () {
+      active = false;
+      return subscription?.cancel();
+    });
+    return controller.stream;
+  }
+
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    unawaited(_changes.close());
+  }
 
   Future<MediaLocalFile?> get({
     required String spaceId,
@@ -206,8 +272,10 @@ class MediaLocalStore {
 
   Future<void> _upsert(String spaceId, MediaLocalFile file) async {
     Future<void> action() async {
+      if (_disposed) throw StateError('Media local store is disposed');
       final db = await databaseProvider(spaceId);
       await _ensureTable(db);
+      if (_disposed) throw StateError('Media local store is disposed');
       await db.insert(
         'media_local_files',
         file.toRow(),
@@ -220,6 +288,7 @@ class MediaLocalStore {
     await (gate == null || context == null
         ? action()
         : gate.run(context, action));
+    if (!_disposed) _changes.add(file);
   }
 
   Future<void> _ensureTable(Database db) async {

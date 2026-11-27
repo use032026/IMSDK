@@ -1,0 +1,4455 @@
+{
+  "sdk": "im_sdk",
+  "version": "0.1.4",
+  "flutterVersion": "3.41.9",
+  "delivery": "source",
+  "files": [
+    {
+      "path": ".flutter-version",
+      "bytes": 7,
+      "sha256": "ac109d4036eff8268620af91c682988fca1fef0b1cf2620a18c91b5a2aa92d0f"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 1397,
+      "sha256": "07df0f88d41f3e5968da171747c0b59eb68483b6162c02980316386164fe36f8"
+    },
+    {
+      "path": "README.md",
+      "bytes": 7194,
+      "sha256": "22a49775b0c2a1047c73e160cc78e7ed7e5dc6cd038cd9c9011a7035ae9094c4"
+    },
+    {
+      "path": "docs/BUILD.md",
+      "bytes": 10042,
+      "sha256": "7cc26dd191990210d3cb246c8d18c34cf8f6f65b1c4f6165cd4e9a5ab222c23a"
+    },
+    {
+      "path": "docs/FLUTTER_INTEGRATION.md",
+      "bytes": 8502,
+      "sha256": "8339b9165686649aa44bdd14a67d77bdf2930c062d96f8bbff8793af48ce40aa"
+    },
+    {
+      "path": "docs/HOST_PRESENTATION_SYNC.md",
+      "bytes": 4396,
+      "sha256": "dddbf746bc553b9989b5346fef37479f27b8011589c796a6db1d47f14895cff5"
+    },
+    {
+      "path": "docs/HOST_SESSION_SYNC.md",
+      "bytes": 5977,
+      "sha256": "1b3189b208b4a75289f69b93dd8675a0b6b7f8b3588672e207857fd0a481e91b"
+    },
+    {
+      "path": "docs/HOST_VALIDATION-2026-10-27.md",
+      "bytes": 20938,
+      "sha256": "ca6552af4962c0944b2fc73e9851974afc4a936c636e8b2c6e9ec41f77a38425"
+    },
+    {
+      "path": "docs/L10N35_DELIVERY-2026-10-29.md",
+      "bytes": 3177,
+      "sha256": "0f6c4787e706def0933dce69cf5f85155c35b436a35bf1aedae0f757f671934e"
+    },
+    {
+      "path": "docs/MEDIASERVICECLIENT_HOST_SESSION.md",
+      "bytes": 7301,
+      "sha256": "4fdcd9202666a88ce8cfee0b97d05456e7dc98f01a1f93bfd638471e4dbe542f"
+    },
+    {
+      "path": "docs/MEDIASERVICECLIENT_PRESENTATION.md",
+      "bytes": 6185,
+      "sha256": "085577367737da0e5c0d49b9fb03eabbe77ee088407d0fcf0dab6cc3b23e3864"
+    },
+    {
+      "path": "docs/SHARED_L10N.md",
+      "bytes": 6948,
+      "sha256": "e72fbfc8da522395a7b792f6ac87f45f89eb6fe35402781ddfde3b146532c638"
+    },
+    {
+      "path": "docs/VALIDATION-2026-10-27.md",
+      "bytes": 7802,
+      "sha256": "37fceef7c03f5c5d161cfa5d4b7c6bdca9d2d54ae650cf00aff11b6f57fea8c8"
+    },
+    {
+      "path": "docs/VERSIONING.md",
+      "bytes": 4734,
+      "sha256": "c6a24cd9d0236a10d01bbdc05d075ac2f92b357046d7d4028a80b6f4ecc76b82"
+    },
+    {
+      "path": "docs/WEB_BROWSER_COMPATIBILITY-2026-10-27.md",
+      "bytes": 6138,
+      "sha256": "7656ba944e36bf19f4ea8c32a87fc17f59d848399a135debf74c47b1dbc11f10"
+    },
+    {
+      "path": "docs/WEB_VALIDATION-2026-10-27.md",
+      "bytes": 9007,
+      "sha256": "63b66e9954b762ddca2ca364a630e661523d70a12b8f779f0e956856e60b9668"
+    },
+    {
+      "path": "examples/flutter_host/.gitignore",
+      "bytes": 703,
+      "sha256": "4a8d984279954e0461e0ffef9b9e7455340a0a762f227c01065a53482a83a4f1"
+    },
+    {
+      "path": "examples/flutter_host/.metadata",
+      "bytes": 1114,
+      "sha256": "bcc061622b45710173b542923f0d38ef073a39141124261c65e414849a1e5b39"
+    },
+    {
+      "path": "examples/flutter_host/README.md",
+      "bytes": 1400,
+      "sha256": "44f1c7a58f909a1643d2f7bc7dcc6161692daf2c83b0b1977c6bac011a86a00b"
+    },
+    {
+      "path": "examples/flutter_host/analysis_options.yaml",
+      "bytes": 53,
+      "sha256": "a32bdc5ead4a1d35953316d9a00a98905d8cf3a831ff01842cc37f81151d39e7"
+    },
+    {
+      "path": "examples/flutter_host/android/.gitignore",
+      "bytes": 212,
+      "sha256": "4b5a480e56e119de4d695821df2db34bf9a2da19ce0aef34aed6fabc91718606"
+    },
+    {
+      "path": "examples/flutter_host/android/app/build.gradle.kts",
+      "bytes": 1556,
+      "sha256": "8a0c0c5677c624f78342ac15beb4b4fb2d0b27412df26d022499d538e048730e"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/debug/AndroidManifest.xml",
+      "bytes": 378,
+      "sha256": "30b0832ed8b92dfbd6ae2abfa939ccf26333d37600056b1572bd4a397a18a74b"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/AndroidManifest.xml",
+      "bytes": 2207,
+      "sha256": "5b7ccc9800fbc7b1bec90860da74a04e78739c77f88d8122e540ccf5ee46414a"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/kotlin/com/imsdk/example/im_sdk_flutter_host/MainActivity.kt",
+      "bytes": 139,
+      "sha256": "b56bd3f9e312d585be2e7e8e0695648cdc9be5acae613d465db0b1ccf20f4d24"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/drawable/launch_background.xml",
+      "bytes": 434,
+      "sha256": "94433756fe10005ddd6fc55cc5c0b1e9f3c10b66a08ceac795ece6713d34e28a"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/drawable-v21/launch_background.xml",
+      "bytes": 438,
+      "sha256": "7ca6d5cec2169c5a98661a119db23a6f3399c8fef2256ff04f3a642831282478"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "bytes": 544,
+      "sha256": "6a7c8f0d703e3682108f9662f813302236240d3f8f638bb391e32bfb96055fef"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "bytes": 442,
+      "sha256": "c7c0c0189145e4e32a401c61c9bdc615754b0264e7afae24e834bb81049eaf81"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "bytes": 721,
+      "sha256": "e14aa40904929bf313fded22cf7e7ffcbf1d1aac4263b5ef1be8bfce650397aa"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "bytes": 1031,
+      "sha256": "4d470bf22d5c17d84edc5f82516d1ba8a1c09559cd761cefb792f86d9f52b540"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "bytes": 1443,
+      "sha256": "3c34e1f298d0c9ea3455d46db6b7759c8211a49e9ec6e44b635fc5c87dfb4180"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/values/styles.xml",
+      "bytes": 996,
+      "sha256": "937d7c82f539c72eb94fd3a3773f29b3d3fef1997213c92cb632298cedf4bda9"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/main/res/values-night/styles.xml",
+      "bytes": 995,
+      "sha256": "8c5bad5152f217e837519f9c15211d19f39bd45f5f67faf6dd81cb4b299e518f"
+    },
+    {
+      "path": "examples/flutter_host/android/app/src/profile/AndroidManifest.xml",
+      "bytes": 378,
+      "sha256": "30b0832ed8b92dfbd6ae2abfa939ccf26333d37600056b1572bd4a397a18a74b"
+    },
+    {
+      "path": "examples/flutter_host/android/build.gradle.kts",
+      "bytes": 735,
+      "sha256": "8491e6efc268f1432fe5e560040a20b2f874be9371e391e3351316fbb93a2933"
+    },
+    {
+      "path": "examples/flutter_host/android/gradle/wrapper/gradle-wrapper.jar",
+      "bytes": 53636,
+      "sha256": "16caeaf66d57a0d1d2087fef6a97efa62de8da69afa5b908f40db35afc4342da"
+    },
+    {
+      "path": "examples/flutter_host/android/gradle/wrapper/gradle-wrapper.properties",
+      "bytes": 201,
+      "sha256": "297c9e63b6fa6e7e8b221900fa1787c1a0e38869d8957da66389fd0f6b00f78e"
+    },
+    {
+      "path": "examples/flutter_host/android/gradle.properties",
+      "bytes": 138,
+      "sha256": "5539cf5f17c53900a72cf0065e450f0a8ba5b929dd2b364724c1296d0285d9dc"
+    },
+    {
+      "path": "examples/flutter_host/android/gradlew",
+      "bytes": 4971,
+      "sha256": "ec56c02543666d92d9ac5ae7fcc48f88ce4de0deb8b7f9b39928ca46f68c1b2b"
+    },
+    {
+      "path": "examples/flutter_host/android/gradlew.bat",
+      "bytes": 2404,
+      "sha256": "c13c6e91b9a517783976de213d46398c661ea9e17651376d7301e839eaedcc62"
+    },
+    {
+      "path": "examples/flutter_host/android/settings.gradle.kts",
+      "bytes": 1001,
+      "sha256": "637e1519dc74b7beeb27d29503a4ed615f66df80867e5e4726beb67c8040b468"
+    },
+    {
+      "path": "examples/flutter_host/integration_test/host_live_test.dart",
+      "bytes": 13429,
+      "sha256": "608bcf29aa895d7a6c1bf9b1d3594759354bec7809b7411b4a4d9a756b467ddb"
+    },
+    {
+      "path": "examples/flutter_host/integration_test/host_runtime_test.dart",
+      "bytes": 2922,
+      "sha256": "8e0dcdca6a669b0e4e56585d777fb94c8f5f5bc8d9542cee30637cd51fb1cade"
+    },
+    {
+      "path": "examples/flutter_host/integration_test/sdk_lifecycle_live_test.dart",
+      "bytes": 3356,
+      "sha256": "b864f15a268940da4e4a0a0bd3ed7a24135fd70689ced0b1fe6bbaf3618e43e6"
+    },
+    {
+      "path": "examples/flutter_host/integration_test/unified_live_test.dart",
+      "bytes": 17918,
+      "sha256": "1011c17d1ad962b2edc057c21f4c0f38bbc73f9d00eb32b54316dbe55a03f04f"
+    },
+    {
+      "path": "examples/flutter_host/ios/.gitignore",
+      "bytes": 569,
+      "sha256": "37380775aeb2499662b7aca80f4ac4c95ae827c3ba2bfa179aa3e9af4812c623"
+    },
+    {
+      "path": "examples/flutter_host/ios/Flutter/AppFrameworkInfo.plist",
+      "bytes": 720,
+      "sha256": "da12038f9b2688a8a26160fea2609fa8fcb11421448c109f09c0f573efe7698d"
+    },
+    {
+      "path": "examples/flutter_host/ios/Flutter/Debug.xcconfig",
+      "bytes": 107,
+      "sha256": "690b8a8b1ae15ddd29b241429963e971bbc6720ab22f154cf8cf6b085b6d4925"
+    },
+    {
+      "path": "examples/flutter_host/ios/Flutter/Release.xcconfig",
+      "bytes": 109,
+      "sha256": "75abb819a9de1e0e41c835e7307bc64a506cac25a9a5c0b0d8253fa1c3d5d422"
+    },
+    {
+      "path": "examples/flutter_host/ios/Podfile",
+      "bytes": 1098,
+      "sha256": "21812c730ade09e0251c4fc6540b06b97b6acca3c1956ccbfb13a79848d848c8"
+    },
+    {
+      "path": "examples/flutter_host/ios/Podfile.lock",
+      "bytes": 8262,
+      "sha256": "a15af2e85bd174453ece8ce2d7c062e389aa0a2a4a483c0169e99868ec7fd156"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/AppDelegate.swift",
+      "bytes": 539,
+      "sha256": "451c6d9ba0a2b3ff43092ea349c60fa79a91f1158b915eb29dbdd357cb95d7b8"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json",
+      "bytes": 2519,
+      "sha256": "3b1e214f466ffedff74baa5598ad5c4421130eea6bc8d57b8fe23435e8280ae4"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
+      "bytes": 10932,
+      "sha256": "7770183009e914112de7d8ef1d235a6a30c5834424858e0d2f8253f6b8d31926"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png",
+      "bytes": 295,
+      "sha256": "cab10a0d391ec5bc09ef50ce49e8ad401cee7ef03707ec0923a222c5c2b3d212"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png",
+      "bytes": 406,
+      "sha256": "b9ad02cf6576a04d1b6806ac02a2431481b448dd0c2e505ce25842d1f7c4730b"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png",
+      "bytes": 450,
+      "sha256": "c6e6d3b215ae744a9c391f4c4d44157eff5e739d6ad6c39f9bfa5df66dddd267"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png",
+      "bytes": 282,
+      "sha256": "5dee24dc104ac76dc162e42ae0beb163d426bf365562ee28ba7b3ad368559a60"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png",
+      "bytes": 462,
+      "sha256": "a9b21eb6f4271385655a8771f76e29eef8c1107d7879cbcfc567e6619d1f716a"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png",
+      "bytes": 704,
+      "sha256": "e677d701ffe4af7bc2935098d6b3984cc9ab7ace573e6900955a5535b12410cf"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png",
+      "bytes": 406,
+      "sha256": "b9ad02cf6576a04d1b6806ac02a2431481b448dd0c2e505ce25842d1f7c4730b"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png",
+      "bytes": 586,
+      "sha256": "7c61c42fc7b657d9cf314d32a4ec458f0647c3aaf360be1b9377857266ec2499"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png",
+      "bytes": 862,
+      "sha256": "19be171481dc71a0b2803ebcd01dd8b0c5fd5778dee34c0a3cabc948c225f24e"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png",
+      "bytes": 862,
+      "sha256": "19be171481dc71a0b2803ebcd01dd8b0c5fd5778dee34c0a3cabc948c225f24e"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png",
+      "bytes": 1674,
+      "sha256": "4209a49e44a92ec40a327d3455eb1b1c153ee83d75de1c2be0a12ab18b2ff9de"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png",
+      "bytes": 762,
+      "sha256": "836c918cb613249eba0483a6b02fa3df3c1c0a89a315ee4d3b88509b83c7ab73"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png",
+      "bytes": 1226,
+      "sha256": "41c7d42f6e61f8fe7f30b1ffa2256aecbc9682be06d18c4a3062043e1a2e547c"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png",
+      "bytes": 1418,
+      "sha256": "5d7e5bdf01b93802bc973345b3a78c038907147625035952a08a115a563b7f81"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json",
+      "bytes": 391,
+      "sha256": "ccc7950fd5f5b82067c85f667940a9d59189151460761ece8098ca78daa19469"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png",
+      "bytes": 68,
+      "sha256": "93ae7d494fad0fb30cbf3ae746a39c4bc7a0f8bbf87fbb587a3f3c01f3c5ce20"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png",
+      "bytes": 68,
+      "sha256": "93ae7d494fad0fb30cbf3ae746a39c4bc7a0f8bbf87fbb587a3f3c01f3c5ce20"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png",
+      "bytes": 68,
+      "sha256": "93ae7d494fad0fb30cbf3ae746a39c4bc7a0f8bbf87fbb587a3f3c01f3c5ce20"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md",
+      "bytes": 336,
+      "sha256": "a985b626c4f7546a8ba392d135e9226c3547c8e2b46895f5f2bdf40d7b14ef9f"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Base.lproj/LaunchScreen.storyboard",
+      "bytes": 2377,
+      "sha256": "857e61203b3deafb05766d8fcda898b86a7cb6f3d5e385ecc9926c4d698215e9"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Base.lproj/Main.storyboard",
+      "bytes": 1605,
+      "sha256": "fd367b6c43006d61b730f674970dd48b9f662c8f2264e52ffc1558102a2c9f2d"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Info.plist",
+      "bytes": 2795,
+      "sha256": "5a0ac5487a3c56fafbdaadc4b168de50d2dc9b67d049ba627e35da8f741f6819"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/Runner-Bridging-Header.h",
+      "bytes": 38,
+      "sha256": "1a8d11d01d1cc92c650c9c9ed35299240052d4683a15a719a2315ef44185e074"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner/SceneDelegate.swift",
+      "bytes": 76,
+      "sha256": "add68b905971dedfcc0d0b5b7118030de5925ba8c081ad9815463699e3a444ad"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcodeproj/project.pbxproj",
+      "bytes": 31120,
+      "sha256": "5fe8a706ffd9967a8c4f80452dd0b0a362da99913bbe85828739fec3f0ae1903"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+      "bytes": 135,
+      "sha256": "7f3b00b5c3fdb45242d7b87e1e5c4e25d1fa8129a16c94295ecc4e8ea2235c5f"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
+      "bytes": 238,
+      "sha256": "dfa0f9bb85b95ccba9c6811adadf8cb407fb5d52088e89db83ebc308ec448542"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings",
+      "bytes": 226,
+      "sha256": "11b247bc6796892d67c9a821d18604db4dd6a880981b34f38460b9866e6b247f"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme",
+      "bytes": 3833,
+      "sha256": "2dd28b879e66081e28a3324cf2bee7ab2f70be9a3e50e08926b7366dadff7d6e"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcworkspace/contents.xcworkspacedata",
+      "bytes": 224,
+      "sha256": "465e6de5660384eb6832e8078920ba6cd5305c445cb29a24a86a2fda4aa6b67e"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist",
+      "bytes": 238,
+      "sha256": "dfa0f9bb85b95ccba9c6811adadf8cb407fb5d52088e89db83ebc308ec448542"
+    },
+    {
+      "path": "examples/flutter_host/ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings",
+      "bytes": 226,
+      "sha256": "11b247bc6796892d67c9a821d18604db4dd6a880981b34f38460b9866e6b247f"
+    },
+    {
+      "path": "examples/flutter_host/ios/RunnerTests/RunnerTests.swift",
+      "bytes": 285,
+      "sha256": "5e8f4908dacea6f29b2a790e4d38bf5fded69096063f9a27a2f21584d62b30c0"
+    },
+    {
+      "path": "examples/flutter_host/lib/diagnostics.dart",
+      "bytes": 10593,
+      "sha256": "c7ca13eb83128ead7664f680954e4e0e3a101c305a34ee8c3e6f90582478105b"
+    },
+    {
+      "path": "examples/flutter_host/lib/main.dart",
+      "bytes": 1934,
+      "sha256": "120501aa9f7247091395ddae940909a728b6cdbd903046f2dda0f454ffc41c91"
+    },
+    {
+      "path": "examples/flutter_host/pubspec.lock",
+      "bytes": 47583,
+      "sha256": "12448372d6644db46cdafeb95bd9a55eb6c73aad016f066bbf3e1d3d152b9f6c"
+    },
+    {
+      "path": "examples/flutter_host/pubspec.yaml",
+      "bytes": 469,
+      "sha256": "8e03ed3e41e74d2aa8f1f77f1220281e4a08cc6fef2534f1beda3adbba15b67d"
+    },
+    {
+      "path": "l10n.changes.json",
+      "bytes": 42,
+      "sha256": "7060c267c912e3156b87c646e3bc970eac1ac8bdd964cf0a794b83e6f1250614"
+    },
+    {
+      "path": "l10n.resources.json",
+      "bytes": 131,
+      "sha256": "f65bb6836b713dc4f4f94f2b05bbf777594e27622bbb4de98fb81d3573973470"
+    },
+    {
+      "path": "l10n.resources.lock.json",
+      "bytes": 56694,
+      "sha256": "8158b3161a143a86ddd266967c6045b339b08ffd5fa53edb7730a749e44ceffb"
+    },
+    {
+      "path": "l10n.source.json",
+      "bytes": 302,
+      "sha256": "a4ff7ec2fe3bc1c0df76d53355d193b98cac31ee1f3632b9b13bc9f9e7eec888"
+    },
+    {
+      "path": "module/.gitignore",
+      "bytes": 441,
+      "sha256": "1fde8979ad51f81519a0a0d0e1e80c44c4c3cfc6f62d545796b3e7629bbe226f"
+    },
+    {
+      "path": "module/.metadata",
+      "bytes": 312,
+      "sha256": "94931a0f0d1e43ec72d117e5b761be271b2817f2679872bb5797d40c6bfd0f15"
+    },
+    {
+      "path": "module/Podfile.lock",
+      "bytes": 8764,
+      "sha256": "338361e5c014c5904870e0cdb3fff18c2cfc183e33df1e7eea4d84ee6900573c"
+    },
+    {
+      "path": "module/README.md",
+      "bytes": 560,
+      "sha256": "33c4ef6c4f852443e9137f30582e8ff7a1ee972f2dfd9793bf5f377bd9907b17"
+    },
+    {
+      "path": "module/analysis_options.yaml",
+      "bytes": 44,
+      "sha256": "c1e9534c05acb3643e72a82ad3d92d56d2ba9b0df2add014c18f7e1d462f24e4"
+    },
+    {
+      "path": "module/lib/main.dart",
+      "bytes": 75,
+      "sha256": "6cb4bae2b42c06b4950467c810b5358d66a4c376ce24696fb275c0edc309b0ca"
+    },
+    {
+      "path": "module/pubspec.lock",
+      "bytes": 46555,
+      "sha256": "ebac3c17bc35a6b1845f2fef335dbf1f681937268664357a1a2b5dac51edab6a"
+    },
+    {
+      "path": "module/pubspec.yaml",
+      "bytes": 537,
+      "sha256": "cbc072ecb3233ce988a35c9102889a85f27c97f966d44be3349becdc1a5a32ec"
+    },
+    {
+      "path": "native/android/README.md",
+      "bytes": 8532,
+      "sha256": "ac5535d8f4dd8be794c41c9359d0eae76519cbb35d708e9cd208b5a223244a8f"
+    },
+    {
+      "path": "native/android/build.gradle.kts",
+      "bytes": 1155,
+      "sha256": "6bb9d925d8bd9cd09e36e192ff2608620874df13efcb0edc982cfbef394c483c"
+    },
+    {
+      "path": "native/android/consumer-rules.pro",
+      "bytes": 215,
+      "sha256": "4b95e67eb06e97519ccf91e8bb4e18c582f19a8398a3f7cde7d3947768c2f09f"
+    },
+    {
+      "path": "native/android/example/README.md",
+      "bytes": 3612,
+      "sha256": "7187246aa6f4e6fee4a2a942b76aaf9090f12482953be8110e1a065f721d583f"
+    },
+    {
+      "path": "native/android/example/app/build.gradle.kts",
+      "bytes": 742,
+      "sha256": "87bd5d41ea5bf50650d5715c3515b767b84b6f7a20a9496a224944a311db21dd"
+    },
+    {
+      "path": "native/android/example/app/src/main/AndroidManifest.xml",
+      "bytes": 610,
+      "sha256": "8f1923c578c4f054564d4656f9fae6e447c085a6f7b77730bc3e4d878fe183df"
+    },
+    {
+      "path": "native/android/example/app/src/main/assets/im_sdk_configuration.example.json",
+      "bytes": 279,
+      "sha256": "70a04dff307ff8e189575b2bf52f130a45d6e41b5bbfbfc5bb46be9a04dce50d"
+    },
+    {
+      "path": "native/android/example/app/src/main/assets/im_sdk_configuration.json",
+      "bytes": 279,
+      "sha256": "70a04dff307ff8e189575b2bf52f130a45d6e41b5bbfbfc5bb46be9a04dce50d"
+    },
+    {
+      "path": "native/android/example/app/src/main/java/com/example/imsdkhost/MainActivity.java",
+      "bytes": 17832,
+      "sha256": "c3161b46b8356beb5b8118a028f56f20522003f86e99fa0fd7d9ae86b0b8e0bd"
+    },
+    {
+      "path": "native/android/example/gradle.properties",
+      "bytes": 73,
+      "sha256": "e14f172d32a081922ca3d0a9c04a989f4e8b91a917e050b75ba734a158e249f0"
+    },
+    {
+      "path": "native/android/example/import_qa_input.py",
+      "bytes": 2615,
+      "sha256": "9afc7efcfb8bed4f76780e01c930883682ccaf8bdbaa96134889f0a05f8bb1db"
+    },
+    {
+      "path": "native/android/example/settings.gradle.kts",
+      "bytes": 969,
+      "sha256": "8d6b6d4e2376f589c15638fd26974f23c659ec8f63fbfbf79cf83f8a8b33bce7"
+    },
+    {
+      "path": "native/android/examples/HostIntegration.kt",
+      "bytes": 1026,
+      "sha256": "c0b30094dda024ff0107cfa0fb7ee9eb124fa485973b6b1f9aafb39c09377ebe"
+    },
+    {
+      "path": "native/android/gradle/wrapper/gradle-wrapper.jar",
+      "bytes": 53636,
+      "sha256": "16caeaf66d57a0d1d2087fef6a97efa62de8da69afa5b908f40db35afc4342da"
+    },
+    {
+      "path": "native/android/gradle/wrapper/gradle-wrapper.properties",
+      "bytes": 201,
+      "sha256": "297c9e63b6fa6e7e8b221900fa1787c1a0e38869d8957da66389fd0f6b00f78e"
+    },
+    {
+      "path": "native/android/gradle.properties",
+      "bytes": 100,
+      "sha256": "d11f16cdb0abbc17bb519b07afd0936fb7c75b3dee1492cdbeecd65c5f2173d1"
+    },
+    {
+      "path": "native/android/gradlew",
+      "bytes": 4971,
+      "sha256": "ec56c02543666d92d9ac5ae7fcc48f88ce4de0deb8b7f9b39928ca46f68c1b2b"
+    },
+    {
+      "path": "native/android/gradlew.bat",
+      "bytes": 2404,
+      "sha256": "c13c6e91b9a517783976de213d46398c661ea9e17651376d7301e839eaedcc62"
+    },
+    {
+      "path": "native/android/handoff/README.md",
+      "bytes": 3445,
+      "sha256": "93a38f68f95dd2398edce8b68674f2ddc2ad2680836c8aaae1447e60edafcbbe"
+    },
+    {
+      "path": "native/android/handoff/docs/ACCEPTANCE.md",
+      "bytes": 3147,
+      "sha256": "4953717610724df63183d36fbf4a18b44598b550e5031e71aa4a2e9723d6e73a"
+    },
+    {
+      "path": "native/android/handoff/docs/API.md",
+      "bytes": 8706,
+      "sha256": "500e87a10c03ae9cfd03eee6524cdb8d265d956d7633c6e979b5fe59f6311f85"
+    },
+    {
+      "path": "native/android/handoff/docs/INTEGRATION.md",
+      "bytes": 9292,
+      "sha256": "a8ac2e030d3417b66dced88c48e7a8a28087a8e8ea0125acd5b29607c1707e52"
+    },
+    {
+      "path": "native/android/handoff/examples/HostIntegration.java",
+      "bytes": 5797,
+      "sha256": "a9bac41cba0cf9fb99866d42fd3678552ac3bbd3ccddd95ddb96bd45c08152ee"
+    },
+    {
+      "path": "native/android/handoff/examples/HostIntegration.kt",
+      "bytes": 4760,
+      "sha256": "d71f600e3c25873f5c701f90fa9690152d82a327d5ddf10926610926210514c9"
+    },
+    {
+      "path": "native/android/handoff/sample-host/README.md",
+      "bytes": 1828,
+      "sha256": "b293d15b9cb9e4c8cfcb8ad94fbfd26f12e958c25f162793722a474e2c521188"
+    },
+    {
+      "path": "native/android/handoff/sample-host/app/build.gradle.kts",
+      "bytes": 605,
+      "sha256": "1f2674a689fcc2139e8c46d737ca40e9b94f2180ddc1824dc32ef62aab071404"
+    },
+    {
+      "path": "native/android/handoff/sample-host/app/src/main/AndroidManifest.xml",
+      "bytes": 603,
+      "sha256": "24bbb39b968f7ef01f9686182bab8abbd3e44b54e2c272346b4f082fcef5f255"
+    },
+    {
+      "path": "native/android/handoff/sample-host/app/src/main/assets/im_sdk_configuration.json",
+      "bytes": 279,
+      "sha256": "560949155b7d819b7f9d5790a3e0da8974b00b413f49dbe079cf1ec355bf7d1c"
+    },
+    {
+      "path": "native/android/handoff/sample-host/app/src/main/java/com/example/imsdkhost/MainActivity.java",
+      "bytes": 8698,
+      "sha256": "34237cf1b61721a4625851bf5869c792b5b266e09495f414f31d0ce9602023dd"
+    },
+    {
+      "path": "native/android/handoff/sample-host/gradle/wrapper/gradle-wrapper.jar",
+      "bytes": 53636,
+      "sha256": "16caeaf66d57a0d1d2087fef6a97efa62de8da69afa5b908f40db35afc4342da"
+    },
+    {
+      "path": "native/android/handoff/sample-host/gradle/wrapper/gradle-wrapper.properties",
+      "bytes": 201,
+      "sha256": "297c9e63b6fa6e7e8b221900fa1787c1a0e38869d8957da66389fd0f6b00f78e"
+    },
+    {
+      "path": "native/android/handoff/sample-host/gradle.properties",
+      "bytes": 73,
+      "sha256": "858c2b8f6ce36e56bb8f50642411c175459aec77175820fe97392e559c7973a4"
+    },
+    {
+      "path": "native/android/handoff/sample-host/gradlew",
+      "bytes": 4971,
+      "sha256": "ec56c02543666d92d9ac5ae7fcc48f88ce4de0deb8b7f9b39928ca46f68c1b2b"
+    },
+    {
+      "path": "native/android/handoff/sample-host/gradlew.bat",
+      "bytes": 2404,
+      "sha256": "c13c6e91b9a517783976de213d46398c661ea9e17651376d7301e839eaedcc62"
+    },
+    {
+      "path": "native/android/handoff/sample-host/settings.gradle.kts",
+      "bytes": 553,
+      "sha256": "13387694e3f26be3bb771cb2d964d94dd4799d9994e90a809721185b1b013b31"
+    },
+    {
+      "path": "native/android/settings.gradle.kts",
+      "bytes": 1201,
+      "sha256": "4eae65a74eb188ab7e25b755514e32123d05b7254a90dd2f06d2e38304fe7cd3"
+    },
+    {
+      "path": "native/android/src/main/AndroidManifest.xml",
+      "bytes": 582,
+      "sha256": "e985be18ce508410b780cdd4daf93dcbac07c9b96820a1e32c8094c80a419449"
+    },
+    {
+      "path": "native/android/src/main/kotlin/com/imsdk/nativebridge/ImSdk.kt",
+      "bytes": 19191,
+      "sha256": "ce8dcdbf5802f1ddd9604e6d6bf896a314e326bded76c8dc653783252861f852"
+    },
+    {
+      "path": "native/android/src/main/kotlin/com/imsdk/nativebridge/ImSdkActivity.kt",
+      "bytes": 1946,
+      "sha256": "944541a21c61a0aebeb05c99607563a2236401d1bd3574ff9290b0a0a929ffa2"
+    },
+    {
+      "path": "native/ios/Examples/HostIntegration.m",
+      "bytes": 1318,
+      "sha256": "603edf136376b13a4856d6ac8843b0274ec5e12f9b290c4de1ebf2c97b181043"
+    },
+    {
+      "path": "native/ios/Examples/HostIntegration.swift",
+      "bytes": 1235,
+      "sha256": "834a2d38cfdd285e07a15d90cf3d0738cf414eaa28f61b90844cb591e6659e45"
+    },
+    {
+      "path": "native/ios/Examples/MediaServiceClientHostSessionAdapter.h",
+      "bytes": 1527,
+      "sha256": "68339732c6454f0a6d54d595619833795574e70964b636f315e002eebfc093ae"
+    },
+    {
+      "path": "native/ios/Examples/MediaServiceClientHostSessionAdapter.m",
+      "bytes": 8291,
+      "sha256": "3a3ad5e2fd066a4a4bf6721e02f2fdf9372b38b771a2e57e6db7d06f877ad72a"
+    },
+    {
+      "path": "native/ios/Examples/MediaServiceClientPresentationAdapter.h",
+      "bytes": 1076,
+      "sha256": "897bb6ee6d244c6e9ace076a116865b4993a222e41565619a9d8c00e9418beba"
+    },
+    {
+      "path": "native/ios/Examples/MediaServiceClientPresentationAdapter.m",
+      "bytes": 7047,
+      "sha256": "8300352aee71d9d048a20e25f700b190e1b64bc9a42d5d93fd652909be47c292"
+    },
+    {
+      "path": "native/ios/IMSDKNative.podspec",
+      "bytes": 906,
+      "sha256": "fe7401d3171a4ae06e72c112c5232427f56ea1647c9a4599bca3aafac50db3ec"
+    },
+    {
+      "path": "native/ios/README.md",
+      "bytes": 9612,
+      "sha256": "652464d278a9dce4f03469750694b69eac85e5fa0c845406442ce85bd9607f57"
+    },
+    {
+      "path": "native/ios/Sources/IMSDK.swift",
+      "bytes": 23593,
+      "sha256": "b80b918e7256b0abb931ee1a3b569c2a3a02d9c6b3e391e583a0dcd6ece37fc0"
+    },
+    {
+      "path": "native/ios/Sources/IMSDKPluginRegistration.h",
+      "bytes": 374,
+      "sha256": "db35928f4a53ed9bd39a5e4a8203babd7320e2414c224d451e4df6c544d4ca00"
+    },
+    {
+      "path": "native/ios/Sources/IMSDKPluginRegistration.m",
+      "bytes": 503,
+      "sha256": "7fa333b61a9835ccb055a8ab95ee518a2cf98658bf1625ae66e8a1fa39202d43"
+    },
+    {
+      "path": "native/ios/example/IMSDKConfiguration.example.plist",
+      "bytes": 580,
+      "sha256": "fb29afebae978f93a67c878a991755b1e62d7e1d6a0dcd47c631f9103d07ff72"
+    },
+    {
+      "path": "native/ios/example/IMSDKHost/AppDelegate.swift",
+      "bytes": 500,
+      "sha256": "d40c35e203530583cbef02b29b5fa70b018ae8f1d5a454c0eeb9a6da99680e98"
+    },
+    {
+      "path": "native/ios/example/IMSDKHost/HostViewController.swift",
+      "bytes": 20145,
+      "sha256": "d9dc77559c31875d7fb056ec8107d423757d0222843afe6f64b4c4d3bec3d045"
+    },
+    {
+      "path": "native/ios/example/IMSDKHost/IMSDKConfiguration.plist",
+      "bytes": 580,
+      "sha256": "fb29afebae978f93a67c878a991755b1e62d7e1d6a0dcd47c631f9103d07ff72"
+    },
+    {
+      "path": "native/ios/example/IMSDKHost/IMSDKHost.entitlements",
+      "bytes": 415,
+      "sha256": "54e4299195b8ea5ef3930a1f1426ba642e1209e5b0706ccfd8d570b15a6786f3"
+    },
+    {
+      "path": "native/ios/example/IMSDKHost/Info.plist",
+      "bytes": 1691,
+      "sha256": "0ad71b12530eb2fbb493b35d35c1add529e81ad6d813e9c6e0eb067a1ea7a3e3"
+    },
+    {
+      "path": "native/ios/example/IMSDKHost.xcodeproj/project.pbxproj",
+      "bytes": 34809,
+      "sha256": "d1f5bddefd3f6b3cc006947d1bc35257df405e7bebfb10f197c1a8c53253b70e"
+    },
+    {
+      "path": "native/ios/example/IMSDKHost.xcodeproj/xcshareddata/xcschemes/IMSDKHost.xcscheme",
+      "bytes": 3059,
+      "sha256": "c373532bd4404f3444f0a5a88a36920797265afab9e809e01d7a04f80ba6ed1b"
+    },
+    {
+      "path": "native/ios/example/IMSDKHostUITests/IMSDKHostUITests.swift",
+      "bytes": 12821,
+      "sha256": "5289b9d5914a54f57324c141440a924dfff75c7a06ab5d8a87ff673d4c96a989"
+    },
+    {
+      "path": "native/ios/example/README.md",
+      "bytes": 11103,
+      "sha256": "fc3e0f5ed9e051daa07482129af46dccca3d8c1d55e008f16cb45b3922b56e04"
+    },
+    {
+      "path": "native/ios/handoff/README.md",
+      "bytes": 3259,
+      "sha256": "42b3a7583870a1d6ae66bfc3f6b71dc17d33bcccdd50c1625c8148b20d012364"
+    },
+    {
+      "path": "native/ios/handoff/docs/ACCEPTANCE.md",
+      "bytes": 4178,
+      "sha256": "55d06dd937d93274902e75b32767a67446825d94037cd681c59985dc3c1cd122"
+    },
+    {
+      "path": "native/ios/handoff/docs/API.md",
+      "bytes": 10389,
+      "sha256": "20d705f9cdd15d934cf9f818a9084196c19fbb88c4c838adc2c0fdfa7665daaa"
+    },
+    {
+      "path": "native/ios/handoff/docs/INTEGRATION.md",
+      "bytes": 12011,
+      "sha256": "5faf412d93ea4aade8e3ffe3fadd10528bb25b29b1cd8bb110bfc7e3cba5a3bc"
+    },
+    {
+      "path": "native/ios/handoff/examples/HostIntegration.m",
+      "bytes": 5292,
+      "sha256": "2bde18b90a6804b090325c1fbb3b4ba3515d475af3cc65af9eb4dbc32a308378"
+    },
+    {
+      "path": "native/ios/handoff/examples/HostIntegration.swift",
+      "bytes": 3698,
+      "sha256": "a782b7082565a843fccdf3ab84dde2347134632ee9a5ef7828557faef77f6cb5"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/IMSDKHost/AppDelegate.swift",
+      "bytes": 500,
+      "sha256": "d40c35e203530583cbef02b29b5fa70b018ae8f1d5a454c0eeb9a6da99680e98"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/IMSDKHost/HostViewController.swift",
+      "bytes": 5617,
+      "sha256": "914007650e7a03941b092e4580b1bca5bf34ce5fd6edc232b4a864c2df0a427a"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/IMSDKHost/IMSDKConfiguration.plist",
+      "bytes": 580,
+      "sha256": "160db946eb9a735e25ec5360bc48ef1de74aeb11889e9a71a3cef28e2605698e"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/IMSDKHost/IMSDKHost.entitlements",
+      "bytes": 415,
+      "sha256": "54e4299195b8ea5ef3930a1f1426ba642e1209e5b0706ccfd8d570b15a6786f3"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/IMSDKHost/Info.plist",
+      "bytes": 1687,
+      "sha256": "7679d584e3e98354d7535a19c70b2516ebf64f637b7c08afda08a9f4138f34dc"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/IMSDKHost.xcodeproj/project.pbxproj",
+      "bytes": 30667,
+      "sha256": "a3c74bb395fe075a6aa0cd2c4a2fc5d72cc3969e1a3049cd21cdf6ad6c6ea554"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/IMSDKHost.xcodeproj/xcshareddata/xcschemes/IMSDKHost.xcscheme",
+      "bytes": 1826,
+      "sha256": "f28e1e66ed915353ae4513eb2fe98c0dbece51c719882bbda60292bdd8e38d75"
+    },
+    {
+      "path": "native/ios/handoff/sample-host/README.md",
+      "bytes": 2058,
+      "sha256": "e7a74aecb103f97d6d71f5ee83ac7a32a72fdd71879de7a81e763d194e8616a1"
+    },
+    {
+      "path": "packages/im_sdk/analysis_options.yaml",
+      "bytes": 1420,
+      "sha256": "e0ea485cfdbc3e12b93efb8679a5ea73ebfe20ea4ca0c473dc594fc2fb274ed5"
+    },
+    {
+      "path": "packages/im_sdk/android/build.gradle",
+      "bytes": 710,
+      "sha256": "b29e3566c4a6bb9f610aaa1b54511e3c568b2be4fa5454bb6bbcb36a68552360"
+    },
+    {
+      "path": "packages/im_sdk/android/src/main/AndroidManifest.xml",
+      "bytes": 472,
+      "sha256": "5b2fc7b6dda547ad210e3c163bbba30bd0e0a09930b79912e95fcb7eb0981214"
+    },
+    {
+      "path": "packages/im_sdk/android/src/main/kotlin/com/imsdk/flutter/AndroidChatAttachmentPickerBridge.kt",
+      "bytes": 12097,
+      "sha256": "e8d0c11ab19275e2b8a2e9a10705f2f8fe76a6ae0e6e3dc69f444d651a43f94d"
+    },
+    {
+      "path": "packages/im_sdk/android/src/main/kotlin/com/imsdk/flutter/AndroidGalleryBridge.kt",
+      "bytes": 5702,
+      "sha256": "aa072829615b4d2f57f9f433e92637b5bdca47b0c96c637649f2a777080626c4"
+    },
+    {
+      "path": "packages/im_sdk/android/src/main/kotlin/com/imsdk/flutter/ImSdkPlugin.kt",
+      "bytes": 3446,
+      "sha256": "cfebea6045d90ada4b799508395eb6871151cb2f044718bb96b145ebd0b8b72b"
+    },
+    {
+      "path": "packages/im_sdk/assets/auth/quick_login_doc_user.png",
+      "bytes": 5083,
+      "sha256": "95d560989ec3efa844a80c6150d71385e367e09fe367baa3b1581dddfc9a671a"
+    },
+    {
+      "path": "packages/im_sdk/assets/auth/quick_login_owner.png",
+      "bytes": 4155,
+      "sha256": "1eac35edeb8b59dd0dabeef1109572019bf304f98f537bccd08bd50df6ab2929"
+    },
+    {
+      "path": "packages/im_sdk/assets/auth/quick_login_service.png",
+      "bytes": 6196,
+      "sha256": "1b7ade8abb594cf2d0422b59c744362e3a6c8255d0a9c9345e2b61bf0be807e0"
+    },
+    {
+      "path": "packages/im_sdk/assets/brand/app_icon.png",
+      "bytes": 668386,
+      "sha256": "2fdb9783949cae94b294952a18f390cb9f6bd07cde665fede64cd20163fb341f"
+    },
+    {
+      "path": "packages/im_sdk/assets/brand/brand_logo_icon.png",
+      "bytes": 668386,
+      "sha256": "2fdb9783949cae94b294952a18f390cb9f6bd07cde665fede64cd20163fb341f"
+    },
+    {
+      "path": "packages/im_sdk/assets/brand/startlink_loading.png",
+      "bytes": 1670243,
+      "sha256": "970c7576b0601a040214ca87d4674a2bfdbca22ba0df3a99e5bb43f88307fbdc"
+    },
+    {
+      "path": "packages/im_sdk/assets/l10n/sdk_locale_manifest.json",
+      "bytes": 9925,
+      "sha256": "412edb3a8b4738aa874da722b0fcb271c4f3aa185c98ce9aadd5322d870aa303"
+    },
+    {
+      "path": "packages/im_sdk/ios/Classes/ImSdkGalleryBridge.swift",
+      "bytes": 3205,
+      "sha256": "bc264bf2b88eb0e16ace6859016a27a48690399f61e71ec35752c78a8a38006f"
+    },
+    {
+      "path": "packages/im_sdk/ios/Classes/ImSdkPlugin.swift",
+      "bytes": 1426,
+      "sha256": "cd7eb3b29bc4540a35a6ad8ea67b58bd45c5ac78835a4c97f8bd8440039de491"
+    },
+    {
+      "path": "packages/im_sdk/ios/im_sdk.podspec",
+      "bytes": 710,
+      "sha256": "69dad55e0bdae8c70b41dbe004e0867ee4f0319821bb2290829a14082d4ae77a"
+    },
+    {
+      "path": "packages/im_sdk/l10n.bundle.json",
+      "bytes": 828,
+      "sha256": "9fc76933390272f3fc5eebcf3fedc78400fd299132e52591504622fad975c55e"
+    },
+    {
+      "path": "packages/im_sdk/l10n.bundle.lock.json",
+      "bytes": 29077,
+      "sha256": "b63eb97cbb4563b9a92e8f443b4b213022897ac2e4da625d90170ef564e8b04a"
+    },
+    {
+      "path": "packages/im_sdk/l10n.yaml",
+      "bytes": 394,
+      "sha256": "f93527dd1868c0fa169c3bc29f6a9982ecbb6d4fc786908f8656e4dcf2678ade"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/account_runtime_provider.dart",
+      "bytes": 11339,
+      "sha256": "dd011844192757c37eb1742ca2aadc9290e2c0387457947b085af9a0dc0c4345"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/app.dart",
+      "bytes": 16966,
+      "sha256": "8891b621160e030177ee633be74dde6cdf76cfe3deffb457ec010fca0d766b67"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/authenticated_runtime_host.dart",
+      "bytes": 2790,
+      "sha256": "435d23cfb419a1a92bc9b5bd022c9bb1b897d9f6d0a78a3fc36ff91a88eb64b3"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/authenticated_runtime_services.dart",
+      "bytes": 3485,
+      "sha256": "9b91c0ee39f884dfbb166a7f4e4e23beae9ddc0c7c64fde76693ae405c4a0b13"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/privacy_consent_bootstrap.dart",
+      "bytes": 20879,
+      "sha256": "adbc212e6e352f8ff214c558907fb21ea45e8dbdbf58b4a9c5fe1444c0705e96"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/router/router.dart",
+      "bytes": 45605,
+      "sha256": "6d218917fc5c1cf4b2345fb33aac478b65df663335f586498a144b170bf228b5"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/system_ui.dart",
+      "bytes": 1777,
+      "sha256": "5ee98497ad22f5e57e02cf238d9c6620e3ff34ce8711fbcb7d0563db9292bbbf"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/theme/app_theme_extension.dart",
+      "bytes": 2224,
+      "sha256": "c529fdf400eb69c6b3cb86a3c0ee629a47a60ab010d19b171e827b5aa45e3091"
+    },
+    {
+      "path": "packages/im_sdk/lib/app/theme/theme.dart",
+      "bytes": 14179,
+      "sha256": "c3fb74b0d645ad214582563f6253eb1dcaf6213586920928276c98607a58e6b5"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/admin/admin_access.dart",
+      "bytes": 1836,
+      "sha256": "6877ec806328db6031e9fe9ebe4f9e6b47c87e6f0dbf5f2dddc2347269ed4b1e"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/admin/admin_http_client.dart",
+      "bytes": 13141,
+      "sha256": "213f41dfd3b63433d547425e773fe12d5b17e185ae8bb18c570efbe8efdd2549"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/auth/account_session.dart",
+      "bytes": 10289,
+      "sha256": "7cfeebecd4260bd048f7895a40209be672fbdbd9ac5e6d11d741184364861167"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/auth/account_session_store.dart",
+      "bytes": 40185,
+      "sha256": "b85e17cb23626878569533021506d226f8ab014518c31d5a020217ee2302d438"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/auth/token_refresh_service.dart",
+      "bytes": 1479,
+      "sha256": "b4a5f0d7eba0ccd71e65c8cd42f08edb5bceed8a2fcbb21232f999a7c9f8c3b8"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/branding/app_brand.dart",
+      "bytes": 80,
+      "sha256": "30c9b59391404ac67d339f34a41bb276f76715f9ffd6b6f143596eb68a805c05"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/branding/app_brand_assets.dart",
+      "bytes": 311,
+      "sha256": "b4465c8c046765c8b3932906a02532cf102c4f8003c57b855f8129c405362201"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/branding/startlink_brand_logo.dart",
+      "bytes": 1194,
+      "sha256": "b0ea500412c1c947b82975da81597819f576296683862ee9116ae5f7cdab3e75"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/database/app_database.dart",
+      "bytes": 16640,
+      "sha256": "8aced4119e0df631b3e526ace86398c6932d8819aa82bba1e3ff6231f66b0f96"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/database/hive_to_sqlite_migration.dart",
+      "bytes": 9968,
+      "sha256": "efed0fae850f905a6c1e23b1e8ef791f5a360e838eb8a66822820c48fc45a21c"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/di/injector.dart",
+      "bytes": 9079,
+      "sha256": "02f39a1f28ec738040f111be452de4a42e97598bc7486e026855254b73c7ef79"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/app_diagnostics.dart",
+      "bytes": 7366,
+      "sha256": "bb1e25a5ff47856af8395409674646b820b831dbb69bbe83aabefd2bbd0303da"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/app_error_reporter.dart",
+      "bytes": 6774,
+      "sha256": "745ec03e5a2612d7879ad7a8719c465098c84ea260f2382c0d7d19fb67110a05"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/diagnostic_http_interceptor.dart",
+      "bytes": 4170,
+      "sha256": "255f8686b425f8fe928d485db3dd5b9b3f926b041c69476b7b3a51beba575b6a"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/diagnostic_redactor.dart",
+      "bytes": 4942,
+      "sha256": "9822f24432afc44ba6b2031df6ce38ebed640a0f52ed6106c8d819e0a820f1b5"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/diagnostic_runtime.dart",
+      "bytes": 7231,
+      "sha256": "a66ef677ac558fd9f66f063e4f2e9d2aa36b9b0860846751bacebf9c13b46a1c"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/diagnostic_scope.dart",
+      "bytes": 1068,
+      "sha256": "86b5df2494a8bec03a9a340de73057a7b217da61edb4fb56d9bec4680c913510"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/diagnostic_share.dart",
+      "bytes": 953,
+      "sha256": "c50f0bf6d6e9d889c5bc4efbebb46828459133578740b1959404acfb7027b470"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/diagnostic_store.dart",
+      "bytes": 7149,
+      "sha256": "a1fe2a64588a6fada4d9105358ae5b75acff0dd934e480319af4998b962640e4"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/media_diagnostics.dart",
+      "bytes": 3971,
+      "sha256": "b9d55805dee20d98e154cc525f6d4f68b6ec31aa1604564aa6b6ebbd653fee3a"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/diagnostics/media_image_observer.dart",
+      "bytes": 1941,
+      "sha256": "6595b8b21977a95a6b76ba89934c71b5f791b7db1ae8184f554fc2e77f788bba"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/domain/official_verification.dart",
+      "bytes": 251,
+      "sha256": "3a924dfcfd4d48731199c838a5280097185f7aa520d7d1c169b0f887ce97755b"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/identity/user_identity_summary.dart",
+      "bytes": 1516,
+      "sha256": "6c3f1ba038823c0ddc0220db34163ec588c31d174545c627fe014702a24a5922"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/localization/notification_text_resolver.dart",
+      "bytes": 3177,
+      "sha256": "e619cc0971c8be2f2b3eb0b4d80640c2c3457b638946e64b6b0485922621d45b"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/media/authenticated_image_cache.dart",
+      "bytes": 11292,
+      "sha256": "6dcb7fd4611832c3ba7b92807ef15a08a44308795268e36989722aeff0c6e9f6"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/media/image_file_service.dart",
+      "bytes": 5327,
+      "sha256": "18f56092e3b16b9cd74d9f25cb39a8dea4d36aa848c21115485af6ddc90ef404"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/media/image_resource.dart",
+      "bytes": 4037,
+      "sha256": "3785e7fac8bf8aa2ed907f76c3ca7e07e1ec17da0fb2f23d93bfb79a015152a7"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/media/media_access_retry.dart",
+      "bytes": 2953,
+      "sha256": "c0adfe37f2dca3fe94a322f7b2d03735a0cdea15512859eda854061f496d1bef"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/media/media_request_context.dart",
+      "bytes": 2110,
+      "sha256": "5b6f5b56045162b36681b37b067ad5b5b5fd6d677bb2b0d3702000f7f3c5dd7e"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/api_response.dart",
+      "bytes": 1306,
+      "sha256": "b9ddad9f0ab8a1ec0d3fc81daccf29b53e87bf044574446ac5acb6fcdd12ba58"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/chat_media_url.dart",
+      "bytes": 3346,
+      "sha256": "cef0d64f2b627602225ccb09cfec1700a2a96150c26d1a10ec1c52d1b486fcae"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/client_locale_header.dart",
+      "bytes": 2695,
+      "sha256": "88d283ecebe2d6dc607e50a5f2b10bb009a5c756162df8f4acabdf8a36d299cb"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/connectivity_provider.dart",
+      "bytes": 1859,
+      "sha256": "a7fe4ad2d9503dbd83c7f5b9b0823d084c29d381b4e308cca83afe3cbf733ede"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/error_handler.dart",
+      "bytes": 11455,
+      "sha256": "c8760e9c06edbaa03cb50c0c72b107119813e86681d52af01f0f6f58f8e77aea"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/http_client.dart",
+      "bytes": 33439,
+      "sha256": "63b47bbf2d5e5b47687d339e1b16b4bdaf24f640432d83c4a05ba5cfde36288e"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/service_realm_config.dart",
+      "bytes": 2757,
+      "sha256": "de2eb184d4be187b3ca9dee8d232dfd46787ee1cf96cf4616e23ef09625b70e2"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/site_line_config.dart",
+      "bytes": 8815,
+      "sha256": "77c04ee2fe881e5fd9ea2753d227cb07fea20d25b7367fcbbba4722c7b8966ef"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/site_line_config_fetcher.dart",
+      "bytes": 10105,
+      "sha256": "e87de8e6b320cbddc9fde87201d37af4d0ff751ffe23ae762cd90266e7506506"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/site_line_manager.dart",
+      "bytes": 17232,
+      "sha256": "47d088e41274ba3cfa7add9c66b1ba0368ecdb875b1ac5c8b014452a0b5bcc21"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/site_line_project_config.dart",
+      "bytes": 926,
+      "sha256": "59aa6f131a049ed4654a49bb45475d8361b546ea4c596209912939a1dedef2b5"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/site_line_request_fence.dart",
+      "bytes": 1505,
+      "sha256": "3c2d9094e000b94dbdcf2e763bae91822d856f3c1baf62e1d5485628524cb183"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/site_line_selection.dart",
+      "bytes": 1748,
+      "sha256": "d2e7bf2b22c1674da47ba1adf0bf57196f1d7c28b88b38c58d48bd408de68572"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/network/trusted_media_url.dart",
+      "bytes": 583,
+      "sha256": "ba6bcff33a09a1c9b8f9eebb373ead8a0e8f2de826c5bb783d10c16de4282d74"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/notifications/account_push_registration_service.dart",
+      "bytes": 14966,
+      "sha256": "f02f43b0474ea0bffefbf4b68d2fd7a49fe36507b936697016e86fea0908085a"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/notifications/android_push_session.dart",
+      "bytes": 1395,
+      "sha256": "ed33a84b227f79247e617af06f15603c6848150c5f15b2a1f8de6e7b68b6248f"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/notifications/app_icon_badge_service.dart",
+      "bytes": 3780,
+      "sha256": "0d92bb5f7c54c76b362ddc088ba9e4438610339e60b62e922cd162d7e0c31b86"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/notifications/mobile_push_token_provider.dart",
+      "bytes": 8231,
+      "sha256": "26c1d41a681dfa16563924c5db256eb2f86074a04f175215ac6f5d9afd240833"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/notifications/push_device_registration_service.dart",
+      "bytes": 4008,
+      "sha256": "641786a7c266ec2c64d918bc07ea60ba2629e7b601e7e95993d65a089863b5a2"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/notifications/push_notification_payload.dart",
+      "bytes": 5375,
+      "sha256": "65f885afee309957769285787aca17a300ed69a561a1865f456c383eb1cd977c"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/notifications/push_notification_service.dart",
+      "bytes": 34676,
+      "sha256": "5a636dff792b27dadb4326d966bd5a9de890bf6bef8776bce99f8dd068eed2ca"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/permissions/app_permissions.dart",
+      "bytes": 7742,
+      "sha256": "c85f8949ca82980d8ee0b19be2ffa33dbc5b4ac7d0b49caaf9af4e593045aff0"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/app_platform.dart",
+      "bytes": 1307,
+      "sha256": "d87c6014e52e747d2646ac75593462c7ddafd487779e112ed72a72739dd41366"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/local_file.dart",
+      "bytes": 126,
+      "sha256": "60f46eaeaa4f734a69f2850c17f14596d11ee1e351759cf7f7f7329202eb50af"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/local_file_io.dart",
+      "bytes": 4048,
+      "sha256": "e807933caa0daa695c6e9e2296d5b9034e363ad100ce5cd5470e224f32a616d4"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/local_file_stub.dart",
+      "bytes": 882,
+      "sha256": "63feb70e7e9051746be70f877e26c1d0bcf08600c30b0dffd7ca39a8cb9aff14"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/local_file_web.dart",
+      "bytes": 882,
+      "sha256": "63feb70e7e9051746be70f877e26c1d0bcf08600c30b0dffd7ca39a8cb9aff14"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/local_image_dimensions.dart",
+      "bytes": 619,
+      "sha256": "ffe10b4b082e44e175bd6a3cc4545bb4eb3edbf0d3de3d365e05990da322e791"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/local_video_poster.dart",
+      "bytes": 2580,
+      "sha256": "88e64d32e730115bc09b5632dae1e083ba63af0b9a0268fa126c304b2af4efb4"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/media_file_runtime.dart",
+      "bytes": 4081,
+      "sha256": "c104e0bb15d60fca0bce08786325f8c1f84fa3157bb97742d8bb8265c23cf3b4"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/media_saver.dart",
+      "bytes": 75,
+      "sha256": "3c264e462f677a736ff9789a61f14e32f36a38a6e27851de3b7901e7be4e8f65"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/media_saver_io.dart",
+      "bytes": 1694,
+      "sha256": "343db2a5faf55a7a99c37874337235fa76dc83492142d2fd8a677eabcf0de3f6"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/media_saver_stub.dart",
+      "bytes": 451,
+      "sha256": "867d015ce1e71cb87c9905852e937f1f54183da9c074408af6465b6a18f34f48"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/platform/platform_capabilities.dart",
+      "bytes": 1102,
+      "sha256": "d84564e5164080ae7d0656f3e6806fa3e6cd1fd998e0d3eefade95c7cabaf851"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/privacy/privacy_consent_service.dart",
+      "bytes": 3107,
+      "sha256": "3f20ebcd082b6d362536f7a02a8bdb00636a12ffd5c9970dda54b04985d5b26f"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/providers/font_size_provider.dart",
+      "bytes": 791,
+      "sha256": "51ad31c8cf29683dee30ade46140a85d1242aa233fc388f24489b48fba0f9df3"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/providers/locale_provider.dart",
+      "bytes": 5193,
+      "sha256": "ea941827091f9f1a0bd56392debeebc8e3d3e2f1d88aa307631c618f70d10025"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/providers/theme_provider.dart",
+      "bytes": 1106,
+      "sha256": "b547fd1ea397013fa20c7a5ed6426835ac02c2e9bbb01708fc68e556bb148a35"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/runtime/account_operation_guard.dart",
+      "bytes": 2028,
+      "sha256": "eb81425e9bc54d50e0f2bafe78ad35438b73960d1573cb5a6220da9c59673554"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/runtime/account_runtime.dart",
+      "bytes": 3800,
+      "sha256": "f1604ba0efe5f5b5dc3bd5f8c4b449a005053d4f6b8e08f5e622cad8fba38bf4"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/runtime/account_write_gate.dart",
+      "bytes": 1645,
+      "sha256": "3b3dc7ff7059305974343d1f07dece45aeb051e2a02a4cdbed843313b1ce9085"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/space/account_scope.dart",
+      "bytes": 4721,
+      "sha256": "0200e60007e41b7b9fa9a835f5d2e0507f6f0a43c3a37814dfe4eb9a49c208a6"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/space/space_context.dart",
+      "bytes": 3070,
+      "sha256": "f7676ff878186213295408b3b3f7a041e263aafe2f499282bc106eb817285fb7"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/space/space_manager.dart",
+      "bytes": 931,
+      "sha256": "7315850359ee994b5c57d018b096419327a5b9f7e1ecca4d94150cb6519e6763"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/space/space_transition.dart",
+      "bytes": 2945,
+      "sha256": "a3ec875f6d9575e27cce130ac69a420548046bf564911c6bd0136e04863cd108"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/account_profile_box_provider.dart",
+      "bytes": 706,
+      "sha256": "ee2f1cd874d9aa59d595880ac25e7e92f44247a8dda2e03a3a4bf4e8cc3fb8a2"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/account_settings_box_provider.dart",
+      "bytes": 387,
+      "sha256": "d98103b5870efc15acd9330a836f193585c7902f8c5c8e1d1ba84f037398ce28"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/account_storage_context.dart",
+      "bytes": 1198,
+      "sha256": "6de8a5cd4b645cbba4c295ae33c14a97d0e36940cbb293449007ec3551d9995a"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/account_storage_context_provider.dart",
+      "bytes": 2534,
+      "sha256": "e9fe39d96d4e11dabccf99d2a2d47cd8036535a8d76ac4acec2ce4e686716215"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/account_storage_registry.dart",
+      "bytes": 7444,
+      "sha256": "f8a51b2497617aaac8a6d673c3c412a524dcdd2184c58109570a437f2b1df6ee"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/hive_storage.dart",
+      "bytes": 3387,
+      "sha256": "971f45d5868f14624dd4014390cbbff315ea981453fe748381432a2cdd419996"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/local_storage.dart",
+      "bytes": 22,
+      "sha256": "ee820399f85e12e3a38078aa2540dbf9e2a86989f80773c6a467ea1e6f9164ad"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/storage/secure_storage.dart",
+      "bytes": 9755,
+      "sha256": "a1cb5ae6d3a6efcb958680d7cd2afc016247942686f030544e6052c62dd69875"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/time/user_timezone_formatter.dart",
+      "bytes": 5890,
+      "sha256": "66e273bd4b54fbca621a8fc2024585a40a64401c1cf68ac2782d6891e235eba4"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/utils/async_lock.dart",
+      "bytes": 401,
+      "sha256": "ceb0eb4328de6ff56ccbe2d7875a9b3b418daac3b3d66b4304d0a9dc9a6415d1"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/utils/debouncer.dart",
+      "bytes": 310,
+      "sha256": "d0fc7248085271423a0476467378bde980ebedc2f49710bba80c2af99ec82521"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/utils/validators.dart",
+      "bytes": 1602,
+      "sha256": "b51b8d9539922d838d3fe9181f4a2698ad2d2db3a15929a489819ff1b6e02515"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/app_alert_dialog.dart",
+      "bytes": 2961,
+      "sha256": "a374b5b614ffc7554a291486bcf1fcbeccd67785227e4bb61e74a9fe87b2846d"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/app_network_image.dart",
+      "bytes": 1891,
+      "sha256": "917636b40ee76bf9c43211da5467b8d40c1d0095939f027e278c6362cd6e2e84"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/app_toast.dart",
+      "bytes": 2837,
+      "sha256": "56142c80bbaec0543fadde24e4232686143a9aa39818e8c356ea32fb7221171a"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/group_avatar.dart",
+      "bytes": 5512,
+      "sha256": "63be3c7115bbc303f89af3b8fc023a373e3f039aee3ae7a41c8d8b96018ad307"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/identity_badge.dart",
+      "bytes": 5580,
+      "sha256": "4fc54ee8017fa34ebbf5fa7a62583d04055ee860d4ccfa33336b8298caae1b68"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/network_status_banner.dart",
+      "bytes": 3102,
+      "sha256": "728cac32e2febc28c4fa5f368c9d052d3a05420c2f0624b9b967e0a789c785ae"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/official_verified_name.dart",
+      "bytes": 800,
+      "sha256": "ad3210a5c0ae4cf948a3137d0cf56c02c26b15e27fd420bc8b2ca81d436e8b1b"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/person_avatar_with_badge.dart",
+      "bytes": 2967,
+      "sha256": "5d83fc10d85326fef5fbff38e149aac76182de634454f67898ef63f7a6ac3c7b"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/setting_tile.dart",
+      "bytes": 5884,
+      "sha256": "ee1a97f82ce900405afa50d9f0a46a01581fb5748a4f04e71d720f716f48ca65"
+    },
+    {
+      "path": "packages/im_sdk/lib/core/widgets/user_avatar.dart",
+      "bytes": 13620,
+      "sha256": "4ba819eded9f4e107d967c55a4c045be486bf0516dfa265e8f7817532541813b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/README.md",
+      "bytes": 77,
+      "sha256": "e061701ad9c7ad1b9ed3490f6f9992ba96a62a76ca9ebf3e95463fd10972f107"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_release_face_dto.dart",
+      "bytes": 1072,
+      "sha256": "9358df531060d8c13d93fef4b9cc658d899a8503b3fc6588cfa0a85af0c8b865"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_release_face_native_store.dart",
+      "bytes": 1041,
+      "sha256": "47020db0dabcac1e440bc44761c7d61d9a9039f522d9299b9a55bc5f70e10dee"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_update_dto.dart",
+      "bytes": 2981,
+      "sha256": "4757703b91de396dfd991f19bbe58858b676ebdc4db9b04737b826f40c3ae30a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_update_environment.dart",
+      "bytes": 2182,
+      "sha256": "636af9b30bd9847710385f9d3c6b48bc5082c6be545c7bfe2335785c1a052256"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_update_install_permission.dart",
+      "bytes": 487,
+      "sha256": "4ea20e9909bafb3cc2e1ac312468cddbc2354cc75fb64c6191feaa7545ce4d3f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_update_installer.dart",
+      "bytes": 8485,
+      "sha256": "3bdc5f9204379071d8071aecf81acace27935726dfeb0ceadc425bf8467d190e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_update_remote_datasource.dart",
+      "bytes": 1722,
+      "sha256": "5fedf187d56d1cb7cb4dc7bbb643ac53d240ac5ba88607398b5eb7bcaa4a95e8"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/data/app_update_repository_impl.dart",
+      "bytes": 954,
+      "sha256": "43a781e938d98b67aad5b6d8d6e34aa3d307fed9aa1ac5c3156cfa880b696e7d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/domain/app_release_face.dart",
+      "bytes": 274,
+      "sha256": "55efbd8907f830827d220f6896bacc7748149fb5db5c8de87e06d06dfb0a1b82"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/domain/app_release_update.dart",
+      "bytes": 1096,
+      "sha256": "51189fabff66d1fe5de740139855d2d83f28c6d2f10963b79f08894d15f8435c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/domain/app_update_repository.dart",
+      "bytes": 434,
+      "sha256": "2a617057e406343e6eea63bf8fd2ddc97b3a2da822867cc10cdf1c7033a2457e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/domain/app_version_code.dart",
+      "bytes": 172,
+      "sha256": "acaa25b284a2c7b44be4657f96a4d99347de37c90a491b9d968d00cbb0a98e4c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/presentation/app_update_gate.dart",
+      "bytes": 4922,
+      "sha256": "598f3362911300610bb4056f2bd780959e81718fe313f7ac08ff9e5c8963c5b1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/app_update/presentation/app_update_provider.dart",
+      "bytes": 13362,
+      "sha256": "c8a490a24ef4ae70af1914428e74626b7366805d1e28508bb5f3416fbf3b00c3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/application/login_identifier_cache.dart",
+      "bytes": 854,
+      "sha256": "368be5877ba1fd88df1e3d9c482485b922b5660ce37e73fc5eb87e6894082df5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/application/logout_guard.dart",
+      "bytes": 1341,
+      "sha256": "e97597b5bc9f6a60d37640c616060766b2d14fd67b7048f46f6cb88fcedaecef"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/data/datasources/auth_datasources.dart",
+      "bytes": 26,
+      "sha256": "2b18f37b6a960855662a1cd45e6e555f32b8c84e8cca07b996d3c19dd754c90c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/data/datasources/auth_remote_datasource.dart",
+      "bytes": 33784,
+      "sha256": "ac4ef4f3a5b39120ff25104866aa4fd52995e6bf070f57a56437b230b9e20a05"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/data/models/auth_models.dart",
+      "bytes": 21,
+      "sha256": "da820f04d765151d3e56d35f7c6fc263dfeeb6b3e8f210b707ac9a4a3b1bfc90"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/data/repositories/auth_repositories.dart",
+      "bytes": 27,
+      "sha256": "3f1c2671af8a9f4b652ff146278c69f55618f951fb686847a68672161a23a1e2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/data/repositories/auth_repository_impl.dart",
+      "bytes": 5163,
+      "sha256": "ee3ed978cfcea779de7fc520ba1f9cdbdd709ae9505af8da6b8cf8c367d87a9c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/data/stores/platform_tenant_directory_store.dart",
+      "bytes": 6132,
+      "sha256": "774f8db5edab3dbb570aec0cb49a5bf73ff8eab36b1222e6e489a6b183569697"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/domain/entities/auth_entities.dart",
+      "bytes": 7601,
+      "sha256": "dffbcb3f53957d29f2f77f864f54115160ed3d550a0aae4fd2bdc3600b03ffb4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/domain/entities/auth_logout_reason.dart",
+      "bytes": 158,
+      "sha256": "593e277f0739d391b86f5b91dd2e47d2e999b62fbe11b278612971aeb13692c5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/domain/repositories/auth_repositories.dart",
+      "bytes": 27,
+      "sha256": "3f1c2671af8a9f4b652ff146278c69f55618f951fb686847a68672161a23a1e2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/domain/repositories/auth_repository.dart",
+      "bytes": 2832,
+      "sha256": "a75cb3f9fa523aee434ac59fad7f8921d4e89b341991e2f656dfbb0f01a02f38"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/domain/usecases/auth_usecases.dart",
+      "bytes": 23,
+      "sha256": "ba6a1b53a984f8c03547eda36cb1979f16f7a17e2e03a7ee759dccffd2f982ba"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/auth_localization.dart",
+      "bytes": 1786,
+      "sha256": "3391f3c66860f639c1a8ad8001640d62983ae07e439f8d82bd9d14beb34a4147"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/pages/auth_pages.dart",
+      "bytes": 20,
+      "sha256": "b91deda5dac4b17a6f5b561e3072becb65eb5956ecab2428e50aeaa81629a592"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/pages/login_page.dart",
+      "bytes": 67632,
+      "sha256": "709f4bb543806ac7b2c80e39fcd8d1b8128f27f90e30a495c5904559fc5b4c77"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/pages/login_page_quick_accounts.dart",
+      "bytes": 222,
+      "sha256": "3441e3fd6da0b676e1fd201b2c2b20ede049c1d4ba627fbd948353cd4c430731"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/pages/register_page.dart",
+      "bytes": 44827,
+      "sha256": "884eb7f65f13b967d7c8b99500c4ab64728abcd9638631973e7bbc433c918351"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/pages/tenant_select_page.dart",
+      "bytes": 11013,
+      "sha256": "5aba1d4f84676de7382ba66979a3f2cce67c272ec0e7f77216a849b49543ec54"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/providers/auth_provider.dart",
+      "bytes": 143398,
+      "sha256": "b4cca31b57bbfb2f124e5a4ac1bd53863dfd8c72b243b095a982607de737ebac"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/providers/auth_providers.dart",
+      "bytes": 24,
+      "sha256": "1cccf5daa8275bd261ebe1f1d3ef7d44a4e1e8dc3e11f29dd3d9eebb29d20290"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/providers/effective_space_provider.dart",
+      "bytes": 1342,
+      "sha256": "eb3d685507f5bf08dca9216750a45e9553386532b647910da1ee780aa5a3fc7b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/widgets/auth_widgets.dart",
+      "bytes": 22,
+      "sha256": "cd2c9aa0e9fbc045958b7cd3193db96c35a4f8fa283879349e58512367f3638c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/auth/presentation/widgets/password_settings_page.dart",
+      "bytes": 11314,
+      "sha256": "3e57d287da9861668a944b5dede57118196675e3718c43796100a3265e1c50f6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/data/datasources/call_datasources.dart",
+      "bytes": 2782,
+      "sha256": "112eff689705d628b1f9e8a0d4193bbd947fc9d799be2b7099a958d45339a1fc"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/data/datasources/call_service.dart",
+      "bytes": 16648,
+      "sha256": "656808012edb223b2b0e40a722f767bdef327f5434a3388ad5333cb1581ef387"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/data/models/call_models.dart",
+      "bytes": 21,
+      "sha256": "15aac2cfe1f2d4a874641a764474e2aaf8f3303a1083fdec6a0b46e518ff46df"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/data/repositories/call_repositories.dart",
+      "bytes": 700,
+      "sha256": "da3aae400fd72ba8cf47766f9178490e8385ea6dede885dc8326d0140b78dbaa"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/domain/entities/call_entities.dart",
+      "bytes": 8261,
+      "sha256": "cf7669a0a65e592903a98be812d9f7710b97b3c8b807540d29c327467936c893"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/domain/repositories/call_repositories.dart",
+      "bytes": 434,
+      "sha256": "c9498fe501516adac7951472f080da042e7d9a5c492fc3e07e926ed40a42cc60"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/domain/services/webrtc_service.dart",
+      "bytes": 21657,
+      "sha256": "c65d9e2269b87361600327784d8bade60e5ffb7bf82bb75d6dcb093b46dedd04"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/domain/usecases/call_usecases.dart",
+      "bytes": 23,
+      "sha256": "f685030fcc3727304f902362513b50ecc4954efc7c6b19a266c2305b5cd8f5f2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/presentation/models/call_route_intent.dart",
+      "bytes": 395,
+      "sha256": "30adf488de03e3d7597d06a0a406bb4086b5ca0efae231952c4fd1e925e5883e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/presentation/pages/call_page.dart",
+      "bytes": 48964,
+      "sha256": "6bb89112844e65d8d5194e56fddead1dcc242b0351c97dba5b707a110ef36bed"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/presentation/pages/call_pages.dart",
+      "bytes": 20,
+      "sha256": "0114262be4de60070e8300d8b83bf6606dffd0612c3231a8bf2f51867201ac69"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/presentation/providers/call_provider.dart",
+      "bytes": 35522,
+      "sha256": "415d0808f30f072314af417507fd0bcb2098253eb6040811c000aa94ad2d4bfd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/presentation/providers/call_providers.dart",
+      "bytes": 24,
+      "sha256": "494d8e5dcf3741048fe4b38a3734030c76d428a29b64cff906b526da843fd188"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/presentation/widgets/call_widgets.dart",
+      "bytes": 22,
+      "sha256": "6530fd8df7327ca90877751bdf07f9213bd76d4848dfe15708ba5f0c8da469b1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/call/presentation/widgets/incoming_call_overlay.dart",
+      "bytes": 12678,
+      "sha256": "29e7044c8e8726b13d37bc0e30632bb3c752500624db1f2e9f03d8a7bea1e889"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/auto_translation_coordinator.dart",
+      "bytes": 7540,
+      "sha256": "df30e262fb1f1e77d84c12c38bb8cc5edbd45e2efe28c3e0d6877f5e30ed804a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/bulk_send_controller.dart",
+      "bytes": 2093,
+      "sha256": "a7241a24ef64caf21e52de8b1705712084582e8c13b4bb448493a47a35215999"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/chat_draft_write_coordinator.dart",
+      "bytes": 852,
+      "sha256": "6183c830e518041fbb7740e7841a73c027d5dde177da3352cb0ad6ebcfb465a2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/complaint_submission_controller.dart",
+      "bytes": 1028,
+      "sha256": "eca8e30159c8cbd84ab2297ded3f080569a3fc92201c67926a595c4d9b51a519"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/draft_translation_controller.dart",
+      "bytes": 9722,
+      "sha256": "f2b96fda2f8056341402b300ab93557a1b2df54594c75db8391a5f4062e04505"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/link_message_draft_resolver.dart",
+      "bytes": 792,
+      "sha256": "7596b811d5afd805963512e7a4f1a1244d55013f8a21abe6ae3a2ea1b8c9acbe"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/providers/auto_translate_preferences_provider.dart",
+      "bytes": 5064,
+      "sha256": "c2213609bfaf98cf0a8f8bc7d1a2f37cbd7b69cbac9dae2b338a0912f5dd8fed"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/providers/conversation_type_resolver_provider.dart",
+      "bytes": 2183,
+      "sha256": "dc7d4039ba7dfdc8cb8af9667608a81e1d43aa9edb09ef43f6f1b69adb2c6c96"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/providers/draft_translation_selection_provider.dart",
+      "bytes": 1319,
+      "sha256": "a787b599d8b397cb0c9fec8d4f949f4441064aae29b92bebfc9ef896b47d9fed"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/services/conversation_type_resolver.dart",
+      "bytes": 4037,
+      "sha256": "92c45b395f7fedaa424f0065696ea28dc3022df9e6378c794e046b4ebf04595b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/services/gateway_sync_coordinator.dart",
+      "bytes": 3419,
+      "sha256": "407ac2a880ad210fde9eeb8dcf1a5e28ab1da67cd99fbe3a014908d999433cec"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/services/interrupted_outgoing_message_recovery.dart",
+      "bytes": 5941,
+      "sha256": "b573c1563f416c6d0f9d911452ab922d19e714d9d7a63790404337b0504214b6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/application/teen_mode_message_send_failure_mapper.dart",
+      "bytes": 786,
+      "sha256": "0324ac470a9f00066c593160c5253c5794e1b6bb6d7160626725ce1a9bdca3dc"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/chat_datasources.dart",
+      "bytes": 26,
+      "sha256": "ef38a0a67eb4f9484b335da1b150f51b4f729305d0ce3d048fbea2d0ed8ab0ad"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/chat_draft_local_store.dart",
+      "bytes": 2857,
+      "sha256": "2aaa451911e0533be658dbd0c2d8e3670ab7800e5ed17553dbfd84e89d395ea4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/chat_local_datasource.dart",
+      "bytes": 85019,
+      "sha256": "9de97343b3d73c0e664c3284704f84b363cd69cc78bfb14282c294b1fa013f7b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/chat_local_search_index.dart",
+      "bytes": 8214,
+      "sha256": "d1db1476c029b435cbddb108debf698159f10af782a93364a3f31a23b9348576"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/chat_media_message_refresher.dart",
+      "bytes": 6083,
+      "sha256": "703b31c9d6c29f81597c433049672d6eb3ab7ba32707253380433b5cdb608829"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/chat_remote_datasource.dart",
+      "bytes": 23132,
+      "sha256": "5cb80421f3982732a0be706d6d0de3956618b737c70c34c83b10356dda1699fe"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/chat_sync_cursor_store.dart",
+      "bytes": 1408,
+      "sha256": "1b59ed651381b8deb899fc0898d2f00cae8e4eae10ca9dc15ec4eeffed1b2725"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/conversation_deletion_boundary_store.dart",
+      "bytes": 15557,
+      "sha256": "d02b091a4fd5120516c5fd7c6b50f6d3625bb35c20542c4cfc6c6404ee1529e9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/conversation_type_remote_data_source.dart",
+      "bytes": 1563,
+      "sha256": "b51fe3259722fb5af018168ef17cea7ef256171f5cfd7d15e3f64b62c93171cb"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/gateway_event_handler.dart",
+      "bytes": 5747,
+      "sha256": "0312c0e781ccee9f0de7052a5c55010e13cb8c807bc7dd1399dcbaac29313f00"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/gateway_service.dart",
+      "bytes": 43138,
+      "sha256": "b61b48cb604b931b140b059e83758be620ab0fb05d030cb08b0f6ad2eb5c91be"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/group_invite_qr_api.dart",
+      "bytes": 5790,
+      "sha256": "6ae2afd24f4316feb031913f2198cc2ab936fc502a5bf5af4d7f01f33a4d9e35"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/group_join_requests_remote_data_source.dart",
+      "bytes": 3526,
+      "sha256": "7712109582215b99098d831914b109c3edd9cdfc1db5bb31f498a2ab7dc82247"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/media_download_service.dart",
+      "bytes": 4306,
+      "sha256": "57e041e8f81184e2db6e4c16f256d7b32fa79e02156a0ff91dfc34c3c5a10c61"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/media_local_store.dart",
+      "bytes": 8857,
+      "sha256": "f2413c28044ff81ba9b1ca848c9bdc86be95adc11e92c61dfdee6d9490970a1a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/datasources/pending_message_queue.dart",
+      "bytes": 21546,
+      "sha256": "bc59c94afb4657f127b3d69a108a2ec30807f6e889072a59411e806e0c049713"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/mappers/group_member_payload_mapper.dart",
+      "bytes": 3448,
+      "sha256": "172604270b9bd5ec5325a8f91653b8d51517c91cb30329b324de101092b3f0d6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/mappers/group_read_receipts_mapper.dart",
+      "bytes": 8242,
+      "sha256": "3a1ae7a0245c50c115b15638f8fd306317807702cce82f0bf65285f250f192aa"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/mappers/message_send_failure_mapper.dart",
+      "bytes": 916,
+      "sha256": "72a23b07d5aa3bf00258a1b3da8f1b268c1459d7c4631c719f8710c093e25ad5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/models/chat_models.dart",
+      "bytes": 21,
+      "sha256": "9e6845be1a14f9cba9a4d5f5ed353a691c1ab1539dbea35bb3b1224fbca75191"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/models/conversation_clear_watermark_model.dart",
+      "bytes": 921,
+      "sha256": "ce13becf3df0f3aee5d1f797ed368de0376245ed8732077713a58de659d8424c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/models/conversation_model.dart",
+      "bytes": 9109,
+      "sha256": "dfcb960b941a395d4a14a5e963251fcfb657f322a468e63618e8eba2834627a4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/models/gateway_sync_conversation_model.dart",
+      "bytes": 2740,
+      "sha256": "b468063d1cc19146422ca3095151dc7176c48c7243f00446dc2b23783173e13d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/models/gateway_sync_page_model.dart",
+      "bytes": 1888,
+      "sha256": "f71c0f8aa3746876ee272309f4b11b7891002d188fd3110c9a94830d43a8f588"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/models/message_model.dart",
+      "bytes": 7556,
+      "sha256": "4304c9a99efdb2446cd95c0b5b2b3e5a336b6c5288abef88037f4e9b15e2954b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/models/message_payload_classifier.dart",
+      "bytes": 1588,
+      "sha256": "be09ddea66e24cb7f00e30635e46224420957cf324acf76484d03671807e409f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/repositories/chat_repositories.dart",
+      "bytes": 27,
+      "sha256": "23db55ef917d3386799322060b2604733b42662e98de584ee6d8b3c2e65cc340"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/repositories/chat_repository_impl.dart",
+      "bytes": 29809,
+      "sha256": "00fbf2ffc33a3e739cdb797625e0ed48f113a501fc698f884ed38cde344a25e2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/repositories/draft_translation_selection_repository.dart",
+      "bytes": 2300,
+      "sha256": "08ada8a71c93e1ae32abb24dd8bbc956e13d926c4416f68d44499909a03acd28"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/repositories/translation_repository.dart",
+      "bytes": 2781,
+      "sha256": "a2eca3ec4f5b30200c0627faa450d02c9a5ede12f9ac6d75589ade54dcfab00e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/data/services/bulk_send_direct_chat_gateway.dart",
+      "bytes": 799,
+      "sha256": "371d4c4396a3a109c0e00bb86b3142649bf0fcac6a397cb333df133840fa6453"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/bulk_send.dart",
+      "bytes": 2196,
+      "sha256": "b87a62a10a407cd5e1298d108548231af4cb3b0d0dcd2a476f4d27c23e93628e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/chat_entities.dart",
+      "bytes": 23,
+      "sha256": "bef5d27e4af33f814df942c93d1b6c32277f7007f6669632c2aa64d6cda7681f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/conversation.dart",
+      "bytes": 4987,
+      "sha256": "a95c8983e241b67f70b5e7e27deea58d891c67bbed3f9238ff600aef6b461bec"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/conversation_clear_watermark.dart",
+      "bytes": 382,
+      "sha256": "156accafa20aa60c95820e8b42252b478d54b011c8e7862c45f9776a05ec56c1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/conversation_page.dart",
+      "bytes": 256,
+      "sha256": "2b298ba3a439cc36e95be90e4b51c94984ae2a434fa5cff7c09d6ea60ff5edc5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/group_entities.dart",
+      "bytes": 2826,
+      "sha256": "cf712c04c5e0acbf261b87440f657f64caa4123403591942a8acc1100870403f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/group_join_request.dart",
+      "bytes": 1347,
+      "sha256": "a48fb4a2282dd2748a735ae69245bbb87cc9897334cc76ca87d3199af3fefc9e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/link_message_body.dart",
+      "bytes": 3791,
+      "sha256": "e53ae9430d1c1f639792a8501c57641e04a9967f189b0f90da900220a978702a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/media_local_file.dart",
+      "bytes": 5151,
+      "sha256": "a7ea757d5578611cea89fe62a077ae15f18963376682d0114d19790dd459813a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/message.dart",
+      "bytes": 25570,
+      "sha256": "ab776008a20b7b6819fd1711ccfe6fa930ea03eead0619c62cca7f616d85387a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/message_inbox_entry.dart",
+      "bytes": 2084,
+      "sha256": "31651304adefd4fb719463be0734b8d3216ed4d0ed0860603a631e6ab7cd867d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/pending_read_receipt.dart",
+      "bytes": 284,
+      "sha256": "84a9a1db5ef7bb2a511639dd8d58bf51f559a9abe6281d9fbd30828c5ad0879b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/read_receipt.dart",
+      "bytes": 292,
+      "sha256": "3af39fc40008c958f334cc96e831f9e312ed4caacf5b056bc74a15dbb674edfe"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/entities/scheduled_message.dart",
+      "bytes": 1079,
+      "sha256": "9e8b0f4993ddb4eb765f94846ba2793b2b6d220bad96cbc51c6d6ec15981c724"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/repositories/chat_repositories.dart",
+      "bytes": 27,
+      "sha256": "23db55ef917d3386799322060b2604733b42662e98de584ee6d8b3c2e65cc340"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/repositories/chat_repository.dart",
+      "bytes": 1971,
+      "sha256": "52ad7dd9bea3725dca773f6938828b88817661c1a613ff04074aa9408b0c0fae"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/asr_service.dart",
+      "bytes": 2185,
+      "sha256": "bef5060d4296400edf58286f7ca87dcdca5b674b01e46cb9a59a41a4f9e22119"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/audio_player_service.dart",
+      "bytes": 10080,
+      "sha256": "3c3551aa3161fdb143f5a3542b3e9eb8cb1a631785c9772fd162f6dc3924d980"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/auto_translation_policy.dart",
+      "bytes": 1509,
+      "sha256": "6f7708a85a8709a27f45f5a6369924235d1067d13858b573d28ae1f2f69525d1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/call_log_policy.dart",
+      "bytes": 3687,
+      "sha256": "717de8910b91d3e0497871dbf3a258869eba6e708b66778bb9410afaae3be91a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/chat_attachment_policy.dart",
+      "bytes": 7114,
+      "sha256": "1d5b396f464f7562fb3dba1de1d4403dd40052dd4854be62a3480327b90920d6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/chat_draft_hydration_policy.dart",
+      "bytes": 741,
+      "sha256": "0b51190756b675cd394e754bf214b69a0a4b7d9d6c67429875d99000114c8e5c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/chat_quick_reply_policy.dart",
+      "bytes": 384,
+      "sha256": "c4a45a231c2698ef8dab7050a65c11cd0b0af97c2f1fc76ada9d725770bf58dc"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/chat_startup_recovery.dart",
+      "bytes": 1029,
+      "sha256": "cff2dd8a3ed67266cb4c8d69509894b45e69b0ab5cd8a78600cad0379cfa97d6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/chat_storage_manager.dart",
+      "bytes": 1995,
+      "sha256": "6777fb1c80dc435b463a775e069a2da8262bdf70f041118d449a89bc7ff577af"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/chat_text_send_draft_policy.dart",
+      "bytes": 354,
+      "sha256": "32837bd89103bdf720e30108da37618f0d5d59e55815894f291c1464ebf1789f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/conversation_deletion_policy.dart",
+      "bytes": 719,
+      "sha256": "4285c26cbd361c9b2806125fc19ce3a2fbcccecccb457fcc1bed8bafbb2227ed"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/conversation_peer_identity.dart",
+      "bytes": 1313,
+      "sha256": "7d50a9b158be36d6660eec997fc1b6c8df46da874db4b5582d2c080deefb9685"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/conversation_read_state_policy.dart",
+      "bytes": 2038,
+      "sha256": "0c3bface6d228bbe95f52ef77806b1a83344861384628802fb8f07a4ba3d6bc6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/conversation_summary_policy.dart",
+      "bytes": 2340,
+      "sha256": "00b18f2db60a6a22b1f3fe6e867d617b47a09d033ae3158b57d5373e7ce2b0e9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/conversation_sync_unread_policy.dart",
+      "bytes": 2493,
+      "sha256": "07dab027ee73ab812c02a6124f27a92b3b5d5f04d81aad713e3d3eba8e61f6e7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/conversation_unread_policy.dart",
+      "bytes": 1440,
+      "sha256": "9cf8312fe5e5ae415c858debf360f8b27c07acc200577eb846c62f8654c24365"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/direct_history_coverage.dart",
+      "bytes": 1471,
+      "sha256": "e290ba182f1269fa2ddb0475deb40d14ff1f2721897c690cc696eb644080c310"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/draft_translation_policy.dart",
+      "bytes": 1053,
+      "sha256": "7a77019a09a2f139d33e66f6eb848f7f03cf1a0ec28f534a5c9d65f8b5d61a26"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/link_message_policy.dart",
+      "bytes": 5190,
+      "sha256": "1b7d3d197ddb0b610e83368d5efe89504829f88290030f7922fe1267dcd921fa"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/link_preview_update_policy.dart",
+      "bytes": 926,
+      "sha256": "484151ea9620e584c8d7236fb4e77054b2f7016cf139ab4b7903394a29525373"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/media_reference_policy.dart",
+      "bytes": 822,
+      "sha256": "03a7eb6e2d4d4807489f8dbae72965e0b05c2bb13c4d984824ddc3ff61231371"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/mention_composer.dart",
+      "bytes": 2906,
+      "sha256": "f12b90850583a1d98b477110417abc4445e218a3535d284c5e687b6ab374e794"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/mention_reminder.dart",
+      "bytes": 2646,
+      "sha256": "141dc3f3cf1180c9265fe7d08d3c6638528e2a98a5519be10d3883f9e94efa54"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_link_access_policy.dart",
+      "bytes": 2941,
+      "sha256": "71ac667d9b64082f68173d6121582aecd42b753d43541345f676b35a64de53cc"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_local_upload_state.dart",
+      "bytes": 1980,
+      "sha256": "2c02de23c87b12ed593105cca80b773e0bb980044f3176036fa1da68a51cda28"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_media_dimension_policy.dart",
+      "bytes": 3544,
+      "sha256": "3a73c8128ad8eb3ee75c503e68017320c74a45ed62e2093f7c5475b1658f9956"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_notification_policy.dart",
+      "bytes": 4624,
+      "sha256": "0eccc7b1bbebda4983240947a301d523675ccd4c4aed6fc36232e5d5e0e53400"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_read_receipt_service.dart",
+      "bytes": 3147,
+      "sha256": "26d0c3e0141f0e63a8587a29c74c5bb093fa2c6ade0e3dffb0ea2017169d02ee"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_send_failure.dart",
+      "bytes": 4137,
+      "sha256": "33f8c6589d96e4c1a6421bb18825b12bd4bc56d570469a39a7b97f42e4c560b6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_send_lifecycle.dart",
+      "bytes": 4092,
+      "sha256": "b636064f21535086e33d8be7853529a1cfdbc2156e03c04d4a115115f7a07346"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_send_policy.dart",
+      "bytes": 6749,
+      "sha256": "6953d6a1b98557bcbd41197273698b96ef26de8a87758e0f0f4fe9a7b0859a25"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_text_link_han_tlds.dart",
+      "bytes": 1273,
+      "sha256": "4c0adf5c9e4a74539741a815db32eb3b409fedc33a13f011e0faf8aee4123958"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_timeline_policy.dart",
+      "bytes": 6602,
+      "sha256": "39db33be74e8c73ddb29beb1fa991c46e15e88f5c7fedc98fa9715ee6e38b220"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/message_transport_retry_policy.dart",
+      "bytes": 308,
+      "sha256": "b57772b8a2d3e31568ff89df33428b43d0f4d23d32076b512fb3f76dafe784cc"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/outgoing_message_policy.dart",
+      "bytes": 722,
+      "sha256": "813ef144a43319f4ed0ed5599fbd0c7945596a0c766400a64074e3e53d6fbe38"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/scheduled_message_input_panel_policy.dart",
+      "bytes": 926,
+      "sha256": "1e0d1c23c5a4456fee70d1cf6425cc31f3caee1ed838565b381f29e146220d2c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/services/scheduled_message_time_policy.dart",
+      "bytes": 1034,
+      "sha256": "23776759b3344c6dcbe21b468ac47ceed2cf40be3a45e9d7fa5f9c7c36fda7f3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/usecases/chat_usecases.dart",
+      "bytes": 23,
+      "sha256": "b044ad4915763fdbaa2bc8a7bd2de27b678fe8aa88b5489dcc5c1e772c915107"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/usecases/filter_conversations.dart",
+      "bytes": 2291,
+      "sha256": "96d325b1f0cada1bb210851c30389f0cb836c79255f126a227b54ac775652973"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/usecases/message_badge_count.dart",
+      "bytes": 1041,
+      "sha256": "1107835024d55aaa28c7b8b8a82368996538b64163fc9fab1e955a3b00276ab7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/usecases/send_message_usecase.dart",
+      "bytes": 18406,
+      "sha256": "669ae10b663094a39450f6c282f7e0ac9245db9ea52d4d066a49bcbef02a2cca"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/domain/usecases/sort_conversations.dart",
+      "bytes": 673,
+      "sha256": "9507e5d86240fdd51ace891eb09e801d6b7c87ddb0d3cdbd988e71df3b9ff39a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/infrastructure/chat_attachment_picker.dart",
+      "bytes": 6029,
+      "sha256": "db0faff103bd1e61ab3e92a94ffcc50a3c814862da1606d89bb7542262119239"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/chat_media_gallery_window_controller.dart",
+      "bytes": 5241,
+      "sha256": "06b1fdb22719f35091377f359f7c8f84c690ea25a9776a658f78506e37042a52"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/conversation_actions_controller.dart",
+      "bytes": 21176,
+      "sha256": "c8117965d3f037d7d63d80d5b65b2fda5246787749c7eb9ab9693236cbb3bf51"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/customer_service_chat_controller.dart",
+      "bytes": 8965,
+      "sha256": "7cb4a37c2c44f7bc4cd8de4f8ce6547b8ef6f2b7a00c3557871c4c0b9c9d8e89"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/direct_chat_entry_controller.dart",
+      "bytes": 1318,
+      "sha256": "824784f7d6044ffd8172463af0dc10b4c40610b4327511f2403a4d51f04b4986"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/external_link_controller.dart",
+      "bytes": 755,
+      "sha256": "22045bb4a898a8e166e97f9b673923e40913d017cf77fa3a57f0cd32c6587835"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/media_open_controller.dart",
+      "bytes": 11340,
+      "sha256": "54f3f58ce435648978f3433c1f287e5cd412e6db972d10f1401bd7a7c54e90aa"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/media_prefetch_controller.dart",
+      "bytes": 3229,
+      "sha256": "0597c1509f6a0c5fd55bd121cc9c19b5862b2d64523f2549734b7f7a8be52ee2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/message_translation_controller.dart",
+      "bytes": 924,
+      "sha256": "401756fe6913e79e11440fa5892dec08214b1c1d033ef98224f8110f4fab606e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/outgoing_media_localizer.dart",
+      "bytes": 1303,
+      "sha256": "463d4976b7411b593641807054be2f291e47fe110c44c050dfe5e9c723c295a9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/controllers/scheduled_messages_controller.dart",
+      "bytes": 1354,
+      "sha256": "85162bfa108c53085d93ec15dbe9609089c1fb6cffdf974dc5d91e370ca5c90b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/call_log_display_model.dart",
+      "bytes": 2315,
+      "sha256": "d57fa59729c61c39c1d4f6c161a90638108c9898f2e69320282e3abc4ba26668"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/chat_camera_capture_interaction.dart",
+      "bytes": 457,
+      "sha256": "8cd30ccd5b69d519f419e1c365d88a5ae49e862b207b1a387be99bbcc554026e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/chat_picked_media.dart",
+      "bytes": 5119,
+      "sha256": "1846696245068bfb3fc34f5a3c9638ae82ef4b14a25325ff7fdea0e5c7228a88"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/chat_send_interaction_policy.dart",
+      "bytes": 750,
+      "sha256": "5db0f966ac9ab8bac888cded0b071e8d4bdec241c260140f6ee5651e0319e32e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/conversation_route_policy.dart",
+      "bytes": 1806,
+      "sha256": "623850a898865dc6b26b74b98a0c10b4481009a5a353af911cafb1012ba93f3b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/customer_service_chat_state_model.dart",
+      "bytes": 3073,
+      "sha256": "d04ab3842e2fc8bd455c15bd18d90715703c28b6c096efddcfd23ff112a9ccac"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/message_context_action_model.dart",
+      "bytes": 3131,
+      "sha256": "b3f32b3dc4a136c418f57ac7bc9b41a55982a6b3760e6827108a8747a6a2381a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/message_media_preview_model.dart",
+      "bytes": 6766,
+      "sha256": "859211e3b09ef50cb093d04096c200d97563ccfe75b6198c60b89da11a7f064f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/message_upload_progress_model.dart",
+      "bytes": 3478,
+      "sha256": "59807b2775497a2d9a81b7c222e7b0087d7425fad309263b15fba34bb3046dcb"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/scheduled_message_cancel_failure_policy.dart",
+      "bytes": 618,
+      "sha256": "56e77db68f42d27f095bf6311cd0b6e9139c33740c1ccadb598069f6af585ee7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/scheduled_message_input_status.dart",
+      "bytes": 1866,
+      "sha256": "b99900335327db1e3a362b5d1bb30f0c9e51933d4cdca8381ec226d33324cda7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/models/translation_language_options.dart",
+      "bytes": 1003,
+      "sha256": "53a01acf31e33c66bd526ccd628343ffd73a14734993ba9bb903bf806f562f9a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/add_friend_page.dart",
+      "bytes": 20912,
+      "sha256": "461c658807018d960e2a49a34442b42e861244d7575e7801bcd628ae60d9dd70"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/bulk_send_page.dart",
+      "bytes": 17856,
+      "sha256": "e531dadfbf0a0a0944cb93868def63f6ba080e36f3b77f5f12d8c9107a0ec003"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/chat_camera_capture_page.dart",
+      "bytes": 8352,
+      "sha256": "d6163194766b990a12062065de12b018197b03b5674c29459b7558fb7400a25f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/chat_media_video_page.dart",
+      "bytes": 16582,
+      "sha256": "2e84b52388930bc0e0b5d73e6ac77b8298aa8d0d51a71e98d91d27d885dea6f6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/chat_page.dart",
+      "bytes": 246007,
+      "sha256": "8341e7b7d49961fddda1635cc62233e5d8656826560ba2583329a29a35c4a3c1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/chat_pages.dart",
+      "bytes": 20,
+      "sha256": "5b24877b6afeb46b1eaa42b8745e5ffd2364fb63656f1f5a17226165d8505d90"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/chat_settings_page.dart",
+      "bytes": 14642,
+      "sha256": "6ade2dbb93fcae946d11c5cc7fa341ea6aede2e37309949487fd25a309b9ef2b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/complaint_page.dart",
+      "bytes": 5382,
+      "sha256": "499b4000b0d182dcbcda1d1bd535d7a63ecc7ad39b9d7a406c5883a05d5e2d63"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/create_group_page.dart",
+      "bytes": 31698,
+      "sha256": "0da59935ca8139c24150bfad6e56e6f92cb6692bb1505c3bf2fb052fdb6c7b3c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/favorites_page.dart",
+      "bytes": 45587,
+      "sha256": "a1b45177f1d07fb2647ccdf327e20a74a5c8193997869edff9cd2a5decd389b7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_admin_page.dart",
+      "bytes": 11098,
+      "sha256": "85baa09cd91026fb5e62196d333dbbb5b627663dcf07f142aeed6e3a19c1f03b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_announcement_page.dart",
+      "bytes": 17327,
+      "sha256": "b64ca255b48360569dfeaa3ae33b45ebd3035ef3f8b9b0e7b2c581ac38dc069f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_join_requests_page.dart",
+      "bytes": 12038,
+      "sha256": "9b0253a9208b2413db022b2738e1d76e643b50f3c5729a1f868b5c38469e9adf"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_manage_page.dart",
+      "bytes": 27556,
+      "sha256": "c6247c7cb029b06f37661a79f8a44fa0ad44f5e6a0e58b9cc934f1c19c716f2a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_member_mute_page.dart",
+      "bytes": 23392,
+      "sha256": "e68dd819169215a3c6cbc174982e705377f2959978ebbc8c20832bb3f71b1075"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_qr_code_page.dart",
+      "bytes": 12139,
+      "sha256": "77d0b80d8d5bf4e8b5f5b7530498360ec545e2897216f297003ee39bb3907192"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_read_receipts_page.dart",
+      "bytes": 8159,
+      "sha256": "ee0c71e080b8b3ead7fd05c5d4e5da55684cf4341d0a08647e63dfa3ce66cb21"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_remark_page.dart",
+      "bytes": 7906,
+      "sha256": "b1263e055832cce428d322f56118df8ca29d8a9bf09d3ee41e5a033ed711074e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/group_settings_page.dart",
+      "bytes": 64900,
+      "sha256": "d9394949a0f27cb771d8ad0cfbcaa2b9781fa330657fd90867024040998b7bbb"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/home_page.dart",
+      "bytes": 60970,
+      "sha256": "b6b1efe8506f06cbbe566263ede146b3f0c7c81906d8f69ede2acc31f4fa6086"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/image_viewer_page.dart",
+      "bytes": 44703,
+      "sha256": "dcf797d23808d0d0679aaa9204e07db6894f2543a03607d441e575f1a749a380"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/image_viewer_transition.dart",
+      "bytes": 8677,
+      "sha256": "b7edbf8bbf27e3b8a002838c8e9f9b1fcf18f914e0d29e62a2a105b41c72ae17"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/scan_page.dart",
+      "bytes": 49180,
+      "sha256": "5683ba9ea15d61ccd3ca32dd117fbc60c32cd2fb376c451c44c1c0661f09e062"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/scheduled_messages_page.dart",
+      "bytes": 15010,
+      "sha256": "390b467870495724b447c6dc809f0d99f0c81926ce6997ae85633813555a0197"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/search_page.dart",
+      "bytes": 51381,
+      "sha256": "52a3237822ae147572c21aebe960c4ac281b21bbd629896d0a8a132444938e7d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/select_group_member_page.dart",
+      "bytes": 11653,
+      "sha256": "7d85eea7deb0015ccf8ef228f6fa1aff22aca1cc7ff8781cdbb8c7d3116678a2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/pages/transfer_owner_page.dart",
+      "bytes": 13638,
+      "sha256": "2a226668015af44dd9095383084ec767f0fecf0148a4bdf6651bb26f214dd635"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/active_chat_provider.dart",
+      "bytes": 1252,
+      "sha256": "ba964a899f934f736aa19d3377058ead23b08c778554dfad88d6530a78d70da0"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/bulk_send_provider.dart",
+      "bytes": 2395,
+      "sha256": "97c7fc43df818b29fb23afa98ab2c1f36f7d3b89de5a372ed81dc6cbf1818ce7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/chat_draft_provider.dart",
+      "bytes": 621,
+      "sha256": "cd7c5a0e2c7c7e5ad35305f39d53482e929968f4d621a61a7965bca7b6087184"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/chat_local_resources_provider.dart",
+      "bytes": 4276,
+      "sha256": "e35cc0c8276fba37b23f8f053882e5a6cf7637818e63696324876958d32a78a3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/chat_media_access_provider.dart",
+      "bytes": 3390,
+      "sha256": "82cec0089d6e63d895b0acb39a7defa8edc951209ce8deef5f320028bd9f136f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/chat_provider.dart",
+      "bytes": 48739,
+      "sha256": "9b9bd59ad55ecbe9ae460abd6d9a838e8f6195077a7e4e0ef3cdc505ad9e25b6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/chat_providers.dart",
+      "bytes": 24,
+      "sha256": "50b4d09d6f4491754d7813a9062b7da9e1012bd9477ccecd16391e72592821d6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/complaint_submission_provider.dart",
+      "bytes": 457,
+      "sha256": "2f304cede2b6c11b9b075d45f2fd6058514ca1836f170a75e321223a89f99528"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/conversations_provider.dart",
+      "bytes": 45648,
+      "sha256": "0d4c846361cd7344283f062989a3aea0642da82c539bec486ff531eadf75b220"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/file_message_availability_provider.dart",
+      "bytes": 1381,
+      "sha256": "393037ca592d0a0b399f4b4ea1dfcb6d4545c9d29239a076c8d6be66d27455d0"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/gateway_provider.dart",
+      "bytes": 73741,
+      "sha256": "a697659079a7a433ae3092cdf4451ac8933dc209e2951f314d291aac8c17897e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/group_invitation_notice_provider.dart",
+      "bytes": 1596,
+      "sha256": "67cd6d6219f65e586f8edd60164d8b19ffca6d79828fe84873c6b53dcbfec828"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/group_invite_qr_provider.dart",
+      "bytes": 570,
+      "sha256": "e2ffebe7dd6ef45f460d7a30629671f8547e1a1118800577fa1923fe91a2ca0b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/group_join_requests_provider.dart",
+      "bytes": 3459,
+      "sha256": "e6ed0dec872ffbfb014aeeae45d7441805c707b9c0e6d85987fe81a575d96025"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/group_member_nickname_preference_provider.dart",
+      "bytes": 1211,
+      "sha256": "df0f303770046080bf055b22e2bc828db0545a804a2dab1a52cef778f016bc38"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/link_message_provider.dart",
+      "bytes": 475,
+      "sha256": "4a8ab59ac67742cedfdbf5c5bb094aced77d00628d416efc83920d26cf9ebf66"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/message_inbox_provider.dart",
+      "bytes": 2844,
+      "sha256": "481ebd5834f38149f35402d99f2fad261682e4e636e2312225250f1d6ffd6b29"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/message_link_whitelist_provider.dart",
+      "bytes": 774,
+      "sha256": "6fc5533cfe003e1f21770bbce3ef203ff22b64a1e0514a39083e029d8cc9bc12"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/providers/presence_provider.dart",
+      "bytes": 4824,
+      "sha256": "cb103580acde4c82e06a71485260f3cbd536c0957a11eae20a22fe1c3dab15d5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/asr_result_sheet.dart",
+      "bytes": 7262,
+      "sha256": "a4deea8824b4a296c25a785873129ed7934fad7546308736cc1d0eb33cf4258a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/chat_back_button.dart",
+      "bytes": 708,
+      "sha256": "3547ea43dcf460ad0844553f6d6ba3a2b2fb987816c0d16b321e4cdb7ac6f07d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/chat_input_toolbar.dart",
+      "bytes": 94867,
+      "sha256": "86c05a9634d5d1072ef7504b49208baba3c9d38d844d02faf8b41a397f6dd791"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/chat_widgets.dart",
+      "bytes": 22,
+      "sha256": "f046f51134331abe1ac02095a8eec2585bd93042b1baef06ad6d09b160482953"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/conversation_avatar.dart",
+      "bytes": 4488,
+      "sha256": "8df13ecbdf22f24043d21ffdb253a15dbc93b4be842818fc7e2f5bf9d7f8be34"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/conversation_list_item.dart",
+      "bytes": 1024,
+      "sha256": "1a75bac58af433f6ef56791ff0b9cd98890f2396296650829fd8320f93ff9f6f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/conversation_list_skeleton.dart",
+      "bytes": 4134,
+      "sha256": "7cdea8a5a712aa911322c0387c7e3045e04e7cdf7687f8dd11a6613fd06f5640"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/conversation_row.dart",
+      "bytes": 18394,
+      "sha256": "3f378a0618c415a84e0ae61ff888a9f2a7176bf2ddd8798c5ee19dc3fdd4b5fb"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/customer_service_ended_notice.dart",
+      "bytes": 2853,
+      "sha256": "deb029bf00a49385694e96d639edad167e7fe9a0235e300e584a39b9dc273ec1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/emoji_picker_panel.dart",
+      "bytes": 10968,
+      "sha256": "4ace757466cd371a4df88e78be5e50eeb6f67e942a9fb8d7b7ca953a89d2471d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/group_conversation_avatar.dart",
+      "bytes": 1639,
+      "sha256": "bcc3bb9dd17961fba913d901239b407f11f20c118c38a0a20c261e7a8589dbe1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/home_entry_cards.dart",
+      "bytes": 4510,
+      "sha256": "7f6cbc2a46ec379a8471660c2517393033afabe43e7099e6a75796f652098a23"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/link_message_bubble.dart",
+      "bytes": 6691,
+      "sha256": "f3818e09e88f267d1e9cb989859e699132ecadc7189b9756c2c54bb888940160"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/marketing_toolbar.dart",
+      "bytes": 3348,
+      "sha256": "5ac9dd6e3c8a4ddaa3c905f1bb8d1cdce450872fdd1d116ea220169729f7b3e5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/message_bubble.dart",
+      "bytes": 113225,
+      "sha256": "e69b8b94de7c22487e2f842850be8a48bb8046c2b3404f7ca5f06c283d0c9dc6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/message_context_menu.dart",
+      "bytes": 5894,
+      "sha256": "c6ff3ddf901568ee990ce913efc0b51d4bbaa358ba1ac15caf70d31dadbfb22b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/message_copy_button.dart",
+      "bytes": 1504,
+      "sha256": "caa5d304f086201719172eb769b6c3ca31ed0399364e8f7f32e76cb55cfab665"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/message_text_content.dart",
+      "bytes": 4036,
+      "sha256": "5155664286550defee5600155c5566ec2a4a8e4e22b78419181724f355092963"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/message_viewport_list.dart",
+      "bytes": 7464,
+      "sha256": "17b99ae9162369d8f65ba6250cda16498b09c768caf555e490af3b22163d4cfe"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/scheduled_message_input_status_bar.dart",
+      "bytes": 5574,
+      "sha256": "649a36338572126f5107bd182ddea31dfcdb61e87e6ccf26677825e50ce00463"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/swipe_action_item.dart",
+      "bytes": 7860,
+      "sha256": "cdc099947a94edf8d873c0bc1ac4dbf8af32722add8c77936aad7e13a66a8922"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/chat/presentation/widgets/voice_recorder.dart",
+      "bytes": 35780,
+      "sha256": "4a7ff33bbc0673dabd5e8cc704bca632e7164b06395e08e4c8fbb8b9e8669bb4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/application/friend_acceptance_conversation_service.dart",
+      "bytes": 10753,
+      "sha256": "1eb82e2a55004d47648b6c32d5d655c7dc4522fcc14c210aef3450c66a227f8a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/application/friend_relation_status.dart",
+      "bytes": 2741,
+      "sha256": "8548e4e00cbb18455c75f5f20c502c2f88cc37be1a0eb1dfb69674281c79b6d2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/application/friend_request_result_handler.dart",
+      "bytes": 7581,
+      "sha256": "f79731fd5ecd55d32c6da01a8aebafa1a5966f609d4257e2a0442a88aeda2444"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/datasources/contacts_datasources.dart",
+      "bytes": 42,
+      "sha256": "1a693631a78745f349797f72f26345629e61dbd241164de8ac8642fc8d4ae2d0"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/datasources/contacts_directory_local_datasource.dart",
+      "bytes": 5112,
+      "sha256": "35687dc19e4292cb2daff76199af9fa4b929f102eb882f1ff833dfec68c923b7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/datasources/contacts_remote_datasource.dart",
+      "bytes": 18122,
+      "sha256": "393b4e3358a5309355990aec6ca0920145fd56c9d24d2b37448f88da54692911"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/datasources/friend_invite_qr_api.dart",
+      "bytes": 3808,
+      "sha256": "d03fc84b6de0c5bd7bb2445077ff21540627afe9898427aecf61639b10325962"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/datasources/friend_profile_extra_local_datasource.dart",
+      "bytes": 3451,
+      "sha256": "7d1e935df5f5aafb43a4b5f8ef0788b86eee8e4dba08f332d7fd717f92d8ce08"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/models/contacts_models.dart",
+      "bytes": 25,
+      "sha256": "020aa7272a966f0d5eff9246c6027c9f7d13a8a35e6f63db163bcb47014d7cc2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/models/user_profile.dart",
+      "bytes": 3890,
+      "sha256": "5369be8ad939cc66e4c996eafc2b88259ba0e3f4f791bc38f5f3162cc26210a5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/repositories/contacts_repositories.dart",
+      "bytes": 40,
+      "sha256": "3e1cb218890026d8505cc7a1b296cc932781b2d56096d1e43f310d849b6eb92f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/repositories/contacts_repository_impl.dart",
+      "bytes": 2455,
+      "sha256": "b29905aff694bda3078b9df7d907d1eff0f1905e40c88f00008944a8bcd01f96"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/data/services/friend_acceptance_conversation_adapters.dart",
+      "bytes": 1593,
+      "sha256": "6ffebb7f2feb316ca3d0a00ffc6889a81db137098f55135c06a693f940dd5fc2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/entities/contact.dart",
+      "bytes": 5861,
+      "sha256": "70b8fc17e74b0cc54f35f983078e3cda5e38792dcc1516b824f990e49f89c589"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/entities/contacts_entities.dart",
+      "bytes": 23,
+      "sha256": "5907349975c81e03e14bc43cd0d050b0cf5512892a42f0ba0bb8fd1218123401"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/entities/friend_profile_extra.dart",
+      "bytes": 4029,
+      "sha256": "0ed6a79c2d89e8c661d7d1174034c44ad87a799ca5bee9ea6200808dc971ba70"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/repositories/contacts_repositories.dart",
+      "bytes": 35,
+      "sha256": "7bd8683553fbe0876b0fff2831a70ee754dc91a5d4c00c7a42d87dc0e8d0c74f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/repositories/contacts_repository.dart",
+      "bytes": 1281,
+      "sha256": "67ae03d353ebbaa49b2fcde0847b545376aea115f12c9006404e93b2ed7e1463"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/services/customer_phone_privacy.dart",
+      "bytes": 557,
+      "sha256": "74e0c7f9e6896a74ffde4514f88229dc3b3a734768dc9ed52161ccacbac67a19"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/services/profile_public_id_visibility.dart",
+      "bytes": 745,
+      "sha256": "b1ef470a0858f7f29f3d2f4f1d8f81518e7a40f608cadfda3f6d2705e33465bb"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/domain/usecases/contacts_usecases.dart",
+      "bytes": 27,
+      "sha256": "927d56868aed35787fbce529f869658da039434162d9e947b86b717ba5960381"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/contacts_page.dart",
+      "bytes": 44285,
+      "sha256": "b3e03d2917c3832114fff3e96fdb864f615d2b8c36b54052169c3c53f3a04671"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/contacts_pages.dart",
+      "bytes": 29,
+      "sha256": "8f09cc3cf896695d1c635371880e7e8e2ceeabcebc1ad2bc6d95b80775ae2acd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/customer_overview_page.dart",
+      "bytes": 32015,
+      "sha256": "78f165e06e4297add8c642e5071bc837147012fab3c75bd6032261bbf917f4df"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/group_list_page.dart",
+      "bytes": 35819,
+      "sha256": "f73c3ac40c98475d4f0f489e27a8ce5be8baacd9e99459e9b56d96d9b75a2375"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/invite_friends_page.dart",
+      "bytes": 9540,
+      "sha256": "d29dfd24e59f06a8287e53d265293a0edd6f5fade4f1071846c6f1a3f0e5ee09"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/my_customers_page.dart",
+      "bytes": 8723,
+      "sha256": "fba4942e92937e6f79dff14d5de15fbcdd7065f9c56ff17e8f465dcb6c765a66"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/new_applications_page.dart",
+      "bytes": 17269,
+      "sha256": "93f52ce4b7af94e9eeefa0df3fd72b088dc932ceedaedc19f3c83c94ed306829"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/new_friends_page.dart",
+      "bytes": 19462,
+      "sha256": "96c77ed4c06ebe1b0d84c6716689bea954276e885a30a56bedf54998a02c6853"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/profile_page.dart",
+      "bytes": 98117,
+      "sha256": "2bd760cda72c481648f6ac1ae49b44e37548c21fbc508d9fb9588f689126309c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/pages/recent_contacts_page.dart",
+      "bytes": 7417,
+      "sha256": "f08a19985a50e0973ff59292189cd7cd36b1bf863064a81025a60d41705985ed"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/providers/contacts_provider.dart",
+      "bytes": 30183,
+      "sha256": "939c24f26caf1647869e3ea474d2a5e3a615546d20f44d7bdfa0a18d4f3a37b6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/providers/contacts_providers.dart",
+      "bytes": 33,
+      "sha256": "21906748ba11a0ffd39c6ac0f5b095ac3c1fa6389d138254df4244386907b40a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/providers/friend_acceptance_conversation_provider.dart",
+      "bytes": 2930,
+      "sha256": "60b796e583af5c91b5514cf51aa870332a7c11c898c277d9d58d69110fb62da9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/providers/user_profile_provider.dart",
+      "bytes": 6530,
+      "sha256": "76f51e1ed9de6b73bff2bc8784959dc95de7e90ef907c99aa97b750178cbc365"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/contacts/presentation/widgets/contacts_widgets.dart",
+      "bytes": 26,
+      "sha256": "5a6de2a6e92bf752c2fb7f49d6480ddb4d50b8a3594fcb2fa1184312e5b94acf"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/application/customer_service_ai_reply_controller.dart",
+      "bytes": 7426,
+      "sha256": "5fb0fe41a951b66d1185404a9ec18ced7c060b4d79d88a818c55a9f1bf4f52e6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/application/customer_service_reception_service.dart",
+      "bytes": 4475,
+      "sha256": "4cebb2a4c34747017edb7a4fd1d1fde70bb68a19bcf130fc317170576fa840fd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/data/adapters/customer_service_gateway_message_adapter.dart",
+      "bytes": 7913,
+      "sha256": "d17589a429ded01be8eeb5a8c65614446154ab506d97a5f68c83c116912f21f4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/data/datasources/customer_service_remote_datasource.dart",
+      "bytes": 47643,
+      "sha256": "67a2c4e5d3c1e1d71908d93ac1de3495128ff3fecb88dad8f938f9700b150377"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/data/models/customer_service_models.dart",
+      "bytes": 88553,
+      "sha256": "574ad8d3c6fe271f92dea9009beacdd29185c3397e880d340532bb3726b8d70b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/data/repositories/customer_service_chat_repository_adapter.dart",
+      "bytes": 8616,
+      "sha256": "200fa5f2d834d6590f197c0491ad96eaebc2ad12120d00e5fcf25fa6ac48b4f9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/data/repositories/customer_service_repository.dart",
+      "bytes": 10227,
+      "sha256": "2705b1e4df53380957b7690d36719e5aadbccb95a3e1dbc6a073ffd9ccdc9e26"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/domain/customer_service_monitor_wall.dart",
+      "bytes": 5279,
+      "sha256": "6b465242b8daf3e8e86bfaf3c33e6353d6765914d892c23ebc5b86070a332750"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/domain/customer_service_realtime_models.dart",
+      "bytes": 8383,
+      "sha256": "b8a4579d2fb03f2b4cdfdb5ba05e2775837d7d8864797a31c9fae7c1840b5c1c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/domain/customer_service_role_capabilities.dart",
+      "bytes": 7329,
+      "sha256": "8c65bdb0ce169214c450e5b3c5d9004d7a72732ebe8b17bbfff6bf4828176f4f"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/domain/customer_service_thread_action_policy.dart",
+      "bytes": 816,
+      "sha256": "19017179d3cb0f06d6c0d1bf315e96abcf9d33eff32e7aa179a991929532a2b7"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/domain/customer_service_unread_ledger.dart",
+      "bytes": 11746,
+      "sha256": "4fd1c841d08e8c421cd0c746aa130a6a92e65d0e7ebe9b003372cf36b6c4aa9e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/domain/official_reception_policy.dart",
+      "bytes": 687,
+      "sha256": "a75c9394e56949b66960968e1e340284ac3fbe419d3b313fa3e76e5680e1bb9c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/presentation/models/customer_service_thread_display.dart",
+      "bytes": 943,
+      "sha256": "9de9f2d58c292440a5cca8fbc3629ead30405543a7f05af4ecce45fa3097a181"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/presentation/pages/customer_service_page.dart",
+      "bytes": 226094,
+      "sha256": "d108abfe45d69fb955bccafa266a5908f1a35b0d4d5f772523d3b2b5c4a8fcd3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/presentation/providers/customer_service_providers.dart",
+      "bytes": 40840,
+      "sha256": "7b9dae1e646f97cdbe14226a8ad61b96327b2fdf7aebdd528f256db503e09062"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/customer_service/presentation/widgets/customer_service_ai_reply_sheet.dart",
+      "bytes": 14725,
+      "sha256": "f1a094601d337d661826503b0204234167363ca372a73d661d6a355a2878d294"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/application/kyc_submission_service.dart",
+      "bytes": 5164,
+      "sha256": "d14bfd649a5208e19425a8b294b54045b431d8478fa369605f9ca5776d6ad8db"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/data/kyc_repository_impl.dart",
+      "bytes": 7593,
+      "sha256": "8a1bfdafc770cb9f34208a4e78c765fe59673152ff04d155aa1115409a676017"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/domain/kyc_models.dart",
+      "bytes": 2830,
+      "sha256": "f0f085c76a00fa48eaa4b727efe585069f4f45b2b33e8dd64c5463df1697c7bd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/domain/kyc_repository.dart",
+      "bytes": 518,
+      "sha256": "2d103c03d89aeff861041f43876a30821135d49ddddb42429953987208176690"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/infrastructure/kyc_photo_picker.dart",
+      "bytes": 1953,
+      "sha256": "141c7b569750fef27d357c23b6d090462ddba64f319b413ac226a0d5e71605bd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/presentation/kyc_page.dart",
+      "bytes": 22566,
+      "sha256": "b1b1a2d50cdd574bc90e2797a1f44c7b2e12f5136ed39f95b38f66bd9e2fef15"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/presentation/kyc_providers.dart",
+      "bytes": 2460,
+      "sha256": "17a765822cadba7c4fa3dbd5645ecdcbe236a205b9d3bd3015e00a692224e662"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/kyc/presentation/kyc_required_action.dart",
+      "bytes": 844,
+      "sha256": "f90d43f8d075e96dd223b92688ee3e5d0cca6c5ad39d1447fe9acc9714f5e06d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/data/datasources/notice_datasources.dart",
+      "bytes": 28,
+      "sha256": "70a8d319058a2bbb9dc895aa7bf1c0275ebb3356d2631f5cb4dcc5c0e43da3b6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/data/models/notice_models.dart",
+      "bytes": 23,
+      "sha256": "429ad89398485807e1eec9eab8b1cd5066497a8b5ab3a6dc4cba4a358aeb30a1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/data/repositories/notice_repositories.dart",
+      "bytes": 29,
+      "sha256": "753a7d506101219c660b10ab541d83691cf47de51b516d4405454c5df6c70d49"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/domain/entities/notice.dart",
+      "bytes": 1839,
+      "sha256": "cc6a3a84cb5c12ae5fb6035012d37c273730b5766ccbed08bc98e35876177ab1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/domain/entities/notice_entities.dart",
+      "bytes": 25,
+      "sha256": "2e62c6dbabd708ee8e316761e959bb0249079386e3e6daf049fc2954aa61cee1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/domain/repositories/notice_repositories.dart",
+      "bytes": 29,
+      "sha256": "753a7d506101219c660b10ab541d83691cf47de51b516d4405454c5df6c70d49"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/domain/usecases/notice_usecases.dart",
+      "bytes": 25,
+      "sha256": "6a16ab6d64f1162d569a0027511d01ed8e10c8d71bfd28abff72fcb18c569c71"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/presentation/pages/notice_detail_page.dart",
+      "bytes": 9136,
+      "sha256": "e6563ed02c0bfd3f1c25ba362c1ba4643ba4aa9ab31ccabe6155b4effe832a9e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/presentation/pages/notice_list_page.dart",
+      "bytes": 12498,
+      "sha256": "edc211b52f5c9268419d3c1358d7a3707256f20492fe9a4c477fb9462f656016"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/presentation/pages/notice_pages.dart",
+      "bytes": 22,
+      "sha256": "7eac374a37d9f0c948705fc7f69a3625cc0757516520dc4df69524385af2bc08"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/presentation/providers/notice_providers.dart",
+      "bytes": 26,
+      "sha256": "091ae4dcb48cda22dbd0c01b05e5ec06a8ccc1b9a527453bd242d4cbae1e332d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/notice/presentation/widgets/notice_widgets.dart",
+      "bytes": 24,
+      "sha256": "bb50c148c2632aec49c679daf9baa2e6c6fd20a67abebe8e48bd003ad6762a17"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/application/official_account_connection_service.dart",
+      "bytes": 3642,
+      "sha256": "bea307692a2f30fdf3f1d1f7ab68d3d268eea009dec0839f59b8766f21e90f72"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/data/datasources/official_account_admin_remote_data_source.dart",
+      "bytes": 6922,
+      "sha256": "ee992fc6021f699f3f5e465e578dbf484ab293ae8663dabdb7d635fa1421e34c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/data/datasources/official_account_remote_data_source.dart",
+      "bytes": 5859,
+      "sha256": "38735011111bc184012d1123ed35a34232d5cda413df51544d88d80e42f91500"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/data/official_account_card_mapper.dart",
+      "bytes": 3438,
+      "sha256": "7cee85abb437906695fa04289f2781340b489f2fddcccd631e4adb6505916a21"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/data/official_account_inbox_repository.dart",
+      "bytes": 2828,
+      "sha256": "fe064acf6262862658e231a35ec2dedb478760d7a77060a07b32e5a248a07ee3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/data/repositories/official_account_admin_repository_impl.dart",
+      "bytes": 1306,
+      "sha256": "8bf8d54ab23646f32b6a6399511e1c7c3d50b3ebe65979dd6033675c5ddb1ee9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/data/repositories/official_account_repository_impl.dart",
+      "bytes": 910,
+      "sha256": "7961165ff2642d341044e2f067a54f32a5822656354c9e1976fd311ed9ebf783"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/domain/entities/official_account.dart",
+      "bytes": 2973,
+      "sha256": "58d1ddc97b263989d00ca26a02111a73ac21df2f5600fd09739fc217eab442dd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/domain/entities/official_account_admin.dart",
+      "bytes": 4691,
+      "sha256": "d87880c0e4056752b964aa3b3e0770bb82edbec3b998aba1877b217a97858593"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/domain/entities/official_account_card.dart",
+      "bytes": 1702,
+      "sha256": "b63fc655a6e1adc3f0e66332b40ed12334c1366bc484576990040f2030707c90"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/domain/repositories/official_account_admin_repository.dart",
+      "bytes": 699,
+      "sha256": "3a78e6e3b6e2d9c9f5b3a2b60342288a3f3c554047195daf5562bc041b0bd922"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/domain/repositories/official_account_repository.dart",
+      "bytes": 359,
+      "sha256": "6a1ab558b75fff93adc1755dc04da0341df37092ec56be7ce7086da5202612c8"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/domain/services/official_account_menu_policy.dart",
+      "bytes": 5563,
+      "sha256": "a34433fb4196dd4c6d1d4b65488366b94176d6fdffdf1b3210cc45c1a8c4b472"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/providers/official_account_admin_provider.dart",
+      "bytes": 5103,
+      "sha256": "b83e52c6d271dd88c0a5187591ec92d20e33c0bf61d35cceb55446204d4bbcb4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/providers/official_account_connection_provider.dart",
+      "bytes": 1773,
+      "sha256": "139b5f1269e7aa22b03eb88b0508b5b5abf8c4419b7e0ed1b0b48c2c0d7750ad"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/providers/official_account_inbox_provider.dart",
+      "bytes": 4021,
+      "sha256": "5439e3919a59fd0d6af749ee5f434938b8919cc595ccd5ae68f6c5ff2d668752"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/providers/official_account_provider.dart",
+      "bytes": 2443,
+      "sha256": "d110f15ea0ff1f7d33c5e51726e921386170551844bd599ff0f8c6e373e9a045"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/widgets/official_account_admin_identity_editor.dart",
+      "bytes": 6519,
+      "sha256": "29dd3e9fab7b9b5863d01765424018b16bddc3ed3b2da4a15aba2a8cba8d352d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/widgets/official_account_card_view.dart",
+      "bytes": 8279,
+      "sha256": "4a10c52e2ff2f10687e0b83ded6343d350e3fca4e364b3556858b3401d4e557c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/widgets/official_account_inbox_runtime.dart",
+      "bytes": 2647,
+      "sha256": "617d88bf05c8cd87875a539063b42bd0929fc2a242a5e9e2c071e2289d5929bb"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/widgets/official_account_inbox_tile.dart",
+      "bytes": 2484,
+      "sha256": "20309fd3b6685e382f9024b301248a456d64c6138f4ca26f7d32ea67b50ba081"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/official_account/presentation/widgets/official_account_menu_bar.dart",
+      "bytes": 10246,
+      "sha256": "90625149c15985bf0b70410ea4b1d25bb7f08774bbd30648a44b8b545ab8a468"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/data/datasources/organization_datasources.dart",
+      "bytes": 34,
+      "sha256": "5c1ccc3741f5ecbb781e8ebfb57e2dbdea44a77392c3998904ee88c0312266a0"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/data/models/organization_models.dart",
+      "bytes": 29,
+      "sha256": "f82057d16088abd28acd26fad447c0b1fde8c5d726599dbada032a5f88356f4d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/data/repositories/organization_repositories.dart",
+      "bytes": 35,
+      "sha256": "eae7c2f9b9f4703544577e87eeb80d51d96684c62b6343c039e9e197e08545fe"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/domain/entities/organization_entities.dart",
+      "bytes": 31,
+      "sha256": "a85413381d5cf9a6486608806390d8dbd711d7958ede18765352dfe870a1b147"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/domain/repositories/organization_repositories.dart",
+      "bytes": 35,
+      "sha256": "eae7c2f9b9f4703544577e87eeb80d51d96684c62b6343c039e9e197e08545fe"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/domain/usecases/organization_usecases.dart",
+      "bytes": 31,
+      "sha256": "b5d036d5f14f56b3cf0c550af651677555cd00ae804e60695a4aac174e7ebcb6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/presentation/pages/organization_page.dart",
+      "bytes": 52398,
+      "sha256": "e3ccbd3576ae56a1bcdb4170228241983a07ab970f459c744831904e3955134b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/presentation/pages/organization_pages.dart",
+      "bytes": 33,
+      "sha256": "bdc78d07d0aade6ead42615a07441de74c9c6b9c77664186212f923dcb9046c5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/presentation/providers/organization_providers.dart",
+      "bytes": 32,
+      "sha256": "c7ff9aaaaebdcb6baba295d20a0662e568baedf840451199a880052293976fb3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/organization/presentation/widgets/organization_widgets.dart",
+      "bytes": 30,
+      "sha256": "fb20a99b86316ce8c70cbcaf778ec74feb7885f91f7fa880f5149bb866491d40"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/data/datasources/profile_datasources.dart",
+      "bytes": 8977,
+      "sha256": "a50d4aaaa8e378b80dad87095fd2a5054edb9b87cb4859ec2bb70e3d1ab6e0e2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/data/models/profile_models.dart",
+      "bytes": 1160,
+      "sha256": "164d7d4be186625ffc380dd65af1c780a2ddd4c053558ebc79fabc7de33b0e47"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/data/repositories/profile_repositories.dart",
+      "bytes": 4336,
+      "sha256": "fdbbf05967d8011c4bcdd6859918ec44392f5eee6680b87dfb3048a68b23c20a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/domain/entities/profile_entities.dart",
+      "bytes": 6821,
+      "sha256": "05776a71180e6d9349d61c50a45e09e9cba0f5cbb440b750cde1626e46d77317"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/domain/repositories/profile_repositories.dart",
+      "bytes": 1666,
+      "sha256": "e89cc0621333a072c03fc383731cce5600029bf7cc36cf4b2bdb0b9b9fb39cf9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/domain/usecases/profile_usecases.dart",
+      "bytes": 26,
+      "sha256": "074cfd58f77d491daf3cd93a71ccc644bb0793c652dd970fad66a1f5093ad0ab"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/presentation/pages/my_page.dart",
+      "bytes": 32942,
+      "sha256": "439d0a05e0affd9e384fcc53123b85f3e3520cfb1d730cfc0edaaf997483834c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/presentation/pages/my_profile_page.dart",
+      "bytes": 43539,
+      "sha256": "c13aec05939609e4991cf8788e3126a69c05890d45844042fe2577d04ea44182"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/presentation/pages/profile_pages.dart",
+      "bytes": 23,
+      "sha256": "1fd2c5271a3c37ab165412c694154196617cf9059ba922962e90406a1a1029cf"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/presentation/pages/qr_code_page.dart",
+      "bytes": 11476,
+      "sha256": "1de0a96c0767f09afc6beb9864f2d7d798e2fd4d61a0d00853db6ffd63305624"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/presentation/providers/profile_providers.dart",
+      "bytes": 10192,
+      "sha256": "d9914dd084378f87fe6f3843634eda8758bab6bdfe2be40613a110593f020807"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/profile/presentation/widgets/profile_widgets.dart",
+      "bytes": 25,
+      "sha256": "ed5ab075bb3184b0ca64662495b863072e2eddfc5bdf421317198de691fee1d2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/application/diagnostics_controller.dart",
+      "bytes": 4017,
+      "sha256": "bbb8d262bbbbcf0b31cef12aeee516e0d1d50a156658b9dbd958519a3d1218b4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/data/datasources/settings_datasources.dart",
+      "bytes": 1368,
+      "sha256": "032b66bc713382b773fa493d1fc88958604b4e06a63429f6489739ab0afbb55b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/data/models/settings_models.dart",
+      "bytes": 25,
+      "sha256": "993df58828af388f4ff88b2c56683d325daff58807a97b8f82bdf98cd7a6991e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/data/repositories/settings_repositories.dart",
+      "bytes": 660,
+      "sha256": "c310447c50d1bc3228a621bef59d10f26b1798a1cfb4081e008d000dd3b4a211"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/domain/entities/settings_entities.dart",
+      "bytes": 2057,
+      "sha256": "b0984acefdb0b245dba9b871d64a702c77dbafde75d288f79728d0f0bd71c63a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/domain/repositories/settings_repositories.dart",
+      "bytes": 348,
+      "sha256": "bbf40d45461f304bb8c7334033d857a8d1abf183b41b91043505859de67b05dd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/domain/usecases/settings_usecases.dart",
+      "bytes": 27,
+      "sha256": "c707ce13111a9cf67f0b2e084ba3801d24c3e3459d3082a744ffb2d585fc9969"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/about_page.dart",
+      "bytes": 5345,
+      "sha256": "9dc589e891eae932e15cc9164b3db185c20a13235d78804227ace13f3f9572e3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/account_settings_page.dart",
+      "bytes": 6499,
+      "sha256": "16284f592f3ae6f5447244355121b0172a7146e70861f9dabb23a7e568db2102"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/auto_translate_page.dart",
+      "bytes": 6812,
+      "sha256": "958314077069bf08efd09a19012977a0ec95e09d72c16e08091dd704510e9e1b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/blacklist_page.dart",
+      "bytes": 7477,
+      "sha256": "1d55a67bda34a8f869f58b877a6539b953caaee3fce147cf4dd5d7cf619a7ef9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/chat_background_page.dart",
+      "bytes": 4868,
+      "sha256": "be02a58f2abcff21a2d8d6e0f50da0e29963d788766fba8e5d9d96814de84348"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/chat_history_management_page.dart",
+      "bytes": 7124,
+      "sha256": "02db390a03f825583f9d664e98e25e28bb6d750c90acf540e0b3c1677749a1a5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/chat_settings_general_page.dart",
+      "bytes": 1405,
+      "sha256": "e1b8bb5897faf08fd0cabac2b823e8ad4371c076f22c3efe82274da5eae7103c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/diagnostics_page.dart",
+      "bytes": 4342,
+      "sha256": "60b26ee03940adf8027fefcd5cdc82eff81eb6d9e74795afad2c6daecf62b337"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/display_settings_page.dart",
+      "bytes": 6092,
+      "sha256": "e1ab433a0999a25a4283d248781b2a94f1309544c6260aebdc20a2c63169ab2d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/feedback_page.dart",
+      "bytes": 10517,
+      "sha256": "03bd7b19da4f54da7ec54fb3590b40a2687b7cabcb48ce255a5c18a44b22ae03"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/font_size_page.dart",
+      "bytes": 3624,
+      "sha256": "7425c8ee357c1c1f3f8f36ac8cf9f00d99500a1d3f0eea0dfaeba1b8ddfe8a91"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/language_settings_page.dart",
+      "bytes": 2173,
+      "sha256": "8e02abedbbb4dc09d1251a807c3d2d65447a9b109b15d7ed70e4c271f9785d30"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/legal_document_page.dart",
+      "bytes": 12194,
+      "sha256": "5f4f6f13cad6c001258c90f606ed8f9e7801373aab2a4702f8cae5056d6f6acf"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/logged_devices_page.dart",
+      "bytes": 11400,
+      "sha256": "d244784283ddd3d4f4b52e43a6f2653ab04dd04e18205426836a4835be2e33ba"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/network_settings_page.dart",
+      "bytes": 10686,
+      "sha256": "4867e8d925b6137d3b9b7165bc400a9576409da031eeb5999e247fec5254c006"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/notification_page.dart",
+      "bytes": 10257,
+      "sha256": "98b462acd90ab906867caeb5ce141ba9529d36029c4d90ff08e19776d0947a43"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/privacy_page.dart",
+      "bytes": 673,
+      "sha256": "5b73398cecfc0442b6f44fe77bae73b64673c7524e9ececc9f92c67022789b34"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/privacy_settings_page.dart",
+      "bytes": 3720,
+      "sha256": "4f2806155d2e049dbc681f3d8be8293d32271226b5f936415bdc798c1eae6acb"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/settings_page.dart",
+      "bytes": 5712,
+      "sha256": "561eb9d7079810cbd16caa00a2b41aaa96161acc4926e16cdee73458b1f9d063"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/settings_pages.dart",
+      "bytes": 24,
+      "sha256": "6726ed62311ac4b26528e4cd61318b269989ca9b00003a22367e4efcdde65087"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/terms_page.dart",
+      "bytes": 665,
+      "sha256": "0eeec105ab5d3bc73c1ae7565dd74da2c649b7dfa3de8d09f1ac30b705c74cce"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/pages/timezone_page.dart",
+      "bytes": 2839,
+      "sha256": "726d9dfae58fbbd613dc73a947784aef23c76fff044999e6aca7971a20b586e3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/providers/auto_translate_provider.dart",
+      "bytes": 102,
+      "sha256": "da403ee686a77ea7571c08aa2503f63254eca26da5de6e0d00fefd23383daff5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/providers/chat_background_provider.dart",
+      "bytes": 3209,
+      "sha256": "0dc6992136a627e3827cbf6973393e22c24619e3a8ffc1c11e2f2f7ed6a41e05"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/providers/chat_input_settings_provider.dart",
+      "bytes": 751,
+      "sha256": "50ce4b2f4cc40c6989fbd74286e59de1982006d3fb42bd51c6f2d2e3b7573d70"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/providers/network_provider.dart",
+      "bytes": 3378,
+      "sha256": "5fa5d30e4b5bd6cf5c23f7bba3446dfa22dd2ef5945e04d29fd32a690886b91c"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/providers/settings_providers.dart",
+      "bytes": 3075,
+      "sha256": "f970427b465300c1f0eae99672e9b2b47fc9c4bb6c03f5176db60e3fe0263125"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/providers/timezone_provider.dart",
+      "bytes": 3918,
+      "sha256": "502673bcc9de9261628dd7cb68278bbac771c905abdb4a415738f87ba402950b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/utils/settings_i18n.dart",
+      "bytes": 2499,
+      "sha256": "832aebceef8e1a87b88080d9016412243928da0c7cb53fbd6892157e4cd17659"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/widgets/diagnostics_version_gate.dart",
+      "bytes": 835,
+      "sha256": "c77cd8664af1caea3b9e22d9b1e9c3c24585cb6c408746b6c912b764590d708e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/settings/presentation/widgets/settings_widgets.dart",
+      "bytes": 26,
+      "sha256": "4255d92231ddd2874b706973a8d29f0fd987554bb0465157fed58fc03fb9a02d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/data/datasources/platform_tenant_datasource.dart",
+      "bytes": 9262,
+      "sha256": "d4e116e7b429e2f7e2ee328dfdaa342b7cf8a46d730dcd77e4db1e7045a1b0d5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/data/datasources/space_datasources.dart",
+      "bytes": 27,
+      "sha256": "c73dbe2f1d0477c3e05cb4a903eeb0f7cc1b8bf912160ee012ee7ed8e13e35a6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/data/models/enterprise_join_models.dart",
+      "bytes": 7753,
+      "sha256": "a58b52a65cc28eb388eeddb6a0a4c1767923c5874a06b2d9404a6e0f8ba6f5d4"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/data/models/space_models.dart",
+      "bytes": 22,
+      "sha256": "322a17ee30fa602cefbc8ed1a91b31ea21fdf58c0c3e927741d3d616965e893b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/data/repositories/space_repositories.dart",
+      "bytes": 37,
+      "sha256": "2d56a56bcf4c42c67bcc9294a670d5478908e2d75df095eebde2a77954edcef1"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/data/repositories/space_repository_impl.dart",
+      "bytes": 2519,
+      "sha256": "8383d9e2390d4983e2fef3b59c566acbf852d11017dcbf07f3239e746b55ac26"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/domain/entities/space_entities.dart",
+      "bytes": 28,
+      "sha256": "1c56b7967928ec412e5435fcae8c470697d905c6172c332828f31256b91862c3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/domain/entities/space_entity.dart",
+      "bytes": 1921,
+      "sha256": "d6a7b601ede796959f59808bf7e80cf624711dfc6c1ee2246abc3a853b914330"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/domain/repositories/space_repositories.dart",
+      "bytes": 32,
+      "sha256": "9004cdeb39e3934abdbde261f2bdfadfdb6d77ff48b6cff3dc6f5c1bba47edc3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/domain/repositories/space_repository.dart",
+      "bytes": 194,
+      "sha256": "9c3bc4321e345e1aa86962f0f845dc59473b70c1a3bfac9de50930da696f50e0"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/domain/usecases/space_usecases.dart",
+      "bytes": 24,
+      "sha256": "a50d13b4fb08bb875f512fb99b5411e4996c35514f9a6fa7ee251f9fed45932e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/enterprise_broadcast_page.dart",
+      "bytes": 27430,
+      "sha256": "909fe465ca28e2b85a65c846ebc689dde3bd420e6add170d2dc1a191ed641940"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/enterprise_info_page.dart",
+      "bytes": 14270,
+      "sha256": "3be71437c1a4400ea8b95120a762871e64b7ee8f718efd1f3b0a5ce0c34d96ce"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/enterprise_invite_page.dart",
+      "bytes": 7818,
+      "sha256": "4f28e1fbd72bb494a0081b45d4ec29f427216b6c9cdb39360e3b96bfbbbba3d9"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/enterprise_manage_page.dart",
+      "bytes": 18053,
+      "sha256": "88be73da94502abf12533ca9daab0d2129173b75ad9ee2caeecdf223ecdacb3b"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/enterprise_members_page.dart",
+      "bytes": 13464,
+      "sha256": "53f1444b70012fcfa7e1a1138159e83a6d3b5caf8f513ab3844749f0b3bc4794"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/join_company_page.dart",
+      "bytes": 42639,
+      "sha256": "6b11f98e687b7bf4e8f3d2541fdc823329c28f33e36cc76608d44a22e1697b17"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/official_account_page.dart",
+      "bytes": 24681,
+      "sha256": "850eb3b011fe924b4cdeb69a6b5d2c7dc9011137e095e18b635d2382a221c025"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/space_list_page.dart",
+      "bytes": 7327,
+      "sha256": "4c56f2a6cb7baaf97f1e679a1bc81ffff4a9affff74d286525756b841978845e"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/pages/space_pages.dart",
+      "bytes": 31,
+      "sha256": "f741a4e63ef5eeccab8389d77f9f0cd47f2ab95bdc3505fd253e9df8b47cc01d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/providers/enterprise_join_provider.dart",
+      "bytes": 2910,
+      "sha256": "72b52aef6ef060f397dcfb2b9380cc4dbf693dd59f75c12da4001e6761d62211"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/providers/space_providers.dart",
+      "bytes": 31,
+      "sha256": "aa7da8d3a051e71f6533cf47cd524d984512d908fd82de33f5bdabdbad1547ed"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/providers/spaces_provider.dart",
+      "bytes": 14456,
+      "sha256": "2e64684d53ad6cda48772043b4b94f8693410be97de23d10529590e18de723d6"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/providers/tenant_features_provider.dart",
+      "bytes": 1689,
+      "sha256": "087b68bb6bd957ede3636f536bab0197288fa01e85405a7754d6c123523a61fe"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/widgets/space_sidebar.dart",
+      "bytes": 5551,
+      "sha256": "29ef38e3b9c47f66dcb1c3556af2adfc90ee23bb480b270636f63ffe13ab1b36"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/space/presentation/widgets/space_widgets.dart",
+      "bytes": 29,
+      "sha256": "6fe2a748288a320769de92c0c445d5d2635224950225b57f44b0e7fb551017ef"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/startup/presentation/pages/startup_gate_page.dart",
+      "bytes": 6626,
+      "sha256": "794b9243bc96ace7c1284224ff4f3210d71ca85d5f76c994de52ecfe41262f47"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/startup/presentation/widgets/startup_brand_loading_view.dart",
+      "bytes": 1352,
+      "sha256": "a920bcb11b39d589c662eb3d5e76aa20885b62ef0d38f77c88498935ca1b95a5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/application/teen_mode_action_executor.dart",
+      "bytes": 4855,
+      "sha256": "92cf600d1304b7e78cbbe61ef53bdc883b23ac7ca89c9c79f1d4d797380dba73"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/application/teen_mode_realtime_refresh_plan.dart",
+      "bytes": 1828,
+      "sha256": "6614979bab916948f06dc0cb566ea6c23c68f336edfa3ce47ca7c91061e564fd"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/data/datasources/teen_mode_remote_data_source.dart",
+      "bytes": 20709,
+      "sha256": "3b83ea72542b1ea13f924f9c5adf63a4de9a8c9ac9cdce9ed49b0a4b6f46740d"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/data/repositories/teen_mode_repository_impl.dart",
+      "bytes": 3808,
+      "sha256": "4f3b23b73d8b2096ea9b0a76c876acc0e91b3f0d1cee0d11ec1290c6687e2ec2"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/domain/entities/teen_mode.dart",
+      "bytes": 9247,
+      "sha256": "d2598aa3939d44f95f860c349614c904c3a5039bbdc9f9db504289d99bf19b8a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/domain/repositories/teen_mode_repository.dart",
+      "bytes": 1898,
+      "sha256": "446ec6fac9604ab08801935b742e2a723e9445c3c529ca53f9bbd4f939a8a8f8"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/domain/services/teen_mode_policy.dart",
+      "bytes": 4542,
+      "sha256": "953fc5433efa008062028361dacbb88ac578941845795f47c4a552c356ab1c8a"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/pages/guardian_center_page.dart",
+      "bytes": 11991,
+      "sha256": "d6155c293e592081a04d6120d641a95418bec88f6c986e29a9c75cdc08973927"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/pages/guardian_minor_page.dart",
+      "bytes": 7651,
+      "sha256": "3fe0703d87ca5aedb86f2a601f2fefac476b6b13d92711660bcc8cd2639fc3be"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/pages/teen_mode_page.dart",
+      "bytes": 11158,
+      "sha256": "93a80025a83de993e61ac999d37236f9f76a1c567fe4f65547e593f62a177b93"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/pages/teen_requests_page.dart",
+      "bytes": 8479,
+      "sha256": "b0dde273702d35a72cbf52b7bdb6858498eacacdcd9f0cfd0db5d18287662e44"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/providers/teen_mode_providers.dart",
+      "bytes": 17523,
+      "sha256": "2daa55aa3c9aa40939fff833d1119687448f28d773f65a7e76dd665482acae19"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/utils/teen_mode_ui.dart",
+      "bytes": 7946,
+      "sha256": "e2291d831253eba9708fa054dd5319b95e832e78ad0400a3e22da2e79a5aa5e3"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/widgets/teen_mode_gate.dart",
+      "bytes": 5906,
+      "sha256": "f7d222a95a5d0d2eb09c956ce6cdba96b0b7bb43ce067bbd0f764ec9454f0ee5"
+    },
+    {
+      "path": "packages/im_sdk/lib/features/teen_mode/presentation/widgets/teen_mode_runtime_service.dart",
+      "bytes": 3821,
+      "sha256": "d81917f0518be21a59c1e2f40d4b21efc1c6ffa88670e931a22214505dddd305"
+    },
+    {
+      "path": "packages/im_sdk/lib/generated/l10n/sdk_coverage.json",
+      "bytes": 46722,
+      "sha256": "408d0cbba68665ec2bfc270127dcaef6fc6a0b9f451b270446320fd86b19a93f"
+    },
+    {
+      "path": "packages/im_sdk/lib/generated/l10n/sdk_legal_documents.g.dart",
+      "bytes": 258520,
+      "sha256": "877c91b4ece7a432cbaf67094b97b3e4a969ac161efe5220a8fd322c0c7a40a9"
+    },
+    {
+      "path": "packages/im_sdk/lib/generated/l10n/sdk_resources.dart",
+      "bytes": 166167,
+      "sha256": "d41585892b001e04837b2f1f2c641b74f6bf435f2ab2647fbe6953a44a2f4881"
+    },
+    {
+      "path": "packages/im_sdk/lib/im_sdk.dart",
+      "bytes": 470,
+      "sha256": "21b692f7ef4dc24dc315f8860ba7a20ac81ff9bca612a6a4337ddcf9a3dda816"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/.im_l10n_catalog_generated",
+      "bytes": 16,
+      "sha256": "43326672066df35d20945e27a148fa3a9e65503971eb7fbf4a88af82cca0148d"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_ar.arb",
+      "bytes": 68745,
+      "sha256": "d9a2ec4db57f675995b6d8f338e690cd3d18456509d033a6efb81f63f0c15d20"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_bg.arb",
+      "bytes": 80001,
+      "sha256": "ee5c5ea06e4c6bc47987b6b226305eff2a529d58bede4b712b413a3424ec497b"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_cs.arb",
+      "bytes": 57812,
+      "sha256": "5a84245746e1841489855e6d2977a6da5334f1bcbeeeb77f06dab1a02e46baac"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_da.arb",
+      "bytes": 55023,
+      "sha256": "09df0bd867c6dc3f4fbe5e532bbbdc81656a0034e8e6ea6704b3e59e7353cec3"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_de.arb",
+      "bytes": 59880,
+      "sha256": "25c573013c6ae41b039d0f33ddc377307ea889f06642e869e437fd0f59936c27"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_el.arb",
+      "bytes": 81768,
+      "sha256": "806aa41923ebba492469c8c006c9e4c418c226fd651a4a9eb5234bc820632fa7"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_en.arb",
+      "bytes": 53223,
+      "sha256": "775e6b654ddc7e090097eade969f4ec1b54016bd7ef081606c1081928eb8e42b"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_es.arb",
+      "bytes": 58858,
+      "sha256": "32aafef1b705e45007af95bf7e336b1c87c736c3fd1173adc66456517d4e21af"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_fi.arb",
+      "bytes": 57584,
+      "sha256": "e337bb02cc94157f018f59d60c7b337467d809d2cc454292b171a43adbc9a4f9"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_fil.arb",
+      "bytes": 58739,
+      "sha256": "4c275ca05f470bff1e1f334a0aa46ff9beb5330c87f1c173ddcf5ccaf2f6ea60"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_fr.arb",
+      "bytes": 60998,
+      "sha256": "11f07ac3064bb57bdf0dc207b3881268a0ef5b0dd0d2d328f88b7b60a17c30e2"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_hi.arb",
+      "bytes": 90819,
+      "sha256": "aec478b99bbf0887e25c0820a18ef156d7388340433cd0395762e67f21a72329"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_hr.arb",
+      "bytes": 56944,
+      "sha256": "4bb7c9f3c7d33a5195b2cc7340a0090a9bef2721aef2720868f006b84785fb5c"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_hu.arb",
+      "bytes": 60310,
+      "sha256": "d8c44103a73698907df5be3351d9f8a2b412a4899dc6111679f968a44696d5bf"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_id.arb",
+      "bytes": 54934,
+      "sha256": "383682e757189b0dda2d0cba2290eb7d74d5b377cda779c706251afb592bc23a"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_it.arb",
+      "bytes": 57944,
+      "sha256": "8d72e3b6af3fec2eaa8cfcc9fd34569f686869e965759e7188d3010b45bf82d6"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_ja.arb",
+      "bytes": 64784,
+      "sha256": "e209cbbaa09a34fba0008cb38f6fb3f0ab7327e5dda293f39fcdf284a8ffd702"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_ko.arb",
+      "bytes": 60777,
+      "sha256": "bbc0e028713b9a10c7529c0a6d441aca25947950040b1bde546c01d7121fc91b"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations.dart",
+      "bytes": 161462,
+      "sha256": "f626f14fd9575ad97dba1335dc8d72112b4d2fea28b90c876edf424ea408bac0"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_ar.dart",
+      "bytes": 95017,
+      "sha256": "20dcb8b5bf738828bcfd47db187a418f887e355e21c74fb4ee2f2621ec6ad925"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_bg.dart",
+      "bytes": 106642,
+      "sha256": "2f3316bd38d26c4658006a4bde3eacc52828f5df2bfc7387d7287809c5de2d8a"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_cs.dart",
+      "bytes": 84305,
+      "sha256": "8fd3fb0eb4319bf5f5ded493e17f2acaf4c4f62a7192c712406177d344cbaa75"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_da.dart",
+      "bytes": 81463,
+      "sha256": "0e14eb806d9b1ee1d964afa9e431294009e6122c4c44ce609e81033cc148b09e"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_de.dart",
+      "bytes": 86620,
+      "sha256": "a8c12465f8cc0bfa8a17d8826f9ec663630d8ef82264c9a0cc7bc270448b9fdc"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_el.dart",
+      "bytes": 108346,
+      "sha256": "e5fad519ac992940b477bd37d085a9b8a53029c3e54615923bed09caa5285fd2"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_en.dart",
+      "bytes": 79667,
+      "sha256": "35fbf17d4211c374c29d1e5480a14bd7793532ef1a2427e5379fcc7b724567ea"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_es.dart",
+      "bytes": 85519,
+      "sha256": "8348b1b3c285a1b863276901c65a3c71d328ddc811a6f396cd883edc0d089ac7"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_fi.dart",
+      "bytes": 84139,
+      "sha256": "2f402a792780e7e5b3ed0bb764d29d1c49a5f3b9523b860b106fdb0731fbea6a"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_fil.dart",
+      "bytes": 85360,
+      "sha256": "bd62f53fa7702e1381cf38cb5512cdbbfdc5ba4ed74586cf5bb979e345ea6d70"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_fr.dart",
+      "bytes": 87781,
+      "sha256": "42e1015bf41560e9fff3e055e235bbe1e74e302835913dbb744ac1d10fae2062"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_hi.dart",
+      "bytes": 117210,
+      "sha256": "8732c58fa7e4cd3fa739c203a5b60fc70147e9caf6df609a760023f55a00f6a9"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_hr.dart",
+      "bytes": 83536,
+      "sha256": "db170d0a4ec45c7a3cbade6ca6504688122cab6dfa4ff7bee2c70267396626b6"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_hu.dart",
+      "bytes": 86849,
+      "sha256": "7a24dc394d2df815ca01a0d35a73cef00600f3dea31d9ead4a5fe1546a4c1afd"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_id.dart",
+      "bytes": 81390,
+      "sha256": "ca550a7704412d450d83b30ebdb30f550d7bafd5f3dfe8eaa913a3e049bdff84"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_it.dart",
+      "bytes": 84545,
+      "sha256": "223537a8213af2cd594e1cf24b17ad3e11cbd3d2ab3ae2fd2c55fd444295cb4a"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_ja.dart",
+      "bytes": 90676,
+      "sha256": "21bea363a0901c282ab11df03318c7ddb04796540787134b3c0937c6754585ee"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_ko.dart",
+      "bytes": 86727,
+      "sha256": "50d836e0e73ba1c8b51913507ae4b1a3edfd1b17091af5f5a2894a5479af4405"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_ms.dart",
+      "bytes": 82222,
+      "sha256": "e11a6b5aec8535da0d0550d4a2a03b12b2ad3042ea477ac65d1d3b6dcfe89873"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_nb.dart",
+      "bytes": 81410,
+      "sha256": "2ffd6eda0911ddb1b9168f158ee2d712426382719869abe6afc54d4f589081b4"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_nl.dart",
+      "bytes": 84196,
+      "sha256": "268246459f02706e2905f7698322840e2103d7736832d11e105e8bee2e054d6e"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_pl.dart",
+      "bytes": 85363,
+      "sha256": "14e8d029b63b789deec03c77e9bda2729702f1d6017f7bc210acb9cac3f5ea77"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_pt.dart",
+      "bytes": 169194,
+      "sha256": "d4c7c290c5b201f18c4667c8953c438d652ce9ff2b97860369c68001f5fcaef4"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_ro.dart",
+      "bytes": 85650,
+      "sha256": "60e7751418191cf8d00fee9853cf8b99936e56424ce85c08a796fcd549275281"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_ru.dart",
+      "bytes": 105001,
+      "sha256": "f29b42442091e3652db908995b2189b280c91bddf8b689f6531ec47704d2b0ec"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_si.dart",
+      "bytes": 124305,
+      "sha256": "b4004aa850a3de3de8d88c192937aca6ff43db6a95c1610da09acb5fc6de4733"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_sk.dart",
+      "bytes": 84272,
+      "sha256": "170d079a0d5d87deaf734415d78befeaaf648ff50eec757a24b3568310b2ded3"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_sv.dart",
+      "bytes": 82260,
+      "sha256": "2e1becab312a6a4c42e4ad9404c003a01eb890453d0eaf331ec3303047a28b40"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_th.dart",
+      "bytes": 117134,
+      "sha256": "5bb73a1dd0c65c255a9da4a688b1f6ce123f51182f0cec0f1d4d7863fdac76c0"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_tr.dart",
+      "bytes": 82525,
+      "sha256": "771c3b5757ec522d4e8a3f8035cbfb71f7bf6828b04d9f6b363fe841c55fa344"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_uk.dart",
+      "bytes": 104627,
+      "sha256": "c9f3b62f125ce099c6d1cc499be38d2047b39319e5ed3ba7cbcc5ba2fe93d392"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_vi.dart",
+      "bytes": 88935,
+      "sha256": "68a17eb275649853459158e5a3fa24d1ced4fc7d319148323e9b6ec7f654803e"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_localizations_zh.dart",
+      "bytes": 154622,
+      "sha256": "59bcdc3a17a1d3849a1ee6e47db1f9d229a704bb61e96a99aeff6403246d0edc"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_ms.arb",
+      "bytes": 55713,
+      "sha256": "61f682e7568c0d46d5603e91eef80d4ac52199b5e2a0cdf7b20f4da004057f2f"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_nb.arb",
+      "bytes": 54953,
+      "sha256": "ef5b7e230df5ff0a7345a9513dd55c390981739c420d70a105579cbb2d0e5d3d"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_nl.arb",
+      "bytes": 57587,
+      "sha256": "ec56770757d976e54accd3932a9e016c5af3d1c29c11dc49e77a3ca5afca4606"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_pl.arb",
+      "bytes": 58647,
+      "sha256": "4bbbb6e206b0a96636548f020ae491c4eef0071882b51f152e2a97c1729dde36"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_pt.arb",
+      "bytes": 58008,
+      "sha256": "603f109a0277ca8eb4a12a77c737143766520a5a26f5dd6c860fe50d3b1a9ca1"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_pt_PT.arb",
+      "bytes": 58206,
+      "sha256": "bfd4fc994235c18dadba6b8e2320ee70ae1705248eb7a7e9d46ac9d9f1b892e5"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_ro.arb",
+      "bytes": 59009,
+      "sha256": "8c7da1774bd00952bb2b4af69d5e30b75b697c1ba71953b4f7712f94881dc05b"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_ru.arb",
+      "bytes": 78488,
+      "sha256": "895857bf6c5a1942b923652ab81a7c17c5a3a92aa6e663535e86996415f802c5"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_si.arb",
+      "bytes": 97774,
+      "sha256": "70aa6019a53a11cad071b0d04b0e3e32f1c9ebcd6dee78ddb0d39be043d5260f"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_sk.arb",
+      "bytes": 57766,
+      "sha256": "d6868fe9f547d71a19bf96822c5f2aec7afb2338c7331ba42ee206b7de1eb21c"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_sv.arb",
+      "bytes": 55771,
+      "sha256": "1f45096e94378cb321c0f3542eed1f415b7d7d6f9bf3ba032ba1e2a20b64c710"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_th.arb",
+      "bytes": 90870,
+      "sha256": "6946bc6216a3ea7ed69fae7429e85ce76f89ae88b839e7c2ac80dc80935684d9"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_tr.arb",
+      "bytes": 56096,
+      "sha256": "df8c4ba89af70de03d31d68d3cf12d2b9941cc8f8c014a6823f6a524a810b701"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_uk.arb",
+      "bytes": 78132,
+      "sha256": "d6631f7d5e5a3784b95566bcdeaaa4b40f48f0d2d7af3ddbd9b513b42202571c"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_vi.arb",
+      "bytes": 62511,
+      "sha256": "e3b47bd7705c144f8bbea40c726374e6e71710b7b266824e8756f19a1551685d"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_zh.arb",
+      "bytes": 112145,
+      "sha256": "5b69e98b6fbe97f5dfe7bfc13a72a9e4054ffb55f34a57dbf7bd68211c7811d1"
+    },
+    {
+      "path": "packages/im_sdk/lib/l10n/app_zh_TW.arb",
+      "bytes": 51765,
+      "sha256": "4cd8248d13cd0003bd6008a8410bc77a312a9162b58d36740f747313c87a3182"
+    },
+    {
+      "path": "packages/im_sdk/lib/main.dart",
+      "bytes": 4331,
+      "sha256": "37aaacdb096ec4569028a619b37dba2cbadaa1f823d127d619cc2a3df8827100"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/data/sdk_customer_service_repository.dart",
+      "bytes": 4424,
+      "sha256": "6862b9b388a2e741bdf1d63820b33bcc66fadd255a4a4b6a08ee402c51853dda"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_chat_view.dart",
+      "bytes": 10153,
+      "sha256": "1c01cfd500c3b74fc2cc711608b88e1b94cfaa345c642ada56a4b6ea445f98d1"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_client.dart",
+      "bytes": 46111,
+      "sha256": "13cb656bec5ebaa9094c99455e6d2d5bad6a2fa521d266b7ab59b596e60aa939"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_customer_service_view.dart",
+      "bytes": 7772,
+      "sha256": "656c13f6f8a6e346743e634cf4e0cc1818ccb2dd8170caeee4d16bf4d2d11a25"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_host_session.dart",
+      "bytes": 2067,
+      "sha256": "0a60c792b18ec9bef03e855c17f266425bd92205a5e08d6c646da6ea6aee791a"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_messaging_view.dart",
+      "bytes": 39566,
+      "sha256": "371b14f8532606ccf6f295ef1a466b608b008c5444fd41a2379adfe137fa28c5"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_models.dart",
+      "bytes": 16786,
+      "sha256": "59be7094e7fb7c121fdcd0803625047876701683e161765cf92609a6509929ee"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_native_host.dart",
+      "bytes": 8945,
+      "sha256": "8a80357e1df480b0549ceb033ffe40abbf1895c7589c2bda87f8b356d94fb61b"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_presentation.dart",
+      "bytes": 5070,
+      "sha256": "594ab43319c2d9325614c9567d8134ead7d47e1a89243a48b679c9d286972d00"
+    },
+    {
+      "path": "packages/im_sdk/lib/sdk/im_sdk_registration_page.dart",
+      "bytes": 18285,
+      "sha256": "2a417ddb9337b58679988015b65217520a7d7ca427105123fad976828386e85a"
+    },
+    {
+      "path": "packages/im_sdk/lib/shared/extensions/extensions.dart",
+      "bytes": 21,
+      "sha256": "30c73625902d48fad66661da7d9e36fa0cc7b0a7e236ed64f4d39bca8e886fad"
+    },
+    {
+      "path": "packages/im_sdk/lib/shared/widgets/README.md",
+      "bytes": 15,
+      "sha256": "bbc0d9334124e381b1a8e51042eb58263a60ad7601d3d3925cb18fc680ad29f1"
+    },
+    {
+      "path": "packages/im_sdk/lib/shared/widgets/app_badge.dart",
+      "bytes": 1484,
+      "sha256": "cabf61aef89236202a053c8403a8e4f2e09023c13dbd481c4410f61e447fa0d1"
+    },
+    {
+      "path": "packages/im_sdk/lib/shared/widgets/responsive_layout.dart",
+      "bytes": 3252,
+      "sha256": "f66cae35a3e6bf7165c3a1aeae3c0f2b2f90b23e7c1939e94c228145c440e6fe"
+    },
+    {
+      "path": "packages/im_sdk/lib/shared/widgets/widgets.dart",
+      "bytes": 58,
+      "sha256": "22de2f3cdff3822dde8fcfc9ef67081e79766a35424a7ec6ada28429d135af87"
+    },
+    {
+      "path": "packages/im_sdk/pubspec.lock",
+      "bytes": 56081,
+      "sha256": "5a8f5f597296f967a1756ef3f02ee4d2961f2999cc3b596d80f50b9fae81a431"
+    },
+    {
+      "path": "packages/im_sdk/pubspec.yaml",
+      "bytes": 2635,
+      "sha256": "9a21920c80a0a9e53fdf6833e50ce33bb1d5fe03ba014057e85e38f1f0378bd7"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/authenticated_profile_identity_test.dart",
+      "bytes": 3481,
+      "sha256": "2d7fe3c8e343cb190a184938e22ee8efb1fe1325de787dde15a2f4ae20c525e4"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/chat_back_button_test.dart",
+      "bytes": 3737,
+      "sha256": "5cb9fb0f96052cfaf15cc3fc1fc15fa0d44349af4abcfc6ce4ff86b45adecfa6"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/chat_recovery_contract_test.dart",
+      "bytes": 5137,
+      "sha256": "976c1d0b1aafea2efd2fe4bff2f4fdd3484948b31c37b185390fd6626af1a1f2"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/external_auth_session_test.dart",
+      "bytes": 10070,
+      "sha256": "3d681eaafc298327aaaef27ac19fa3019cdb74ec5d6f16125e03dff662ad36f4"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/im_sdk_models_test.dart",
+      "bytes": 4120,
+      "sha256": "c9b12c29826114d9b3a5fd2b5d35482fde6ac0c3d80c19b2e5fdd29b6e36df54"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/messaging_login_view_test.dart",
+      "bytes": 9557,
+      "sha256": "46d556372ac41ec55d00281553d5978486da1aeda4550a78e92cdf0ddbe928f6"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/notification_settings_lifecycle_test.dart",
+      "bytes": 2569,
+      "sha256": "b0360e4092c6f980fffc0d7abc992b29afd94c8050e33e9c3b4009b245a82534"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/official_verification_contract_test.dart",
+      "bytes": 5362,
+      "sha256": "e48bd0f89da71c1ba0ef8fd1a66f29d24c9783794e1bef445653b05a7e5037dc"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/password_login_contract_test.dart",
+      "bytes": 14783,
+      "sha256": "fdcc9abd39890fdba6375a8b7bec59066e0653cf11265d4ec59c75342bbb28ab"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/registration_contract_test.dart",
+      "bytes": 19452,
+      "sha256": "193cc6e92f1e863fecd7c1bf8f8071085e9c101dd519983e0ffd3b45a09f86ea"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/sdk_customer_service_repository_test.dart",
+      "bytes": 6524,
+      "sha256": "eae740e3e186b01bf8bb2962626567423aab0a076cafe9d42bb440b749305942"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/sdk_customer_service_session_test.dart",
+      "bytes": 6932,
+      "sha256": "22fb2276cc9b847f17141299226279aec44e0124a0bbae2129fe256a25fe80fb"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/sdk_customer_service_view_test.dart",
+      "bytes": 3997,
+      "sha256": "e95869220e4c609bc2e5a9b57d0d3cf6d37fd0f33ff3d419a63de52f0bed9fd1"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/sdk_isolation_and_lifecycle_test.dart",
+      "bytes": 5125,
+      "sha256": "8ff9d06c0f6e4aad082dd2a38e71bafe52782d70fc8bf506283c3de7007de99f"
+    },
+    {
+      "path": "packages/im_sdk/test/sdk/shared_l10n_resources_test.dart",
+      "bytes": 5628,
+      "sha256": "6f7be2820e74436a357081c8546f56cc0759782faf8d7a3e357287fd872c8db2"
+    },
+    {
+      "path": "scripts/build_android.sh",
+      "bytes": 1648,
+      "sha256": "5bfdebe32840ae4302d5121a6376ef1537e7d4d2830788813e4e5db468455b03"
+    },
+    {
+      "path": "scripts/build_ios.sh",
+      "bytes": 2337,
+      "sha256": "31212c47e639af0129e4f0f01ac1b0aeca20bb3df7a2cd3b40a7eb1430af1a65"
+    },
+    {
+      "path": "scripts/build_ios_facade.py",
+      "bytes": 5188,
+      "sha256": "b0b1923eba5a34f999d8df3fdfcf9f1788a8eef59279d6d4d73dd09fde71207f"
+    },
+    {
+      "path": "scripts/build_ios_host_example.sh",
+      "bytes": 2231,
+      "sha256": "37f71466fa3ba3aa45b330c90c3537a50b3955ad855770f03f012a434cd50dab"
+    },
+    {
+      "path": "scripts/build_web.sh",
+      "bytes": 217,
+      "sha256": "929997a75e335568b1dce7b100de4daa8322edca7f66db2dcd5c6fa8028f4cef"
+    },
+    {
+      "path": "scripts/common.sh",
+      "bytes": 1154,
+      "sha256": "87bf349efd7aa06450b0d82e2115ac6b27bf09ba9fc440654cd39f68606623f6"
+    },
+    {
+      "path": "scripts/complete_ios_distribution.py",
+      "bytes": 4018,
+      "sha256": "29b6adc281cd6d86d82c8ab6d300b289ede7f37af4cb3ee90d04da060b4827e5"
+    },
+    {
+      "path": "scripts/generate_ios_host_example.py",
+      "bytes": 11743,
+      "sha256": "5f3ee794bd448145f80a38e3c03e1665968dbf06c7b52b7ab9c804effaa46b90"
+    },
+    {
+      "path": "scripts/generate_native_handoff_samples.py",
+      "bytes": 10920,
+      "sha256": "87e97e22ddb355cb15c76d2eab2ce1dbacf46c92a2c70bd272cba63e68341fa6"
+    },
+    {
+      "path": "scripts/l10n_pending.py",
+      "bytes": 2521,
+      "sha256": "1c7354a61578a3ee28eda44cf0a194d42ddf9194f8c5536a32d082245474083f"
+    },
+    {
+      "path": "scripts/l10n_prepare.py",
+      "bytes": 25658,
+      "sha256": "e79edfe20bc13bcc157a0e49b9c6116bbb4e668a3e7a50f011112c5d2d1c277f"
+    },
+    {
+      "path": "scripts/l10n_source.py",
+      "bytes": 10966,
+      "sha256": "306c930f3dc04387b9dff2a998b9e9a1a36a43ebefcfe15208ebf45047050a4f"
+    },
+    {
+      "path": "scripts/l10n_update.py",
+      "bytes": 17009,
+      "sha256": "60ca01c76f0f4540b33ef24f1e383035554d8190663aa501ee7828b7e189bbda"
+    },
+    {
+      "path": "scripts/native_connected_peer.mjs",
+      "bytes": 15624,
+      "sha256": "d9aa2ad0b2360a97318c2976966ba1ba7d0b8eb7c2f05cdfa57df8f4ef77c3bd"
+    },
+    {
+      "path": "scripts/package_flutter.py",
+      "bytes": 5310,
+      "sha256": "ff66557615269c9624401835580a1f261eba94dbb39881867cb852116fc6f4dc"
+    },
+    {
+      "path": "scripts/package_flutter.sh",
+      "bytes": 291,
+      "sha256": "5b291333a60af9ddfb91d16e47206741cb306dfb440f719beb0c48817b236a29"
+    },
+    {
+      "path": "scripts/package_localization_handoff.py",
+      "bytes": 13992,
+      "sha256": "88c24fa88b7c590db64698b57d058a40fd6d694094c01b96cf090a2a82c42d4e"
+    },
+    {
+      "path": "scripts/package_native_handoff.py",
+      "bytes": 10901,
+      "sha256": "c39e59d47acd2276fae27a39be6e25c1bd43df8f3951f1e72f7f74d35dac46cd"
+    },
+    {
+      "path": "scripts/package_web.py",
+      "bytes": 4323,
+      "sha256": "a3ec81ee3fb84975aff4880554598ec519e7dd77c520d1ac1ad243bc3323f404"
+    },
+    {
+      "path": "scripts/package_web_handoff.py",
+      "bytes": 6855,
+      "sha256": "57c023741601f7482740d8e5cfc67a7fde155b7698fd17ea8b7d74df132b4e45"
+    },
+    {
+      "path": "scripts/prepare_host_validation.py",
+      "bytes": 19851,
+      "sha256": "10dc362467cde7b0be0d971111637ef388cea74270d668f11db094546a445369"
+    },
+    {
+      "path": "scripts/prepare_module.py",
+      "bytes": 3503,
+      "sha256": "b4214aecab2d3797dbd5ea2b7ac0d42338a3442526596591c74ccaa676a58925"
+    },
+    {
+      "path": "scripts/resolve_dependencies.sh",
+      "bytes": 813,
+      "sha256": "2ad2d82af2a6235bd2a1cdb57c7521123fc921e8faaba5e2733261dbc8f5cedc"
+    },
+    {
+      "path": "scripts/run_flutter_host_validation.py",
+      "bytes": 3992,
+      "sha256": "a7d1ad21d5fcb85b06919a44d6af0f682fe23d16f1373d265dc9e7f4d53a32f5"
+    },
+    {
+      "path": "scripts/run_ios_host_live_test.py",
+      "bytes": 9557,
+      "sha256": "39b8dc7319a23c42722a35de087e4b9b1adfaf271f9ca4e6e22fa6d1340db9cd"
+    },
+    {
+      "path": "scripts/run_unification_mobile_live.py",
+      "bytes": 9110,
+      "sha256": "da7af4a664c9295ce6cc20f6cf3a828ea0cb130d5e2575d507b6fef705e2aa63"
+    },
+    {
+      "path": "scripts/stage_ios_host_private_input.py",
+      "bytes": 3810,
+      "sha256": "39dee75c8cc66353358f3a48c6b2e34ea2a29eaf6aa2d060417f51c8a2c6631f"
+    },
+    {
+      "path": "scripts/support_host_peer.py",
+      "bytes": 13093,
+      "sha256": "dd570326a684d108d43025ba474009473467029ec47bc63e555c9ce6bce789b0"
+    },
+    {
+      "path": "scripts/sync_l10n.py",
+      "bytes": 3683,
+      "sha256": "a6a656d7373b6e8abf67f3232109ce08d80615a537a7915492605cca49bd3968"
+    },
+    {
+      "path": "scripts/verify_independence.py",
+      "bytes": 7746,
+      "sha256": "8c30b490fab2caa860c66a4df1ff1221983597817e4aae3ac5a78e2e3dd6f489"
+    },
+    {
+      "path": "scripts/verify_ios_consumers.py",
+      "bytes": 3396,
+      "sha256": "1a5d6c06cb2e8c6a90df528ecc999a64c4ed2b79cf8763b50bd0c8554bde60d4"
+    },
+    {
+      "path": "scripts/verify_native_handoff_ios.py",
+      "bytes": 3870,
+      "sha256": "6664861672c15cdb5ae7450c59d850762e7003aa51218eff89a9ddc58723e771"
+    },
+    {
+      "path": "scripts/write_checksums.py",
+      "bytes": 770,
+      "sha256": "37286ae192a3cf2807f0fd3311f55783ec9d474f028abea3c24a9d77f63ba368"
+    },
+    {
+      "path": "scripts/write_localization_manifest.py",
+      "bytes": 2752,
+      "sha256": "24efc2de528c74507c16978f7a178c990b9653399fa19fa7d6b380a68a03a301"
+    },
+    {
+      "path": "web/src/generated/l10n/sdk_catalog.ts",
+      "bytes": 165094,
+      "sha256": "1e1b013f273dcb6fb76f8809333b45b9beec31dd8b34d302ba6d55b01a70f1c0"
+    }
+  ],
+  "exclusions": "Build/cache outputs, machine paths, signing material, private vendor configuration and credentials are not delivered.",
+  "verification": "Archive integrity only; backend, native host build and device acceptance require separate evidence."
+}

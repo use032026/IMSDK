@@ -115,7 +115,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
   const status = node('div', 'status', '');
   heading.append(title, status);
   const back = button('返回', () => showList(), 'icon');
-  const refresh = button('刷新', () => refreshCurrent(), 'icon');
+  const refresh = button('刷新', () => refreshCurrent(true), 'icon');
   const logoutButton = button('退出登录', async () => {
     if (closed) return;
     logoutButton.disabled = true;
@@ -129,7 +129,9 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
   notice.setAttribute('role', 'alert');
   const body = node('main', 'body');
   const bottom = node('div');
-  shell.append(header, notice, body, bottom);
+  const hostRecheck = node('div', 'empty');
+  hostRecheck.hidden = true;
+  shell.append(header, notice, hostRecheck, body, bottom);
   shadow.append(style, shell);
   container.append(host);
   const removedBindings = new MutationObserver(() => {
@@ -145,10 +147,16 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
   let target: ConversationTarget | undefined;
   let serviceRequest: CustomerServiceRequest | undefined;
   let currentMessages: Message[] = [];
+  let recalls = new Map<string, boolean>();
   let conversations: Conversation[] = [];
   let nextCursor: string | undefined;
+  let conversationCursors = new Set<string>();
+  let conversationPages = 1;
   let listBusy = false;
+  let listRefreshQueued = false;
   let chatBusy = false;
+  let chatRefreshQueued = false;
+  let reconcileHistory = false;
   let historyBusy = false;
   let hasHistory = true;
   let sending = false;
@@ -156,7 +164,14 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
   let historyButton: HTMLButtonElement | undefined;
   let timeline: HTMLElement | undefined;
   let lastRead = 0;
+  let readBusy = false;
+  let readTimer: number | undefined;
   let refreshTimer: number | undefined;
+  let localeRevision = 0;
+  let displayedLocale = locale();
+  let directoryRefresh: (() => Promise<void>) | undefined;
+  let titleRefresh: (() => Promise<void>) | undefined;
+  let hostRecheckRevision = 0;
 
   function valid(ownRevision: number, session: number): boolean {
     return !closed && revision === ownRevision && client.sessionRevision === session;
@@ -176,6 +191,8 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
   }
   function reset(nextPage: typeof page, text: UiText): number {
     revision += 1;
+    hostRecheckRevision++;
+    setHostRecheck(false);
     page = nextPage;
     setText(title, text);
     setText(notice, '');
@@ -188,11 +205,17 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     timeline = undefined;
     historyButton = undefined;
     listBusy = chatBusy = historyBusy = false;
+    listRefreshQueued = chatRefreshQueued = reconcileHistory = false;
+    recalls = new Map();
+    directoryRefresh = titleRefresh = undefined;
+    if (readTimer !== undefined) window.clearTimeout(readTimer);
+    readTimer = undefined;
+    readBusy = false;
     sending = false;
     return revision;
   }
 
-  function showLogin(): void {
+  function showLogin(prefilledAccount = '', message?: UiText): void {
     if (closed) return;
     if (client.config?.hostManagedAuth) { showHostState(); return; }
     const ownRevision = reset('login', '登录聊天');
@@ -205,6 +228,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     const form = node('form', 'card') as HTMLFormElement;
     form.append(node('h2', '', '欢迎使用'), node('p', 'muted', '登录 IM 账号，即可查看你的消息。'));
     const account = input('text', '账号', 'username');
+    account.value = prefilledAccount;
     const password = input('password', '密码', 'current-password');
     account.required = password.required = true;
     form.append(field('账号', account), field('密码', password));
@@ -221,6 +245,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     submit.type = 'submit';
     form.append(submit, button('注册新账号', () => showRegister(), 'wide'), node('p', 'footer-note', '登录后即可查看当前账号的单聊和群聊。'));
     body.append(form);
+    if (message) setText(notice, message);
 
     async function loadCaptcha(): Promise<void> {
       if (!requireReady()) return;
@@ -285,6 +310,32 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     } else body.append(node('div', 'list'));
   }
 
+  function setHostRecheck(active: boolean, failed = false): void {
+    hostRecheck.replaceChildren();
+    hostRecheck.hidden = !active;
+    const elements = [title, body, bottom, back, refresh];
+    for (const element of elements) {
+      element.style.visibility = active ? 'hidden' : '';
+      if (active) element.setAttribute('inert', ''); else element.removeAttribute('inert');
+    }
+    if (active && failed) hostRecheck.append(
+      node('div', '', '聊天暂不可用，请重试'), button('重试', () => checkForegroundHost(), 'wide'));
+  }
+
+  async function checkForegroundHost(): Promise<void> {
+    const check = ++hostRecheckRevision;
+    setHostRecheck(true);
+    try {
+      const authenticated = await client.synchronizeHostSession();
+      if (closed || check !== hostRecheckRevision) return;
+      setHostRecheck(false);
+      if (!authenticated) showHostState('请先在应用中登录');
+      else await refreshCurrent();
+    } catch {
+      if (!closed && check === hostRecheckRevision) setHostRecheck(true, true);
+    }
+  }
+
   async function enterHostMessenger(): Promise<void> {
     if (closed) return;
     showHostState();
@@ -308,7 +359,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     const displayName = input('text', '昵称', 'nickname');
     const channel = node('select') as HTMLSelectElement;
     setAttr(channel, 'aria-label', '注册方式');
-    const identifier = input('tel', '手机号', 'tel');
+    const identifier = input('text', '手机号', 'tel');
     const password = input('password', '设置密码', 'new-password');
     password.minLength = 6;
     const confirm = input('password', '确认密码', 'new-password');
@@ -348,7 +399,8 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
       captchaArea.hidden = true;
     }
     channel.addEventListener('change', () => {
-      identifier.type = channel.value === 'email' ? 'email' : 'tel';
+      identifier.inputMode = channel.value === 'email' ? 'email' : 'tel';
+      identifier.autocomplete = channel.value === 'email' ? 'email' : 'tel';
       setAttr(identifier, 'placeholder', channel.value === 'email' ? '邮箱' : '手机号');
       setAttr(identifier, 'aria-label', channel.value === 'email' ? '邮箱' : '手机号');
       identifier.value = code.value = '';
@@ -425,8 +477,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
         else clearCaptcha();
         if (errorCode === 'REGISTER_LOGIN_FAILED' || errorCode === 'REGISTER_PENDING_APPROVAL') {
           password.value = confirm.value = '';
-          submit.disabled = true;
-          settings = undefined; // The account exists; never submit a duplicate registration.
+          showLogin(request.identifier, error instanceof ImSdkError ? error.message : '操作未完成，请重试');
         }
       } finally { if (active()) setBusy(false); }
     }
@@ -438,6 +489,8 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     if (closed) return;
     if (!client.isAuthenticated) { showLogin(); return; }
     reset('list', '消息');
+    conversationPages = 1;
+    conversationCursors = new Set();
     target = undefined;
     currentMessages = [];
     serviceRequest = undefined;
@@ -449,6 +502,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
       const cached = client.cachedConversations;
       conversations = cached?.items ?? [];
       nextCursor = cached?.nextCursor;
+      if (nextCursor) conversationCursors.add(nextCursor);
       if (cached) renderConversations();
       else body.append(node('div', 'list'));
     } else body.append(node('div', 'loader', '正在加载会话…'));
@@ -456,30 +510,55 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
   }
 
   async function loadConversations(append: boolean): Promise<void> {
-    if (closed || page !== 'list' || listBusy) return;
+    if (closed || page !== 'list') return;
+    if (listBusy) {
+      if (!append) listRefreshQueued = true;
+      return;
+    }
     listBusy = true;
     const ownRevision = revision;
     const session = client.sessionRevision;
+    const ownLocale = localeRevision;
     try {
-      const result = await client.listConversations(append && nextCursor ? { cursor: nextCursor } : {});
-      if (!valid(ownRevision, session)) return;
-      conversations = append ? mergeConversations(conversations, result.items) : result.items;
-      nextCursor = result.nextCursor;
+      let cursor = append ? nextCursor : undefined;
+      let items = append ? conversations : [];
+      const seen = append ? new Set(conversationCursors) : new Set<string>();
+      const pages = append ? 1 : conversationPages;
+      let loaded = 0;
+      do {
+        const result = await client.listConversations(cursor ? { cursor } : {});
+        if (!valid(ownRevision, session) || ownLocale !== localeRevision) return;
+        items = mergeConversations(items, result.items);
+        cursor = result.nextCursor;
+        if (cursor && seen.has(cursor)) throw new ImSdkError('INVALID_RESPONSE', '会话列表格式无效');
+        if (cursor) seen.add(cursor);
+        loaded++;
+      } while (cursor && loaded < pages);
+      conversations = items;
+      nextCursor = cursor;
+      conversationCursors = seen;
+      conversationPages = append ? conversationPages + 1 : loaded;
       renderConversations();
     } catch (error) {
-      if (valid(ownRevision, session)) {
+      if (valid(ownRevision, session) && ownLocale === localeRevision) {
         failure(error);
         if (!conversations.length) body.replaceChildren(node('div', 'empty', '暂时无法加载会话，请点击刷新重试。'));
       }
     } finally {
-      if (valid(ownRevision, session)) listBusy = false;
+      if (valid(ownRevision, session)) {
+        listBusy = false;
+        if (listRefreshQueued) {
+          listRefreshQueued = false;
+          void loadConversations(false);
+        }
+      }
     }
   }
 
   function renderConversations(): void {
     const list = node('div', 'list');
     for (const conversation of conversations) {
-      const row = button('', () => openConversation(conversation), 'row');
+      const row = button('', () => openConversation(conversation, undefined, true), 'row');
       const displayTitle = (): string => conversation.titleIsDefault ? t(conversation.type === 'group' ? '群聊' : '聊天') : conversation.title;
       setAttr(row, 'aria-label', () => t('{name}，{count} 条未读消息', { name: displayTitle(), count: conversation.unreadCount }));
       const avatar = node('div', 'avatar', conversation.type === 'group' ? '群' : Array.from(conversation.title)[0] ? raw(Array.from(conversation.title)[0]!) : '聊');
@@ -504,13 +583,16 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     const controls = node('div', 'new-chat');
     const search = input('search', '搜索好友名字', 'off');
     const refreshContacts = button('刷新好友', () => loadContacts());
+    const createGroup = button('新建群聊', () => showCreateGroup());
+    createGroup.hidden = !client.canCreateGroup;
     controls.append(button('添加好友', () => showAddFriend()), button('好友申请', () => showFriendRequests()),
-      button('新建群聊', () => showCreateGroup()), field('选择好友开始聊天', search), refreshContacts);
+      createGroup, field('选择好友开始聊天', search), refreshContacts);
     const list = node('div', 'list');
     body.append(controls, list);
     let contacts: Contact[] = [];
     let loading = false;
     let opening = false;
+    let queued = false;
 
     function renderContacts(): void {
       const query = search.value.trim().toLocaleLowerCase();
@@ -532,25 +614,28 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     }
 
     async function loadContacts(): Promise<void> {
-      if (loading || opening || !valid(ownRevision, session)) return;
+      if (!valid(ownRevision, session)) return;
+      if (loading || opening) { queued = true; return; }
       loading = true;
+      const ownLocale = localeRevision;
       search.disabled = refreshContacts.disabled = true;
       setText(notice, '');
-      list.replaceChildren(node('div', 'loader', '正在加载好友…'));
+      if (!contacts.length) list.replaceChildren(node('div', 'loader', '正在加载好友…'));
       try {
         const result = await client.listContacts();
-        if (!valid(ownRevision, session)) return;
+        if (!valid(ownRevision, session) || ownLocale !== localeRevision) return;
         contacts = result;
         renderContacts();
       } catch (error) {
-        if (valid(ownRevision, session)) {
+        if (valid(ownRevision, session) && ownLocale === localeRevision) {
           failure(error);
-          list.replaceChildren(node('div', 'empty', '好友加载失败，请刷新重试。'));
+          if (!contacts.length) list.replaceChildren(node('div', 'empty', '好友加载失败，请刷新重试。'));
         }
       } finally {
         if (valid(ownRevision, session)) {
           loading = false;
           search.disabled = refreshContacts.disabled = false;
+          if (queued) { queued = false; void loadContacts(); }
         }
       }
     }
@@ -572,6 +657,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
           opening = false;
           search.disabled = refreshContacts.disabled = false;
           renderContacts();
+          if (queued) { queued = false; void loadContacts(); }
         }
       }
     }
@@ -579,6 +665,10 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     search.addEventListener('input', () => {
       if (!loading && !opening) renderContacts();
     });
+    if (!client.canCreateGroup) void client.checkGroupCreateAccess().then(allowed => {
+      if (valid(ownRevision, session)) createGroup.hidden = !allowed;
+    }).catch(() => {});
+    directoryRefresh = loadContacts;
     void loadContacts();
   }
 
@@ -596,8 +686,13 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     const list = node('div', 'list');
     body.append(form, list);
     let busy = false;
+    let queued = false;
+    let searched = '';
+    let complete = false;
     let results: UserSearchResult[] = [];
-    const submitted = new Map<string, 'pending' | 'accepted'>();
+    let incoming = new Map<string, FriendRequest>();
+    let outgoing = new Set<string>();
+    const submitted = new Map<string, { status: 'pending' | 'accepted'; requestId: string }>();
     function render(): void {
       list.replaceChildren();
       for (const user of results.filter(user => user.userId !== client.currentUser?.userId)) {
@@ -605,10 +700,15 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
         const main = node('div', 'row-main');
         main.append(node('div', 'row-title', () => contactName(user)));
         if (user.lppId) main.append(node('div', 'preview', raw(user.lppId)));
-        const state = submitted.get(user.userId);
-        const add = button(user.isFriend || state === 'accepted' ? '已是好友' : state === 'pending' ? '已申请' : '添加好友', () => send(user));
-        add.disabled = busy || user.isFriend === true || state !== undefined;
+        const state = submitted.get(user.userId)?.status;
+        const request = incoming.get(user.userId);
+        const isFriend = user.isFriend === true || state === 'accepted';
+        const requested = state === 'pending' || outgoing.has(user.userId);
+        const add = button(isFriend ? '已是好友' : request ? '同意' : requested ? '已申请' : '添加好友',
+          () => request ? accept(request) : send(user));
+        add.disabled = busy || !complete || isFriend || (!request && requested);
         row.append(main, add);
+        if (request && !isFriend) main.append(node('div', 'preview', '待处理'));
         list.append(row);
       }
       if (!list.children.length) list.append(node('div', 'empty', '没有找到可添加的用户'));
@@ -621,25 +721,68 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
       try {
         const result = await client.sendFriendRequest(user.userId, message.value.trim() || undefined);
         if (!valid(ownRevision, session)) return;
-        submitted.set(user.userId, result.status);
+        submitted.set(user.userId, result);
         setText(notice, result.status === 'accepted' ? '已成为好友，可返回发起单聊' : '好友申请已发送，等待对方同意');
       } catch (error) { if (valid(ownRevision, session)) failure(error); }
-      finally { if (valid(ownRevision, session)) { busy = false; search.disabled = false; render(); } }
+      finally { finish(); }
     }
-    form.addEventListener('submit', async event => {
+    async function accept(request: FriendRequest): Promise<void> {
+      if (busy || !valid(ownRevision, session)) return;
+      busy = search.disabled = true;
+      render();
+      try {
+        await client.handleFriendRequest(request.requestId, 'accept');
+        if (!valid(ownRevision, session)) return;
+        queued = true;
+        setText(notice, '好友申请状态已更新');
+      } catch (error) { if (valid(ownRevision, session)) failure(error); }
+      finally { finish(); }
+    }
+    function finish(): void {
+      if (!valid(ownRevision, session)) return;
+      busy = search.disabled = false;
+      render();
+      if (queued) { queued = false; void load(); }
+    }
+    async function load(): Promise<void> {
+      if (!searched || !valid(ownRevision, session)) return;
+      if (busy) { queued = true; return; }
+      const ownLocale = localeRevision;
+      busy = true;
+      complete = false;
+      search.disabled = true;
+      render();
+      try {
+        const [found, requests, contacts] = await Promise.all([
+          client.searchUsers(searched), client.listFriendRequests(), client.listContacts(),
+        ]);
+        if (!valid(ownRevision, session) || ownLocale !== localeRevision) return;
+        const self = client.currentUser?.userId;
+        const friendIds = new Set(contacts.map(row => row.userId));
+        incoming = new Map(requests.filter(row => row.status === 'pending' && row.toUserId === self)
+          .map(row => [row.fromUserId, row]));
+        outgoing = new Set(requests.filter(row => row.status === 'pending' && row.fromUserId === self).map(row => row.toUserId));
+        for (const [userId, result] of submitted) {
+          if (friendIds.has(userId) || requests.some(row => row.requestId === result.requestId &&
+              row.fromUserId === self && row.toUserId === userId && row.status !== 'pending' && row.status !== 'unknown')) {
+            submitted.delete(userId);
+          }
+        }
+        for (const user of found) if (friendIds.has(user.userId)) user.isFriend = true;
+        results = found;
+        complete = true;
+      } catch (error) {
+        if (valid(ownRevision, session) && ownLocale === localeRevision) failure(error);
+      } finally { finish(); }
+    }
+    form.addEventListener('submit', event => {
       event.preventDefault();
       if (busy) return;
-      busy = true;
-      search.disabled = true;
+      searched = query.value.trim();
       setText(notice, '');
-      try {
-        const found = await client.searchUsers(query.value.trim());
-        if (!valid(ownRevision, session)) return;
-        results = found;
-        render();
-      } catch (error) { if (valid(ownRevision, session)) failure(error); }
-      finally { if (valid(ownRevision, session)) { busy = false; search.disabled = false; render(); } }
+      void load();
     });
+    directoryRefresh = load;
   }
 
   function showFriendRequests(): void {
@@ -652,6 +795,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     bottom.append(retry);
     let requests: FriendRequest[] = [];
     let busy = false;
+    let queued = false;
     function render(): void {
       list.replaceChildren();
       for (const request of requests) {
@@ -674,15 +818,17 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
       if (!requests.length) list.append(node('div', 'empty', '暂无好友申请'));
     }
     async function load(): Promise<void> {
-      if (busy || !valid(ownRevision, session)) return;
+      if (!valid(ownRevision, session)) return;
+      if (busy) { queued = true; return; }
       busy = retry.disabled = true;
+      const ownLocale = localeRevision;
       try {
         const rows = await client.listFriendRequests();
-        if (!valid(ownRevision, session)) return;
+        if (!valid(ownRevision, session) || ownLocale !== localeRevision) return;
         requests = rows.filter(row => row.toUserId === client.currentUser?.userId || row.fromUserId === client.currentUser?.userId);
         render();
       } catch (error) { if (valid(ownRevision, session)) failure(error); }
-      finally { if (valid(ownRevision, session)) { busy = retry.disabled = false; render(); } }
+      finally { finish(); }
     }
     async function handle(request: FriendRequest, action: 'accept' | 'reject'): Promise<void> {
       if (busy || !valid(ownRevision, session)) return;
@@ -691,20 +837,27 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
       try {
         await client.handleFriendRequest(request.requestId, action);
         if (!valid(ownRevision, session)) return;
-        // Refresh server state even for an already handled request (409).
-        requests = (await client.listFriendRequests()).filter(row => row.toUserId === client.currentUser?.userId || row.fromUserId === client.currentUser?.userId);
-        if (!valid(ownRevision, session)) return;
+        queued = true; // Refresh authority even for an already handled request (409).
         setText(notice, '好友申请状态已更新');
       } catch (error) { if (valid(ownRevision, session)) failure(error); }
-      finally { if (valid(ownRevision, session)) { busy = retry.disabled = false; render(); } }
+      finally { finish(); }
     }
+    function finish(): void {
+      if (!valid(ownRevision, session)) return;
+      busy = retry.disabled = false;
+      render();
+      if (queued) { queued = false; void load(); }
+    }
+    directoryRefresh = load;
     void load();
   }
 
   function showCreateGroup(): void {
     if (!client.isAuthenticated) { showLogin(); return; }
+    if (!client.canCreateGroup) return;
     const ownRevision = reset('group', '新建群聊');
     const session = client.sessionRevision;
+    const personal = client.currentUser?.spaceId === 'personal';
     const form = node('form', 'new-chat') as HTMLFormElement;
     const name = input('text', '群名称', 'off');
     name.required = true;
@@ -712,65 +865,103 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     const submit = node('button', 'primary wide', '创建群聊') as HTMLButtonElement;
     submit.type = 'submit';
     submit.disabled = true;
-    const retry = button('刷新可选好友', () => load());
-    form.append(field('群名称', name), node('p', 'muted', '选择好友加入群聊，也可以先创建空群。'), retry, list, submit);
+    const retry = button(personal ? '刷新可选好友' : '刷新', () => load());
+    form.append(field('群名称', name), node('p', 'muted', personal ? '选择好友加入群聊，也可以先创建空群。' : '联系人'), retry, list, submit);
     body.append(form);
     const selected = new Set<string>();
     let busy = false;
     let created = false;
+    let queued = false;
+    let loaded = false;
+    function updateSubmit(): void { submit.disabled = busy || created || !loaded || (!personal && !selected.size); }
     async function load(): Promise<void> {
-      if (busy || !valid(ownRevision, session)) return;
+      if (!valid(ownRevision, session)) return;
+      if (busy) { queued = true; return; }
+      const ownLocale = localeRevision;
       busy = retry.disabled = true;
-      submit.disabled = true;
+      updateSubmit();
       try {
-        const contacts = await client.listContacts();
-        if (!valid(ownRevision, session)) return;
-        selected.clear();
+        const contacts = await client.listGroupCandidates();
+        if (!valid(ownRevision, session) || ownLocale !== localeRevision) return;
+        loaded = true;
+        const available = new Set(contacts.map(contact => contact.userId));
+        for (const id of selected) if (!available.has(id)) selected.delete(id);
         list.replaceChildren();
-        for (const contact of contacts.filter(contact => contact.userId !== client.currentUser?.userId)) {
+        for (const contact of contacts) {
           const checkbox = input('checkbox', () => t('邀请{name}', { name: contactName(contact) }), 'off');
           checkbox.style.width = 'auto';
-          checkbox.addEventListener('change', () => { if (checkbox.checked) selected.add(contact.userId); else selected.delete(contact.userId); });
+          checkbox.checked = selected.has(contact.userId);
+          checkbox.addEventListener('change', () => {
+            if (checkbox.checked) selected.add(contact.userId); else selected.delete(contact.userId);
+            updateSubmit();
+          });
           const row = node('label', 'row');
           row.append(checkbox, node('span', 'row-title', () => contactName(contact)));
           list.append(row);
         }
-        if (!list.children.length) list.append(node('p', 'muted', '暂无好友，可先添加好友。'));
+        if (!list.children.length) list.append(node('p', 'muted', personal ? '暂无好友，可先添加好友。' : '暂无联系人。'));
       } catch (error) { if (valid(ownRevision, session)) failure(error); }
-      finally { if (valid(ownRevision, session)) { busy = retry.disabled = false; submit.disabled = created; } }
+      finally { finish(); }
+    }
+    function finish(): void {
+      if (!valid(ownRevision, session)) return;
+      busy = retry.disabled = false;
+      updateSubmit();
+      if (queued && !created) { queued = false; void load(); }
     }
     form.addEventListener('submit', async event => {
       event.preventDefault();
-      if (busy || created) return;
+      if (submit.disabled) return;
       busy = retry.disabled = submit.disabled = true;
       try {
         const result = await client.createGroup({ title: name.value.trim(), memberUserIds: [...selected] });
         if (!valid(ownRevision, session)) return;
         created = true;
-        await openConversation(result);
+        await openConversation(result, undefined, true);
       } catch (error) { if (valid(ownRevision, session)) failure(error); }
-      finally { if (valid(ownRevision, session)) { busy = retry.disabled = false; submit.disabled = created; } }
+      finally { finish(); }
     });
+    directoryRefresh = load;
     void load();
   }
 
-  async function openConversation(requested: ConversationTarget, sdkTitle?: string): Promise<void> {
+  async function openConversation(requested: ConversationTarget, sdkTitle?: string, useServerTitle = false): Promise<void> {
     if (closed) throw new Error(t('聊天界面已关闭'));
     if (!client.isAuthenticated) throw new Error(t('请先登录'));
     const requestedTitle = requested.titleIsDefault ? (requested.type === 'group' ? '群聊' : '聊天') : requested.title ? raw(requested.title) : '聊天';
     const ownRevision = reset('chat', sdkTitle ?? requestedTitle);
     const session = client.sessionRevision;
-    target = { ...requested };
+    const ownLocale = localeRevision;
+    target = undefined;
     currentMessages = [];
     lastRead = 0;
     hasHistory = true;
     body.append(node('div', 'loader', '正在加载消息…'));
+    const renderTitle = (resolved: Conversation): void => {
+      setText(title, sdkTitle ?? (!useServerTitle && requested.title ? requestedTitle :
+        resolved.titleIsDefault ? (resolved.type === 'group' ? '群聊' : '聊天') : raw(resolved.title)));
+    };
     try {
       // Resolve the server-owned conversation type before selecting a message route.
       const resolved = await client.getConversation(requested.conversationId);
       if (!valid(ownRevision, session)) return;
       target = resolved;
-      setText(title, sdkTitle ?? (requested.title ? requestedTitle : resolved.titleIsDefault ? (resolved.type === 'group' ? '群聊' : '聊天') : raw(resolved.title)));
+      lastRead = resolved.lastReadSeq ?? 0;
+      renderTitle(resolved);
+      if (!sdkTitle && (useServerTitle || !requested.title)) {
+        let titleRequest = 0;
+        titleRefresh = async () => {
+          const request = ++titleRequest;
+          const ownLocale = localeRevision;
+          try {
+            const updated = await client.getConversation(requested.conversationId);
+            if (valid(ownRevision, session) && ownLocale === localeRevision && request === titleRequest) renderTitle(updated);
+          } catch {
+            // A pending or temporary directory error does not disturb this chat.
+          }
+        };
+        if (ownLocale !== localeRevision) void titleRefresh();
+      }
       renderComposer();
       await loadMessages(false);
     } catch (error) {
@@ -840,45 +1031,84 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     });
   }
 
-  async function loadMessages(older: boolean): Promise<void> {
-    if (closed || page !== 'chat' || !target || (older ? historyBusy : chatBusy)) return;
+  async function loadMessages(older: boolean, reconcile = false): Promise<void> {
+    if (closed || page !== 'chat' || !target) return;
+    if (!older) reconcileHistory ||= reconcile;
+    if (chatBusy || historyBusy) {
+      if (!older) chatRefreshQueued = true;
+      return;
+    }
+    const reconcileLoaded = !older && reconcileHistory;
+    if (!older) reconcileHistory = false;
     if (older) historyBusy = true; else chatBusy = true;
     const ownRevision = revision;
     const ownMessageRevision = messageRevision;
-    const validSnapshot = (): boolean => valid(ownRevision, session) && messageRevision === ownMessageRevision;
     const session = client.sessionRevision;
+    const ownLocale = localeRevision;
+    const validSnapshot = (): boolean => valid(ownRevision, session) &&
+      messageRevision === ownMessageRevision && localeRevision === ownLocale;
     const currentTarget = target;
-    const firstSeq = currentMessages.reduce((min, message) => message.seq > 0 ? Math.min(min, message.seq) : min, Infinity);
+    const previous = currentMessages;
+    const firstSeq = oldestSequence(previous);
+    const lastSeq = previous.reduce((max, message) => Math.max(max, message.seq), 0);
     if (historyButton) historyButton.disabled = true;
     const oldHeight = body.scrollHeight;
     const oldTop = body.scrollTop;
     const shouldScroll = !currentMessages.length || body.scrollHeight - body.scrollTop - body.clientHeight < 100;
     try {
-      const result = await client.listMessages(currentTarget, { limit: 50, ...(older && Number.isFinite(firstSeq) ? { beforeSeq: firstSeq } : {}) });
+      const limit = 50;
+      if (older && !Number.isFinite(firstSeq)) return;
+      let result = await client.listMessages(currentTarget, { limit, ...(older ? { beforeSeq: firstSeq } : {}) });
       if (!validSnapshot()) return;
-      if (older || !currentMessages.length) hasHistory = result.length >= 50;
-      if (older) currentMessages = mergeMessages(currentMessages, result);
-      else {
-        // Replace the authoritative newest window, including removals and recalls.
-        // Fewer than one full page means no older messages remain on the server.
-        const first = result.reduce((min, message) => Math.min(min, message.seq), Infinity);
-        const retained = result.length >= 50 ? currentMessages.filter((message) => message.seq < first) : [];
-        currentMessages = mergeMessages(retained, result);
+      let hasOlderPage = result.length >= limit;
+      if (older) {
+        if (result.some(row => row.seq >= firstSeq)) throw new ImSdkError('INVALID_RESPONSE', '消息列表格式无效');
+        hasHistory = hasOlderPage;
+        currentMessages = applyRecalls(mergeMessages(currentMessages, result));
+      } else {
+        // Backfill only to the previous newest record when a burst overtakes
+        // the newest page. Reconciliation revalidates the entire loaded range.
+        const anchor = reconcileLoaded && Number.isFinite(firstSeq) ? firstSeq : lastSeq;
+        let oldest = oldestSequence(result);
+        while (anchor > 0 && hasOlderPage && oldest > anchor && Number.isFinite(oldest)) {
+          const next = await client.listMessages(currentTarget, { limit, beforeSeq: oldest });
+          if (!validSnapshot()) return;
+          if (next.some(row => row.seq >= oldest)) throw new ImSdkError('INVALID_RESPONSE', '消息列表格式无效');
+          hasOlderPage = next.length >= limit;
+          result = mergeMessages(next, result);
+          oldest = oldestSequence(result);
+        }
+        const beforeIds = new Set(previous.map(row => row.messageId));
+        const returnedIds = new Set(result.map(row => row.messageId));
+        const acknowledged = currentMessages.filter(row =>
+          row.isSelf && !beforeIds.has(row.messageId) && !returnedIds.has(row.messageId));
+        const retained = hasOlderPage ? previous.filter(row => row.seq < oldest) : [];
+        currentMessages = applyRecalls(mergeMessages(mergeMessages(retained, result), acknowledged));
+        if (!retained.length || reconcileLoaded) hasHistory = hasOlderPage;
       }
       renderMessages(!older && shouldScroll);
       if (older) body.scrollTop = body.scrollHeight - oldHeight + oldTop;
-      void markVisibleRead();
+      scheduleVisibleRead();
     } catch (error) {
       if (validSnapshot()) {
         failure(error);
         if (!timeline) body.replaceChildren(node('div', 'empty', '消息加载失败，请点击刷新重试。'));
       }
     } finally {
-      if (validSnapshot()) {
+      if (valid(ownRevision, session)) {
         if (older) historyBusy = false; else chatBusy = false;
         if (historyButton) historyButton.disabled = false;
+        if (chatRefreshQueued) {
+          chatRefreshQueued = false;
+          void loadMessages(false);
+        }
       }
     }
+  }
+
+  function applyRecalls(messages: Message[]): Message[] {
+    return messages.filter(row => recalls.get(row.messageId) !== true).map(row =>
+      recalls.has(row.messageId) && row.type !== 'recalled' ? { ...row, type: 'recalled', text: '' } : row);
   }
 
   function renderMessages(scrollToBottom: boolean): void {
@@ -892,6 +1122,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     }
     for (const message of currentMessages) {
       const item = node('article', `message${message.isSelf ? ' self' : ''}`);
+      if (!message.isSelf && message.seq > 0) item.dataset.readSequence = String(message.seq);
       item.append(node('div', 'meta', () => `${message.isSelf ? t('我') : message.senderName || message.senderUserId || t('对方')} · ${formatTimestamp(message.sentAt, locale())}`));
       const bubble = node('div', `bubble${message.type === 'text' ? '' : ' unsupported'}`, message.type === 'text' ? raw(message.text) : unsupportedLabel(message.type));
       item.append(bubble);
@@ -902,17 +1133,44 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     if (scrollToBottom) body.scrollTop = body.scrollHeight;
   }
 
+  function scheduleVisibleRead(): void {
+    if (readTimer !== undefined || readBusy || page !== 'chat') return;
+    readTimer = window.setTimeout(() => {
+      readTimer = undefined;
+      void markVisibleRead();
+    }, 200);
+  }
+
   async function markVisibleRead(): Promise<void> {
-    if (closed || page !== 'chat' || !target || document.visibilityState === 'hidden' || body.scrollHeight - body.scrollTop - body.clientHeight > 120) return;
-    const seq = currentMessages.reduce((max, message) => Math.max(max, message.seq), 0);
+    if (closed || page !== 'chat' || !target || !timeline || readBusy || !hostRecheck.hidden ||
+        document.visibilityState === 'hidden' || getComputedStyle(body).visibility !== 'visible') return;
+    const viewport = body.getBoundingClientRect();
+    let seq = 0;
+    for (const row of timeline.querySelectorAll<HTMLElement>('[data-read-sequence]')) {
+      const bounds = row.getBoundingClientRect();
+      if (Math.min(bounds.bottom, viewport.bottom, window.innerHeight) > Math.max(bounds.top, viewport.top, 0) &&
+          Math.min(bounds.right, viewport.right, window.innerWidth) > Math.max(bounds.left, viewport.left, 0)) {
+        seq = Math.max(seq, Number(row.dataset.readSequence));
+      }
+    }
     if (!seq || seq <= lastRead) return;
     const ownRevision = revision;
     const session = client.sessionRevision;
+    readBusy = true;
+    let succeeded = false;
     try {
       await client.markRead(target, seq);
-      if (valid(ownRevision, session)) lastRead = Math.max(lastRead, seq);
-    } catch (error) {
-      if (valid(ownRevision, session)) failure(error);
+      if (valid(ownRevision, session)) {
+        lastRead = Math.max(lastRead, seq);
+        succeeded = true;
+      }
+    } catch {
+      // Retry on the next visible refresh or scroll instead of interrupting chat.
+    } finally {
+      if (valid(ownRevision, session)) {
+        readBusy = false;
+        if (succeeded) scheduleVisibleRead();
+      }
     }
   }
 
@@ -945,16 +1203,29 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     }
   }
 
-  function refreshCurrent(): Promise<unknown> | void {
-    setText(notice, '');
+  function refreshCurrent(clearNotice = false): Promise<unknown> | void {
+    if (clearNotice) setText(notice, '');
     if (page === 'list') return loadConversations(false);
     if (page === 'chat') return loadMessages(false);
-    if (page === 'service' && serviceRequest) return openCustomerService(serviceRequest);
-    if (page === 'requests') return showFriendRequests();
+    if (page === 'service' && serviceRequest && clearNotice) return openCustomerService(serviceRequest);
+    return directoryRefresh?.();
+  }
+  function refreshPresentation(): void {
+    applyPresentation();
+    const selected = locale();
+    if (displayedLocale === selected) return;
+    displayedLocale = selected;
+    localeRevision++;
+    if (page === 'list') void loadConversations(false);
+    if (page === 'chat') {
+      void titleRefresh?.();
+      void loadMessages(false, true);
+    }
+    void directoryRefresh?.();
   }
   handleEvent = (event) => {
     if (closed) return;
-    if (event.type === 'presentationChanged') { applyPresentation(); return; }
+    if (event.type === 'presentationChanged') { refreshPresentation(); return; }
     if (event.type === 'ready') {
       scheduleRefresh();
       if (client.config?.hostManagedAuth) void enterHostMessenger();
@@ -976,26 +1247,34 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
       else if (page === 'host') showList();
       return;
     }
-    if (event.type === 'hostSessionError') { showHostState('聊天暂不可用，请重试'); return; }
+    if (event.type === 'hostSessionError') {
+      if (client.isAuthenticated) setText(notice, '聊天暂不可用，请重试');
+      else if (page !== 'host' || hostRecheck.hidden) showHostState('聊天暂不可用，请重试');
+      return;
+    }
     if (event.type === 'shutdown') { close(); return; }
     if (event.type === 'connectionChanged') {
       const value = String(event.state ?? event.status ?? '');
       setText(status, value === 'connected' ? '已连接' : value === 'reconnecting' ? '正在恢复连接…' : value === 'connecting' ? '正在连接…' : '连接暂不可用，可手动刷新');
     }
-    if (event.type === 'conversationDeleted' && page === 'chat' && (!event.conversationId || event.conversationId === target?.conversationId)) { showList(); return; }
-    if (event.type === 'messagesChanged' && page === 'chat' && (!event.conversationId || event.conversationId === target?.conversationId)) {
+    if (event.type === 'conversationDeleted' && page === 'chat' && event.conversationId === target?.conversationId && target) { showList(); return; }
+    if (event.type === 'conversationPresentationChanged' && page === 'chat' &&
+        (!event.conversationId || event.conversationId === target?.conversationId)) void titleRefresh?.();
+    if (event.type === 'messagesChanged' && event.readReceipt !== true && page === 'chat' &&
+        (!event.conversationId || event.conversationId === target?.conversationId)) {
       if (event.reset && target) {
-        // Retire message snapshots while preserving the draft and send attempt ID.
+        // A mutation invalidates older in-flight reads. Leave the input mounted.
         messageRevision++;
-        chatBusy = historyBusy = false;
-        currentMessages = [];
-        hasHistory = true;
-        timeline = undefined;
-        body.replaceChildren(node('div', 'loader', '正在更新消息…'));
+        if (typeof event.messageId === 'string' && event.recalled === true) {
+          recalls.set(event.messageId, event.silent === true);
+          currentMessages = applyRecalls(currentMessages);
+          renderMessages(false);
+        }
       }
-      void loadMessages(false);
+      void loadMessages(false, event.reset === true || event.reconcile === true);
     }
     if (event.type === 'conversationsChanged' && page === 'list') void loadConversations(false);
+    if (event.type === 'contactsChanged') void directoryRefresh?.();
     if (event.type === 'customerServiceChanged' && page === 'service') {
       // A handoff notification is only a refresh hint; the REST response grants chat access.
       setText(status, '客服状态有更新，请刷新查看');
@@ -1004,19 +1283,14 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
   const onVisibility = (): void => {
     if (document.visibilityState === 'hidden' || closed) return;
     if (client.config?.hostManagedAuth) {
-      // A missed host notification can leave the old account here. Hide it
-      // synchronously while the foreground snapshot is still pending.
-      showHostState();
-      void client.synchronizeHostSession().then(authenticated => {
-        if (!closed && authenticated) {
-          if (page === 'host') showList(); else return refreshCurrent();
-        }
-      }).catch(() => { if (!closed) showHostState('聊天暂不可用，请重试'); });
+      if (page === 'host') void enterHostMessenger();
+      else void checkForegroundHost();
     } else void Promise.resolve(refreshCurrent()).catch(failure);
+    scheduleVisibleRead();
   };
-  const onScroll = (): void => { void markVisibleRead(); };
+  const onScroll = (): void => { scheduleVisibleRead(); };
   document.addEventListener('visibilitychange', onVisibility);
-  const onLanguage = (): void => { if (!closed && client.config?.locale === 'system') applyPresentation(); };
+  const onLanguage = (): void => { if (!closed && client.config?.locale === 'system') refreshPresentation(); };
   window.addEventListener('languagechange', onLanguage);
   body.addEventListener('scroll', onScroll, { passive: true });
   // REST refresh covers missed events and browser suspension without retaining credentials.
@@ -1040,6 +1314,7 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
     serviceRequest = undefined;
     unsubscribe();
     if (refreshTimer !== undefined) window.clearInterval(refreshTimer);
+    if (readTimer !== undefined) window.clearTimeout(readTimer);
     refreshTimer = undefined;
     document.removeEventListener('visibilitychange', onVisibility);
     window.removeEventListener('languagechange', onLanguage);
@@ -1053,13 +1328,16 @@ export function mountMessenger(client: ImSdkClient, container: HTMLElement): ImS
 
   if (client.config?.hostManagedAuth) void enterHostMessenger();
   else if (client.isAuthenticated) showList(); else showLogin();
-  return { openConversation, openCustomerService, close };
+  return { openConversation: requested => openConversation(requested), openCustomerService, close };
 }
 
 function mergeMessages(existing: Message[], incoming: Message[]): Message[] {
   const indexed = new Map(existing.map((message) => [message.messageId, message]));
   for (const message of incoming) indexed.set(message.messageId, message);
   return [...indexed.values()].sort((a, b) => a.seq - b.seq || a.sentAt.localeCompare(b.sentAt));
+}
+function oldestSequence(messages: Message[]): number {
+  return messages.reduce((min, message) => message.seq > 0 ? Math.min(min, message.seq) : min, Infinity);
 }
 function mergeConversations(existing: Conversation[], incoming: Conversation[]): Conversation[] {
   const indexed = new Map(existing.map((conversation) => [conversation.conversationId, conversation]));

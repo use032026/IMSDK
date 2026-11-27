@@ -18,9 +18,11 @@ required = [
     'packages/im_sdk/ios/im_sdk.podspec',
     'module/pubspec.yaml', 'module/pubspec.lock', 'module/lib/main.dart',
     'examples/flutter_host/pubspec.yaml', 'examples/flutter_host/lib/main.dart',
-    'l10n.resources.json', 'l10n.resources.lock.json',
+    'l10n.source.json', 'l10n.changes.json', 'l10n.resources.json',
+    'l10n.resources.lock.json', 'packages/im_sdk/assets/l10n/sdk_locale_manifest.json',
     'scripts/build_android.sh', 'scripts/build_ios.sh',
     'scripts/resolve_dependencies.sh', 'README.md', '.flutter-version',
+    'web/src/generated/l10n/sdk_catalog.ts',
 ]
 missing = [item for item in required if not (root / item).is_file()]
 if missing:
@@ -36,8 +38,9 @@ for relative in ('packages/im_sdk/pubspec.yaml', 'module/pubspec.yaml', 'example
 
 excluded_dirs = {'.git', '.dart_tool', '.gradle', '.idea', '.android', '.ios', '.symlinks', 'build', 'Pods', 'dist', 'logs', '__pycache__'}
 excluded_files = {'.packages', '.flutter-plugins', '.flutter-plugins-dependencies', 'local.properties', 'key.properties', 'Generated.xcconfig', 'flutter_export_environment.sh', 'pubspec_overrides.yaml', 'google-services.json', 'GoogleService-Info.plist', '.DS_Store'}
-excluded_patterns = ('*.iml', '.env', '.env.*', '*.jks', '*.keystore', '*.p12', '*.pfx', '*.mobileprovision', '*.p8', '*.pem', '*.key', '*.cer', '*.crt')
-roots = ('packages', 'module', 'native', 'examples', 'scripts', 'docs', 'test', 'README.md', '.gitignore', '.flutter-version', 'l10n.resources.json', 'l10n.resources.lock.json')
+excluded_patterns = ('*.iml', '.env', '.env.*', 'GeneratedPluginRegistrant.*', '*.jks', '*.keystore', '*.p12', '*.pfx', '*.mobileprovision', '*.p8', '*.pem', '*.key', '*.cer', '*.crt')
+flutter_ephemeral = Path('examples/flutter_host/ios/Flutter/ephemeral')
+roots = ('packages', 'module', 'native', 'examples', 'scripts', 'docs', 'test', 'README.md', '.gitignore', '.flutter-version', 'l10n.source.json', 'l10n.changes.json', 'l10n.resources.json', 'l10n.resources.lock.json', 'web/src/generated/l10n/sdk_catalog.ts')
 files = []
 for entry in roots:
     start = root / entry
@@ -46,7 +49,7 @@ for entry in roots:
     candidates = [start] if start.is_file() else list(start.rglob('*'))
     for path in candidates:
         relative = path.relative_to(root)
-        if set(relative.parts[:-1]) & excluded_dirs or path.name in excluded_files:
+        if set(relative.parts[:-1]) & excluded_dirs or path.name in excluded_files or relative.is_relative_to(flutter_ephemeral):
             continue
         if any(fnmatch.fnmatch(path.name, pattern) for pattern in excluded_patterns):
             continue

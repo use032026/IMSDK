@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "แชร์ผ่านระบบเสร็จแล้ว โปรดตรวจสอบไฟล์ในแอปผู้รับ",
   "diagnosticsCancelled": "ยกเลิกการแชร์แล้ว คุณส่งออกใหม่ได้",
   "diagnosticsUnconfirmed": "ยืนยันการแชร์ไม่ได้ โปรดตรวจสอบแอปผู้รับ",
-  "diagnosticsFailed": "ดำเนินการไม่สำเร็จ โปรดลองอีกครั้ง"
+  "diagnosticsFailed": "ดำเนินการไม่สำเร็จ โปรดลองอีกครั้ง",
+  "scanIncomingFriendRequest": "บุคคลนี้ส่งคำขอเป็นเพื่อนถึงคุณแล้ว โปรดตรวจสอบก่อน",
+  "chatGroupAddedToGroup": "คุณถูกเพิ่มในแชทกลุ่มแล้ว",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "ยังยืนยันผลการเพิ่มในรายการโปรดไม่ได้ โปรดลองอีกครั้ง",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

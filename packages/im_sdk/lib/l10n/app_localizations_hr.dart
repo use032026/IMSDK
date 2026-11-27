@@ -3357,4 +3357,18 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Radnja nije uspjela. Pokušajte ponovno.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Ova vam je osoba već poslala zahtjev za prijateljstvo. Najprije ga pregledajte.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Dodani ste u grupni razgovor';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Nije moguće potvrditi dodavanje u omiljene. Pokušajte ponovno';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

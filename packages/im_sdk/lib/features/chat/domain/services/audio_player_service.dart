@@ -8,6 +8,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
 import 'package:im_sdk/core/diagnostics/media_diagnostics.dart';
+import 'package:im_sdk/core/media/image_file_service.dart';
+import 'package:im_sdk/core/network/chat_media_url.dart';
 import 'package:im_sdk/core/network/http_client.dart';
 import 'package:im_sdk/core/platform/local_file.dart';
 
@@ -24,22 +26,26 @@ class AudioPlayerService {
   final Dio? _dio;
   final Dio _unauthenticatedDio;
   final bool _ownsUnauthenticatedDio;
+  final String Function() _apiBaseUrl;
   final AudioPlayer _player;
   final DiagnosticScope diagnosticScope;
   late final StreamSubscription<PlaybackEvent> _diagnosticSubscription;
   MediaDiagnosticOperation? _diagnostic;
   MediaFailureStage _diagnosticStage = MediaFailureStage.load;
   int _playbackRequestVersion = 0;
+  bool _disposed = false;
 
   AudioPlayerService(
       {Dio? dio,
       Dio? unauthenticatedDio,
+      String Function()? apiBaseUrl,
       AudioPlayer? player,
       this.diagnosticScope = DiagnosticScope.unattributed})
       : _player = player ?? AudioPlayer(),
         _dio = dio,
         _unauthenticatedDio = unauthenticatedDio ?? Dio(),
-        _ownsUnauthenticatedDio = unauthenticatedDio == null {
+        _ownsUnauthenticatedDio = unauthenticatedDio == null,
+        _apiBaseUrl = apiBaseUrl ?? (() => HttpClient.baseUrl) {
     _diagnosticSubscription = _player.playbackEventStream.listen((_) {},
         onError: (Object error, StackTrace stack) {
       _recordFailure(_diagnostic, _diagnosticStage, error, stack);
@@ -94,8 +100,7 @@ class AudioPlayerService {
     var stage = MediaFailureStage.load;
     _diagnosticStage = stage;
     try {
-      final source =
-          await _buildAudioSource(url, token: token, diagnostic: diagnostic);
+      final source = await _buildAudioSource(url, diagnostic: diagnostic);
       if (!isCurrentPlaybackRequest(effectiveRequestVersion)) return;
       stage = MediaFailureStage.initialize;
       _diagnosticStage = stage;
@@ -133,13 +138,14 @@ class AudioPlayerService {
   }
 
   Future<void> dispose() async {
+    _disposed = true;
     await _diagnosticSubscription.cancel();
     await _player.dispose();
     if (_ownsUnauthenticatedDio) _unauthenticatedDio.close(force: true);
   }
 
   Future<AudioSource> _buildAudioSource(String rawUrl,
-      {String? token, required MediaDiagnosticOperation diagnostic}) async {
+      {required MediaDiagnosticOperation diagnostic}) async {
     final url = rawUrl.trim();
     if (url.isEmpty) throw ArgumentError('Voice url is empty');
 
@@ -148,44 +154,50 @@ class AudioPlayerService {
       return AudioSource.file(filePath);
     }
 
-    final uri = _resolveRemoteUri(url);
-    final cachedPath = await diagnostic.observe(
+    final uri = ChatMediaRequest.resolve(url, _apiBaseUrl()).uri;
+    final downloaded = await diagnostic.observe(
         MediaFailureStage.download, () => _downloadRemoteVoice(uri));
-    if (cachedPath != null) {
-      return AudioSource.file(cachedPath);
+    if (downloaded != null) {
+      return downloaded;
     }
 
-    final authHeaders = token == null ||
-            token.isEmpty ||
-            !isSameOriginMediaUri(uri, Uri.parse(HttpClient.baseUrl))
-        ? null
-        : <String, String>{'Authorization': 'Bearer $token'};
-    return AudioSource.uri(uri, headers: authHeaders);
+    // Without an account transport there is no credential owner. The native
+    // fallback remains anonymous, including any redirects it may follow.
+    return AudioSource.uri(uri);
   }
 
-  Future<String?> _downloadRemoteVoice(Uri uri) async {
+  Future<AudioSource?> _downloadRemoteVoice(Uri uri) async {
     final dio = _dio;
     if (dio == null) return null;
 
+    final response = await ImageDownloadTransport(
+      accountDio: dio,
+      publicDio: _unauthenticatedDio,
+      apiBaseUrl: _apiBaseUrl,
+      isCurrent: () => !_disposed,
+      namespace: 'voice',
+      diagnosticScope: diagnosticScope,
+      kind: DiagnosticMediaKind.audio,
+    ).get(uri.toString());
+    final bytes = await response.content
+        .fold<List<int>>([], (buffer, chunk) => buffer..addAll(chunk));
+    if (bytes.isEmpty) throw StateError('Voice response is empty');
+    final contentType = switch (response.fileExtension.toLowerCase()) {
+      '.mp3' => 'audio/mpeg',
+      '.aac' => 'audio/aac',
+      '.ogg' || '.oga' || '.opus' => 'audio/ogg',
+      '.wav' => 'audio/wav',
+      _ => 'audio/mp4',
+    };
     try {
-      final downloadDio =
-          isSameOriginMediaUri(uri, Uri.parse(HttpClient.baseUrl))
-              ? dio
-              : _unauthenticatedDio;
-      final response = await downloadDio.get<List<int>>(
-        uri.toString(),
-        options: Options(responseType: ResponseType.bytes),
-      );
-      final bytes = response.data;
-      if (bytes == null || bytes.isEmpty) return null;
-
-      return cacheBytesToLocalFile(
+      final path = await cacheBytesToLocalFile(
         bytes: bytes,
         directoryName: 'lpp_voice',
-        fileName: _cacheFileName(uri, response.headers.value('content-type')),
+        fileName: _cacheFileName(uri, contentType),
       );
+      return AudioSource.file(path);
     } on UnsupportedError {
-      return null;
+      return _DownloadedAudioSource(bytes, contentType);
     }
   }
 
@@ -231,11 +243,29 @@ class AudioPlayerService {
     }
     return url;
   }
+}
 
-  Uri _resolveRemoteUri(String url) {
-    final parsed = Uri.tryParse(url);
-    if (parsed != null && parsed.hasScheme) return parsed;
-    return Uri.parse(HttpClient.baseUrl).resolve(url);
+// just_audio's byte source keeps network access in the credential transport
+// when a platform has no local file runtime.
+// ignore: experimental_member_use
+class _DownloadedAudioSource extends StreamAudioSource {
+  _DownloadedAudioSource(this.bytes, this.contentType);
+  final List<int> bytes;
+  final String contentType;
+
+  @override
+  // ignore: experimental_member_use
+  Future<StreamAudioResponse> request([int? start, int? end]) async {
+    final offset = start ?? 0;
+    final limit = end ?? bytes.length;
+    // ignore: experimental_member_use
+    return StreamAudioResponse(
+      sourceLength: bytes.length,
+      contentLength: limit - offset,
+      offset: offset,
+      stream: Stream.value(bytes.sublist(offset, limit)),
+      contentType: contentType,
+    );
   }
 }
 

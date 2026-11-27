@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/permissions/app_permissions.dart';
+import 'package:im_sdk/core/space/space_context.dart';
 import 'package:im_sdk/core/utils/debouncer.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/app_update/presentation/app_update_provider.dart';
@@ -80,8 +82,18 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
     });
   }
 
+  bool _hasRequiredMembers(SpaceContext? space, Iterable<Contact> contacts) =>
+      contacts.any((contact) => _selectedIds.contains(contact.userId)) ||
+      (widget.existingGroupId == null && space?.isPersonal == true);
+
   Future<void> _handleCreate(List<Contact> contacts) async {
-    if (_isSubmitting) return;
+    final space = ref.read(currentSpaceProvider);
+    if (_isSubmitting || !_hasRequiredMembers(space, contacts)) return;
+    if (widget.existingGroupId == null &&
+        !AppPermissions.canCreateGroup(space)) {
+      _showGroupCreationUnavailable();
+      return;
+    }
     if (widget.existingGroupId == null &&
         !ref.read(teenModePolicyProvider).canAttemptCreateGroup) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -98,7 +110,10 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
     setState(() => _isSubmitting = true);
     final dio = ref.read(dioProvider);
     try {
-      final memberIds = _selectedIds.toList();
+      final memberIds = contacts
+          .where((contact) => _selectedIds.contains(contact.userId))
+          .map((contact) => contact.userId)
+          .toList();
 
       // 如果是向现有群添加成员
       if (widget.existingGroupId != null) {
@@ -233,9 +248,11 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
   Widget build(BuildContext context) {
     final space = ref.watch(currentSpaceProvider);
     final myUserId = space?.userId ?? '';
-    final isEmployeeSpace =
-        !widget.messagingOnly && (space?.isEmployee ?? false);
+    final isEmployeeSpace = space?.isEmployee == true &&
+        (!widget.messagingOnly || widget.existingGroupId == null);
     final isAddMode = widget.existingGroupId != null;
+    final releaseFaceBlocks = ref.watch(appUpdateGroupFeaturesBlockedProvider);
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     // 员工空间：显示企业员工列表（过滤自己）；其他：显示好友列表
@@ -247,7 +264,7 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
       backgroundColor: colorScheme.surfaceContainerLow,
       body: contactsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('加载失败: $e')),
+        error: (_, __) => Center(child: Text(l10n.commonLoadFailed)),
         data: (allContacts) {
           // 员工空间过滤掉自己
           final contacts = isEmployeeSpace || widget.messagingOnly
@@ -266,7 +283,12 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
                 }).toList();
 
           Widget buildContent(_GroupInvitePermission? permission) {
-            final canInvite = permission?.canInvite ?? true;
+            final canInvite = isAddMode
+                ? permission?.canInvite ?? true
+                : AppPermissions.canCreateGroupForReleaseFace(
+                    space,
+                    releaseFaceBlocks: releaseFaceBlocks,
+                  );
             if (isAddMode && !canInvite) {
               return Column(
                 children: [
@@ -294,7 +316,7 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
                         color: colorScheme.onSurface,
                       ),
                       decoration: InputDecoration(
-                        hintText: '输入群聊名称（可选）',
+                        hintText: l10n.groupNameHint,
                         hintStyle: TextStyle(
                           color: colorScheme.onSurfaceVariant,
                           fontSize: 15,
@@ -359,10 +381,14 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
   // AppBar
   Widget _buildHeader(List<Contact> contacts, {bool canComplete = true}) {
     final isAddMode = widget.existingGroupId != null;
-    final title = isAddMode ? '添加群成员' : '发起群聊';
-    final submitEnabled = canComplete &&
-        !_isSubmitting &&
-        (widget.existingGroupId == null || _selectedIds.isNotEmpty);
+    final l10n = AppLocalizations.of(context);
+    final title = isAddMode ? l10n.groupAddMember : l10n.groupCreateTitle;
+    final space = ref.read(currentSpaceProvider);
+    final submitEnabled =
+        canComplete && !_isSubmitting && _hasRequiredMembers(space, contacts);
+    final selectedCount = contacts
+        .where((contact) => _selectedIds.contains(contact.userId))
+        .length;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
@@ -376,7 +402,7 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
               GestureDetector(
                 onTap: () => context.pop(),
                 child: Text(
-                  '取消',
+                  l10n.commonCancel,
                   style: TextStyle(fontSize: 15, color: colorScheme.onSurface),
                 ),
               ),
@@ -396,15 +422,8 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
                     if (isAddMode) _showPermissionDenied();
                     return;
                   }
-                  // 添加成员模式需要选人；创建群模式可以不选人
-                  if (isAddMode && _selectedIds.isEmpty) return;
-                  final space = ref.read(currentSpaceProvider);
-                  final isEmployeeSpace =
-                      !widget.messagingOnly && (space?.isEmployee ?? false);
-                  final allContacts = isEmployeeSpace
-                      ? ref.read(tenantMembersProvider).valueOrNull ?? []
-                      : ref.read(friendsProvider).valueOrNull ?? [];
-                  _handleCreate(allContacts);
+                  if (!submitEnabled) return;
+                  _handleCreate(contacts);
                 },
                 child: Container(
                   padding:
@@ -416,7 +435,7 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    '完成(${_selectedIds.length})',
+                    '${l10n.commonDone} ($selectedCount)',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -490,7 +509,7 @@ class _CreateGroupPageState extends ConsumerState<CreateGroupPage> {
                 onChanged: _onSearchChanged,
                 style: TextStyle(fontSize: 15, color: colorScheme.onSurface),
                 decoration: InputDecoration(
-                  hintText: '搜索',
+                  hintText: AppLocalizations.of(context).commonSearch,
                   hintStyle: TextStyle(
                     color: colorScheme.onSurfaceVariant,
                     fontSize: 15,

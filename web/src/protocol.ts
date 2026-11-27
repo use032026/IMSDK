@@ -36,6 +36,7 @@ export function conversation(value: unknown): Conversation {
     title: string(row.title) || (row.conversationType === 'group' ? '群聊' : '聊天'),
     ...(!string(row.title) ? { titleIsDefault: true } : {}),
     unreadCount: sequence(row.unreadCount), peerUserId: string(row.peerUserId) || undefined,
+    ...(row.lastReadSeq !== undefined ? { lastReadSeq: sequence(row.lastReadSeq) } : {}),
     lastMessage: string(last.preview) || undefined,
     lastMessageAt: string(row.lastActivityAt) || string(last.sentAt) || undefined,
   };

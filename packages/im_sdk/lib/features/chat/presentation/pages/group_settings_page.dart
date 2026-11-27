@@ -9,6 +9,7 @@ import 'package:im_sdk/core/space/account_scope.dart';
 import 'package:im_sdk/core/storage/account_profile_box_provider.dart';
 import 'package:im_sdk/core/widgets/app_alert_dialog.dart';
 import 'package:im_sdk/core/widgets/app_toast.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/chat/data/mappers/group_member_payload_mapper.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
@@ -68,6 +69,7 @@ class GroupMember {
   final bool? isMuted;
   final String? muteUntil;
   final String? muteReason;
+  final bool showOfficialVerification;
 
   const GroupMember({
     required this.userId,
@@ -77,6 +79,7 @@ class GroupMember {
     this.isMuted,
     this.muteUntil,
     this.muteReason,
+    this.showOfficialVerification = false,
   });
 
   GroupMember copyWith({
@@ -98,6 +101,7 @@ class GroupMember {
       isMuted: isMuted ?? this.isMuted,
       muteUntil: clearMuteUntil ? null : (muteUntil ?? this.muteUntil),
       muteReason: clearMuteReason ? null : (muteReason ?? this.muteReason),
+      showOfficialVerification: showOfficialVerification,
     );
   }
 }
@@ -477,6 +481,7 @@ class _GroupMembersNotifier
                       'isMuted': m.isMuted,
                       'muteUntil': m.muteUntil,
                       'muteReason': m.muteReason,
+                      'showOfficialVerification': m.showOfficialVerification,
                     })
                 .toList(),
           ));
@@ -501,6 +506,7 @@ class _GroupMembersNotifier
       isMuted: parseGroupMemberMuted(m),
       muteUntil: m['muteUntil'] as String?,
       muteReason: m['muteReason'] as String?,
+      showOfficialVerification: m['showOfficialVerification'] == true,
     );
   }
 
@@ -530,6 +536,7 @@ class _GroupMembersNotifier
             isMuted: parsed.isMuted,
             muteUntil: parsed.muteUntil,
             muteReason: parsed.muteReason,
+            showOfficialVerification: parsed.showOfficialVerification,
           ),
         );
       }
@@ -974,8 +981,7 @@ class _GroupSettingsPageState extends ConsumerState<GroupSettingsPage> {
         if (contact.displayName.isNotEmpty) contact.userId: contact.displayName
     };
     final members = rawMembers
-        .map((member) => GroupMember(
-              userId: member.userId,
+        .map((member) => member.copyWith(
               displayName: resolveFriendDisplayName(
                 friend: friendsByUserId[member.userId],
                 contextualDisplayName: member.displayName,
@@ -984,8 +990,6 @@ class _GroupSettingsPageState extends ConsumerState<GroupSettingsPage> {
               avatarUrl: member.avatarUrl?.isNotEmpty == true
                   ? member.avatarUrl
                   : avatarByUserId[member.userId],
-              role: member.role,
-              muteReason: member.muteReason,
             ))
         .toList();
     _refreshMembersWhenCountIsStale(
@@ -1566,11 +1570,14 @@ class _MemberCell extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Text(member.displayName,
-                style: TextStyle(fontSize: 11, color: colorScheme.onSurface),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center),
+            OfficialVerifiedName(
+              verified: member.showOfficialVerification,
+              name: Text(member.displayName,
+                  style: TextStyle(fontSize: 11, color: colorScheme.onSurface),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center),
+            ),
           ],
         ),
       ),

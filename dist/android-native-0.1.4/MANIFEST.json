@@ -1,0 +1,142 @@
+{
+  "product": "IM SDK Android",
+  "sdkVersion": "0.1.4",
+  "validatedOn": "2026-11-27",
+  "validationScope": "sdk-release-validation",
+  "localization": {
+    "catalogVersion": "0.3.15",
+    "localeCount": 35,
+    "keysPerLocale": 1044,
+    "nativeManifestSha256": "412edb3a8b4738aa874da722b0fcb271c4f3aa185c98ce9aadd5322d870aa303",
+    "coverageSha256": "408d0cbba68665ec2bfc270127dcaef6fc6a0b9f451b270446320fd86b19a93f",
+    "locales": [
+      "zh-CN",
+      "zh-TW",
+      "en",
+      "ja",
+      "ko",
+      "vi",
+      "ar",
+      "bg",
+      "cs",
+      "da",
+      "de",
+      "el",
+      "es",
+      "fi",
+      "fil",
+      "fr",
+      "hi",
+      "hr",
+      "hu",
+      "id",
+      "it",
+      "ms",
+      "nb",
+      "nl",
+      "pl",
+      "pt-BR",
+      "pt-PT",
+      "ro",
+      "ru",
+      "si",
+      "sk",
+      "sv",
+      "th",
+      "tr",
+      "uk"
+    ],
+    "fallbackPolicy": "SDK/Web exclusive missing translations use English. Existing legal bodies retain their original selection and fallback."
+  },
+  "binaryTreeSha256": "e1a285ebe0e6bc4c24844955716eeaf2ea0399c56e71fd096fd83d02275efe5d",
+  "validation": {
+    "status": "passed",
+    "sdkVersion": "0.1.4",
+    "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.4",
+    "hostMode": "Debug",
+    "sdkMode": "Release",
+    "consumerValidation": {
+      "status": "passed",
+      "javaHostAssembleDebug": "passed",
+      "packagedJavaSnippetCompile": "passed",
+      "packagedKotlinSnippetCompile": "passed",
+      "hostSessionAndPresentationPublicApiCompile": "passed",
+      "kotlinCompilerVersion": "2.2.20",
+      "jvmTarget": "17",
+      "sourceProjectSdkDependency": false,
+      "packageSourcesUnchanged": true,
+      "packageBuildCachesAbsent": true,
+      "resolvedDebugCompileAndRuntimeReleaseDependencies": "passed",
+      "releaseCoordinates": [
+        "com.imsdk:im-sdk-native:0.1.4",
+        "com.startlink.im_sdk_module:flutter_release:0.1.4"
+      ],
+      "ndkIndependentStripTool": "27.0.12077973"
+    },
+    "binaryTreeSha256": "e1a285ebe0e6bc4c24844955716eeaf2ea0399c56e71fd096fd83d02275efe5d",
+    "sampleHostTreeSha256": "68316eea58a8cab2bc5269f87b45c988386be9e0803c9acbd9aa2edd29a0c6ed",
+    "apkSha256": "833d1d77d8e017a8a22835a346fd9310a92d7d20a040b423114696903c103db4",
+    "flutterReleaseAarSha256": "c9b44976abd906ce67ad1aa1fce900a651bedde55e125adacf2bc5c7a3d00704",
+    "nativeFacadeAarSha256": "1e36fcfe5401c317311198d3bd32bfc4ffd511e5aef936f1f57e5bb105d0f3bf",
+    "localeManifestSha256": "412edb3a8b4738aa874da722b0fcb271c4f3aa185c98ce9aadd5322d870aa303",
+    "aarAndApkLocaleManifestsMatchSource": true,
+    "appLibraryPackaging": {
+      "status": "passed",
+      "transform": "NDK llvm-strip --strip-unneeded",
+      "ndkVersionUsedForIndependentReproduction": "27.0.12077973",
+      "requiresAarEqualsMergedAndReproducedStripEqualsGradleStripEqualsApk": true,
+      "architectures": {
+        "arm64-v8a": {
+          "aarAndMergedSha256": "9a43a842f553627346608f7de6b1c9a4c3093c45433e67bb7f9015f603df9fa9",
+          "apkAndStrippedSha256": "9ea189d5539a29df59ef68bbe59a5713a3de2929fe0076cf58ee53cfdd989193",
+          "independentStripMatchesApk": true
+        },
+        "armeabi-v7a": {
+          "aarAndMergedSha256": "937797da433f8e239098e565ca7ea564be8c510e06967349f972692b70c3757d",
+          "apkAndStrippedSha256": "f69e61bf5461b1797b65ca043e378c996da1a4d50a9dc326638c90c1a2d825ea",
+          "independentStripMatchesApk": true
+        },
+        "x86_64": {
+          "aarAndMergedSha256": "3a402b12de54e74395eada9420e1eba78900c2b44b83cf921f44a191a4463397",
+          "apkAndStrippedSha256": "376939524e0157eeeaae65d61628afb6695c348214a14422bc83f2b1abbaf395",
+          "independentStripMatchesApk": true
+        }
+      }
+    },
+    "aarCount": 27,
+    "publicTransitiveDependenciesRequired": true,
+    "hostApkVersionCode": 4,
+    "compileSdk": 36,
+    "targetSdk": 36,
+    "minimumSdk": 24,
+    "completeFlutterAbis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86_64"
+    ],
+    "extraPluginOnlyApkAbis": [
+      "x86"
+    ],
+    "emulatorValidation": {
+      "status": "passed",
+      "apkSha256": "833d1d77d8e017a8a22835a346fd9310a92d7d20a040b423114696903c103db4",
+      "apiLevel": "35",
+      "abi": "arm64-v8a",
+      "steps": [
+        "fresh install",
+        "offline SDK login screen",
+        "return to native host",
+        "reopen SDK login screen"
+      ],
+      "network": "no default network before and after smoke"
+    },
+    "sourceIndependence": "passed"
+  },
+  "realServiceValidation": {
+    "status": "not_run"
+  },
+  "physicalDeviceValidation": "not_run",
+  "remotelyPublished": false,
+  "mavenCoordinate": "com.imsdk:im-sdk-native:0.1.4",
+  "publicTransitiveDependenciesRequired": true
+}

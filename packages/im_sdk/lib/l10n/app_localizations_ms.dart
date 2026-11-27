@@ -3342,4 +3342,19 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Operasi gagal. Sila cuba lagi.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Orang ini sudah menghantar permintaan rakan kepada anda. Semak dahulu.';
+
+  @override
+  String get chatGroupAddedToGroup =>
+      'Anda telah ditambahkan ke sembang kumpulan';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Hasil penambahan ke kegemaran tidak dapat disahkan. Cuba lagi';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

@@ -3345,4 +3345,18 @@ class AppLocalizationsSi extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'ක්‍රියාව අසාර්ථකයි. නැවත උත්සාහ කරන්න.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'මෙම පුද්ගලයා දැනටමත් ඔබට මිතුරු ඉල්ලීමක් යවා ඇත. පළමුව එය සමාලෝචනය කරන්න.';
+
+  @override
+  String get chatGroupAddedToGroup => 'ඔබව සමූහ කතාබහට එක් කර ඇත';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'ප්‍රියතමයන්ට එක් කළ බව තහවුරු කළ නොහැකි විය. නැවත උත්සාහ කරන්න';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

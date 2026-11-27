@@ -249,6 +249,9 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   SessionCredentials? _committedCredentials;
   String? _pendingPlatformRefreshToken;
   String? _pendingDeviceSessionToken;
+  ({PlatformRegistrationResult registration, int authOperation})?
+      _pendingRegistration;
+  int _externalCredentialRevision = 0;
   int _identityRevision = 0;
   int _authOperationGeneration = 0;
   int _tenantDirectoryRefreshGeneration = 0;
@@ -312,6 +315,9 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
     _installIdentityProjection(next.currentSpace, nextSession);
     state = AsyncData(next);
+    if (nextSession != null) {
+      ref.read(httpClientProvider).activatePlatformSession();
+    }
   }
 
   Future<int?> _beginSpaceTransition(
@@ -351,8 +357,13 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       state = AsyncError(error, stackTrace);
       return;
     }
+    final latest = state.valueOrNull;
+    final rollback =
+        latest?.accountSession?.sessionId == previous.accountSession?.sessionId
+            ? latest ?? previous
+            : previous;
     _publishAuthState(
-      previous.copyWith(error: AuthPresentationFailure.spaceSwitch),
+      rollback.copyWith(error: AuthPresentationFailure.spaceSwitch),
     );
     _startTokenRefresh();
     ref.read(spaceTransitionProvider.notifier).fail(revision, error);
@@ -436,6 +447,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   Future<void> _beginIdentityTransition(int authOperation) async {
+    _pendingRegistration = null;
     ref.read(spaceTransitionProvider.notifier).cancel();
     _spaceTransitionRollbackState = null;
     _activeSpaceTransitionRevision = null;
@@ -682,7 +694,10 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   /// Invalidates a pending external login immediately, before queued teardown.
   /// It cannot grant or restore an identity.
   void invalidateExternalSessionOperation() {
-    if (ref.read(externalSessionOnlyProvider)) ++_authOperationGeneration;
+    if (ref.read(externalSessionOnlyProvider)) {
+      ++_authOperationGeneration;
+      _pendingRegistration = null;
+    }
   }
 
   /// Accepts only a server-verified identity from an authenticated SDK host.
@@ -694,6 +709,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     required DateTime expiresAt,
     bool Function()? externalOperationIsCurrent,
     Future<void> Function()? verifyExternalSession,
+    bool preserveActiveSession = false,
   }) async {
     if (!ref.read(externalSessionOnlyProvider)) {
       throw StateError(
@@ -701,16 +717,23 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
     await _waitForLogoutCleanup();
     final authOperation = ++_authOperationGeneration;
+    final expected = preserveActiveSession ? _committedSession : null;
+    if (preserveActiveSession && expected?.scope != scope) {
+      throw const _AuthOperationSuperseded();
+    }
+    bool canCommit() =>
+        _isAuthOperationCurrent(authOperation) &&
+        externalOperationIsCurrent?.call() != false &&
+        (expected == null || _committedSession?.sessionId == expected.sessionId);
     void ensureCurrent() {
-      _ensureAuthOperationCurrent(authOperation);
-      if (externalOperationIsCurrent?.call() == false) {
+      if (!canCommit()) {
         throw const _AuthOperationSuperseded();
       }
     }
 
     try {
       ensureCurrent();
-      await _beginIdentityTransition(authOperation);
+      if (expected == null) await _beginIdentityTransition(authOperation);
       await _serializeAuthMutation(() async {
         ensureCurrent();
         if (scope.serviceRealmId != ServiceRealmConfig.current.realmId ||
@@ -728,7 +751,9 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         ensureCurrent();
         if (!identity.hasStableIdentity ||
             identity.userId.trim() != scope.userId ||
-            identity.platformUserId.trim() != scope.platformUserId) {
+            identity.platformUserId.trim() != scope.platformUserId ||
+            (identity.verifiedSpaceId != null &&
+                identity.verifiedSpaceId != scope.spaceId)) {
           throw const ServerError(
               code: 'AUTH_EXTERNAL_IDENTITY_MISMATCH',
               message: '宿主IM身份与服务端凭证不匹配');
@@ -780,26 +805,45 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
           platformRefreshToken: credentials.platformRefreshToken,
           deviceSessionToken: credentials.deviceSessionToken,
         );
-        final active = await _sessionStore.provisionAndActivate(
-          scope: scope,
-          credentials: safeCredentials,
-          accessTokenIssuedAt: issuedAt.toUtc(),
-          accessTokenExpiresAt: expiresAt.toUtc(),
-          expectedActivationId: predecessor?.activationId,
-          identityRevision: nextRevision,
-          canCommit: () =>
-              _isAuthOperationCurrent(authOperation) &&
-              externalOperationIsCurrent?.call() != false,
-        );
-        ensureCurrent();
-        await verifyExternalSession?.call();
-        ensureCurrent();
-        _identityRevision = nextRevision;
-        _committedSession = active.session;
-        _committedCredentials = active.credentials;
+        final AccountSession session;
+        if (expected != null) {
+          if (predecessor?.activationId != expected.sessionId ||
+              predecessor?.spaceSessionId == null) {
+            throw ActiveSessionConflict();
+          }
+          await _sessionStore.replaceActiveCredentials(
+            expectedCurrentSessionId: expected.sessionId,
+            credentials: safeCredentials,
+            accessTokenIssuedAt: issuedAt,
+            accessTokenExpiresAt: expiresAt,
+            canCommit: canCommit,
+          );
+          ensureCurrent();
+          session = expected;
+        } else {
+          final active = await _sessionStore.provisionAndActivate(
+            scope: scope,
+            credentials: safeCredentials,
+            accessTokenIssuedAt: issuedAt.toUtc(),
+            accessTokenExpiresAt: expiresAt.toUtc(),
+            expectedActivationId: predecessor?.activationId,
+            identityRevision: nextRevision,
+            canCommit: canCommit,
+          );
+          ensureCurrent();
+          await verifyExternalSession?.call();
+          ensureCurrent();
+          _identityRevision = nextRevision;
+          session = active.session;
+        }
+        ++_externalCredentialRevision;
+        ref.read(httpClientProvider).fenceInFlightRenewals();
+        _committedSession = session;
+        _committedCredentials = safeCredentials;
         _pendingPlatformRefreshToken = null;
         _pendingDeviceSessionToken = null;
-        _publishAuthState(AuthState(
+        final previous = expected == null ? null : state.valueOrNull;
+        _publishAuthState((previous ?? const AuthState()).copyWith(
           status: AuthStatus.authenticated,
           currentSpace: SpaceContext(
               spaceId: scope.spaceId,
@@ -810,12 +854,13 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
               membershipRole: membershipRole),
           platformUserId: identity.platformUserId,
           platformToken: safeCredentials.platformAccessToken,
-          accountSession: active.session,
+          clearPlatformToken: safeCredentials.platformAccessToken == null,
+          accountSession: session,
         ));
         _startTokenRefresh();
       });
     } catch (_) {
-      if (_isAuthOperationCurrent(authOperation)) {
+      if (expected == null && _isAuthOperationCurrent(authOperation)) {
         TokenRefreshService.instance.stop();
         _committedSession = null;
         _committedCredentials = null;
@@ -1240,74 +1285,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
           throw const ServerError(
               code: 'REGISTER_PENDING_APPROVAL', message: '账号已创建，等待审批后请登录');
         }
-        try {
-          _pendingPlatformRefreshToken = registration.platformRefreshToken;
-          _pendingDeviceSessionToken = registration.deviceSessionToken;
-          final platformToken = registration.platformToken;
-          if (platformToken != null) {
-            ref.read(httpClientProvider).activatePlatformSession();
-          }
-          final result = registration.tenantAuth ??
-              await _repo.selectPersonalSpace(platformToken!,
-                  preserveReturnedSpace: true);
-          _ensureAuthOperationCurrent(authOperation);
-          if (result.spaceId.isEmpty ||
-              (result.spaceType != null &&
-                  result.spaceType != 1 &&
-                  result.spaceType != 2) ||
-              (result.spaceType == 2 && result.spaceId == 'personal')) {
-            throw const ServerError(
-                code: 'AUTH_CONTEXT_REQUIRED', message: '注册返回的空间无法确认');
-          }
-          final identity = await _repo.getTenantIdentity(result.accessToken);
-          _ensureAuthOperationCurrent(authOperation);
-          final platformUserId =
-              result.platformUserId ?? registration.platformUserId;
-          if (!identity.hasStableIdentity ||
-              (identity.verifiedSpaceId != null &&
-                  identity.verifiedSpaceId != result.spaceId) ||
-              identity.userId != result.userId ||
-              (platformUserId != null &&
-                  platformUserId != identity.platformUserId)) {
-            throw const ServerError(
-                code: 'AUTH_EXTERNAL_IDENTITY_MISMATCH', message: '注册身份验证失败');
-          }
-          if (result.spaceId != 'personal') {
-            await _applySingleTenantSession(
-                result: result,
-                previousState: AuthState(
-                    platformToken: platformToken,
-                    platformUserId: identity.platformUserId),
-                authOperation: authOperation);
-            return;
-          }
-          final space = SpaceContext(
-              spaceId: 'personal',
-              accessToken: result.accessToken,
-              refreshToken: result.refreshToken,
-              userId: identity.userId,
-              type: SpaceType.personal);
-          final session = await _commitAccountSession(
-              result: result,
-              space: space,
-              platformToken: platformToken,
-              platformUserId: identity.platformUserId,
-              authOperation: authOperation);
-          _ensureAuthOperationCurrent(authOperation);
-          _publishAuthState(AuthState(
-              status: AuthStatus.authenticated,
-              currentSpace: space,
-              platformToken: platformToken,
-              platformUserId: identity.platformUserId,
-              accountSession: session));
-          _startTokenRefresh();
-          return;
-        } on _AuthOperationSuperseded {
-          rethrow;
-        } catch (_) {
-          throw const ServerError(
-              code: 'REGISTER_LOGIN_FAILED', message: '账号已创建，暂时无法进入聊天，请稍后登录');
-        }
+        await _activateDefaultRegistration(registration, authOperation);
+        return;
       }
 
       final tenantResult = registration.tenantAuth;
@@ -1366,6 +1345,130 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       _ensureAuthOperationCurrent(authOperation);
       state = AsyncError(e, st);
       rethrow;
+    }
+  }
+
+  bool get canRetryRegistrationActivation =>
+      _pendingRegistration?.authOperation == _authOperationGeneration;
+
+  void discardPendingRegistrationActivation() {
+    if (!canRetryRegistrationActivation) return;
+    _pendingRegistration = null;
+    _pendingPlatformRefreshToken = null;
+    _pendingDeviceSessionToken = null;
+    ++_authOperationGeneration;
+  }
+
+  Future<void> retryRegistrationActivation() async {
+    final pending = _pendingRegistration;
+    if (pending == null ||
+        !_isAuthOperationCurrent(pending.authOperation)) {
+      throw const ServerError(
+        code: 'REGISTER_LOGIN_FAILED',
+        message: '账号已创建，请稍后登录',
+      );
+    }
+    await _activateDefaultRegistration(
+      pending.registration,
+      pending.authOperation,
+    );
+  }
+
+  Future<void> _activateDefaultRegistration(
+    PlatformRegistrationResult registration,
+    int authOperation,
+  ) async {
+    _ensureAuthOperationCurrent(authOperation);
+    try {
+      _pendingPlatformRefreshToken = registration.platformRefreshToken;
+      _pendingDeviceSessionToken = registration.deviceSessionToken;
+      final platformToken = registration.platformToken;
+      if (platformToken != null) {
+        ref.read(httpClientProvider).activatePlatformSession();
+      }
+      final result = registration.tenantAuth ??
+          await _repo.selectPersonalSpace(platformToken!,
+              preserveReturnedSpace: true);
+      _ensureAuthOperationCurrent(authOperation);
+      if (result.spaceId.isEmpty ||
+          (result.spaceType != null &&
+              result.spaceType != 1 &&
+              result.spaceType != 2) ||
+          (result.spaceType == 2 && result.spaceId == 'personal')) {
+        throw const ServerError(
+            code: 'AUTH_CONTEXT_REQUIRED', message: '注册返回的空间无法确认');
+      }
+      final identity = await _repo.getTenantIdentity(result.accessToken);
+      _ensureAuthOperationCurrent(authOperation);
+      final platformUserId =
+          result.platformUserId ?? registration.platformUserId;
+      if (!identity.hasStableIdentity ||
+          (identity.verifiedSpaceId != null &&
+              identity.verifiedSpaceId != result.spaceId) ||
+          identity.userId != result.userId ||
+          (platformUserId != null &&
+              platformUserId != identity.platformUserId)) {
+        throw const ServerError(
+            code: 'AUTH_EXTERNAL_IDENTITY_MISMATCH', message: '注册身份验证失败');
+      }
+      if (result.spaceId != 'personal') {
+        await _applySingleTenantSession(
+            result: result,
+            previousState: AuthState(
+                platformToken: platformToken,
+                platformUserId: identity.platformUserId),
+            authOperation: authOperation);
+        _pendingRegistration = null;
+        return;
+      }
+      final space = SpaceContext(
+          spaceId: 'personal',
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          userId: identity.userId,
+          type: SpaceType.personal);
+      final session = await _commitAccountSession(
+          result: result,
+          space: space,
+          platformToken: platformToken,
+          platformUserId: identity.platformUserId,
+          authOperation: authOperation);
+      _ensureAuthOperationCurrent(authOperation);
+      _publishAuthState(AuthState(
+          status: AuthStatus.authenticated,
+          currentSpace: space,
+          platformToken: platformToken,
+          platformUserId: identity.platformUserId,
+          accountSession: session));
+      _startTokenRefresh();
+      _pendingRegistration = null;
+    } on _AuthOperationSuperseded {
+      rethrow;
+    } catch (error) {
+      _ensureAuthOperationCurrent(authOperation);
+      final status = switch (error) {
+        ServerError error => error.statusCode,
+        AuthError error => error.statusCode,
+        _ => null,
+      };
+      final canRetry = error is NetworkError ||
+          status == 408 ||
+          status == 429 ||
+          (status != null && status >= 500 && status < 600);
+      if (canRetry &&
+          state.valueOrNull?.status != AuthStatus.authenticated &&
+          registration.platformToken?.isNotEmpty == true) {
+        _pendingRegistration =
+            (registration: registration, authOperation: authOperation);
+      } else {
+        _pendingRegistration = null;
+      }
+      _pendingPlatformRefreshToken = null;
+      _pendingDeviceSessionToken = null;
+      throw const ServerError(
+        code: 'REGISTER_LOGIN_FAILED',
+        message: '账号已创建，暂时无法进入聊天，请稍后登录',
+      );
     }
   }
 
@@ -1835,6 +1938,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     String purpose = 'login',
     String? captchaToken,
     String? captchaAnswer,
+    bool reportInAuthState = true,
   }) async {
     try {
       await _repo.sendVerificationCode(
@@ -1845,7 +1949,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         captchaAnswer: captchaAnswer,
       );
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (reportInAuthState) state = AsyncError(e, st);
       rethrow;
     }
   }
@@ -2268,14 +2372,12 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     Future<void> discardInvalidStoredSpace(
       StoredSpaceSession invalidStored,
     ) async {
-      final wasActive = _committedSession?.scope == invalidStored.scope;
+      // Keep the active session until replacement succeeds or account
+      // invalidation is confirmed. A replacement ticket can fail transiently.
+      if (_committedSession?.scope == invalidStored.scope) return;
       await _sessionStore.removeSpaceSession(
         spaceSessionId: invalidStored.spaceSessionId,
       );
-      if (wasActive) {
-        _committedSession = null;
-        _committedCredentials = null;
-      }
     }
 
     final now = DateTime.now().toUtc();
@@ -2405,6 +2507,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     AuthLogoutReason reason = AuthLogoutReason.userRequested,
     String? serverCode,
   }) {
+    _pendingRegistration = null;
     final inFlight = _logoutTransitionFuture;
     if (inFlight != null) return inFlight;
     final session = _committedSession;
@@ -2840,7 +2943,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         // Keep any existing directory cache rather than writing a false empty
         // snapshot from the routing-only list above.
         if (!forcePersonal) {
-          await _cacheTenantMetadata(
+          await _cacheAuthenticatedTenantMetadata(
             verifiedTenants,
             platformUserId: resolvedPlatformUserId,
             authOperation: authOperation,
@@ -2890,11 +2993,37 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     );
     _ensureAuthOperationCurrent(authOperation);
 
-    await _cacheTenantMetadata(
+    await _cacheAuthenticatedTenantMetadata(
       verifiedTenants,
       platformUserId: result.platformUserId,
       authOperation: authOperation,
     );
+  }
+
+  Future<void> _cacheAuthenticatedTenantMetadata(
+    List<TenantSummary> tenants, {
+    required String? platformUserId,
+    required int authOperation,
+  }) async {
+    // The account session is already committed. Its presentation cache cannot
+    // turn a successful authentication into an error state.
+    try {
+      await _cacheTenantMetadata(
+        tenants,
+        platformUserId: platformUserId,
+        authOperation: authOperation,
+      );
+    } on _AuthOperationSuperseded {
+      rethrow;
+    } catch (error) {
+      _ensureAuthOperationCurrent(authOperation);
+      AppDiagnostics.instance.warning(
+        'auth.tenant_directory_cache_failed',
+        'Authenticated tenant directory could not be cached',
+        context: {'errorType': error.runtimeType.toString()},
+      );
+    }
+    _ensureAuthOperationCurrent(authOperation);
   }
 
   /// Cache non-sensitive tenant presentation metadata only. Tenant
@@ -3206,19 +3335,24 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   Future<void> _replaceCommittedCredentials({
     String? tenantAccessToken,
     String? tenantRefreshToken,
+    int? tenantExpiresIn,
     String? platformAccessToken,
     String? platformRefreshToken,
   }) async {
     final expected = _committedSession;
     if (expected == null) return;
+    final credentialRevision = _externalCredentialRevision;
     final platform = PlatformAccountScope.fromAccountScope(expected.scope);
     bool acceptsWrite() =>
+        _externalCredentialRevision == credentialRevision &&
         _logoutTransitionFuture == null &&
         !LogoutGuard.isPending &&
         ref.read(currentAccountOperationContextProvider)?.sessionId ==
             _committedSession?.sessionId &&
         state.valueOrNull?.platformUserId == platform.platformUserId &&
         _committedSession != null &&
+        (tenantAccessToken == null ||
+            _committedSession?.sessionId == expected.sessionId) &&
         PlatformAccountScope.fromAccountScope(_committedSession!.scope) ==
             platform;
     try {
@@ -3269,12 +3403,16 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
                 stored.scope != expected.scope) {
               return;
             }
+            final issuedAt =
+                tenantExpiresIn == null ? null : DateTime.now().toUtc();
             await _sessionStore.updateSpaceCredentials(
               spaceSessionId: stored.spaceSessionId,
               accessToken: tenantAccessToken ?? stored.accessToken,
               refreshToken: tenantRefreshToken ?? stored.refreshToken,
-              accessTokenIssuedAt: stored.accessTokenIssuedAt,
-              accessTokenExpiresAt: stored.accessTokenExpiresAt,
+              accessTokenIssuedAt: issuedAt ?? stored.accessTokenIssuedAt,
+              accessTokenExpiresAt: issuedAt == null
+                  ? stored.accessTokenExpiresAt
+                  : issuedAt.add(Duration(seconds: tenantExpiresIn!)),
             );
           }
         }
@@ -3344,54 +3482,59 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     );
   }
 
-  /// 刷新当前激活空间的租户 token
   Future<void> _refreshCurrentTenantToken() async {
-    final currentState = state.valueOrNull;
-    final platformToken = currentState?.platformToken;
-    if (platformToken == null && !ref.read(externalSessionOnlyProvider)) return;
-
-    final spaceId = currentState?.currentSpace?.spaceId;
-    if (spaceId == null) return;
-    final expectedSessionId = _committedSession?.sessionId;
-    if (expectedSessionId == null) return;
-
+    final sessionId = _committedSession?.sessionId;
+    if (sessionId == null) return;
     try {
-      final currentSpace = currentState?.currentSpace;
-      if (currentSpace == null) return;
-      final result = await _repo.refreshToken(currentSpace.refreshToken);
-      if (_committedSession?.sessionId != expectedSessionId) return;
-      final active = await _sessionStore.loadActive();
-      final spaceSessionId = active?.spaceSessionId;
-      if (spaceSessionId != null && active?.activationId == expectedSessionId) {
-        final issuedAt = DateTime.now().toUtc();
-        await _sessionStore.updateSpaceCredentials(
-          spaceSessionId: spaceSessionId,
-          accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-          accessTokenIssuedAt: issuedAt,
-          accessTokenExpiresAt:
-              issuedAt.add(Duration(seconds: result.expiresIn)),
-        );
+      await ref.read(httpClientProvider).refreshTenantSession();
+    } catch (error) {
+      // A scheduled refresh has not established that the current access token
+      // is rejected. Only explicit revocation can end the session here.
+      if (_committedSession?.sessionId == sessionId &&
+          error is CredentialRenewalError &&
+          error.failure == CredentialFailure.sessionRevoked) {
+        await handleCredentialRenewalFailure(error);
       }
-      // 更新内存状态
-      await updateTenantToken(
-        spaceId,
-        result.accessToken,
-        newRefreshToken: result.refreshToken,
-      );
-      debugPrint('[TokenRefresh] tenant token refreshed for $spaceId');
-    } catch (e) {
-      AppDiagnostics.instance.warning(
-        'auth.renewal_failed',
-        'Scheduled tenant credential renewal failed',
-        context: {
-          'credentialDomain': 'tenant',
-          'endpoint': '/api/client/v1/auth/refresh',
-          'errorType': e.runtimeType.toString(),
-          if (e is AuthError) 'serverCode': e.code,
-        },
-      );
     }
+  }
+
+  Future<void> handleCredentialRenewalFailure(
+    AuthError error, {
+    AuthLogoutReason reason = AuthLogoutReason.httpAuthenticationFailed,
+  }) async {
+    final session = _committedSession;
+    if (session == null ||
+        error is! CredentialRenewalError ||
+        error.failure == CredentialFailure.rejected) {
+      return;
+    }
+    if (error.failure == CredentialFailure.exhausted) {
+      // A different authorized space may still have its own usable ticket.
+      final List<StoredSpaceSession> spaces;
+      try {
+        spaces = await _sessionStore
+            .loadPlatformSpaces(
+              platformAccount:
+                  PlatformAccountScope.fromAccountScope(session.scope),
+            )
+            .timeout(_startupStorageTimeout);
+      } catch (_) {
+        return;
+      }
+      if (_committedSession?.sessionId != session.sessionId) return;
+      final tenants =
+          state.valueOrNull?.availableTenants ?? const <TenantSummary>[];
+      final now = DateTime.now().toUtc();
+      if (spaces.any((space) =>
+          space.scope.spaceId != session.scope.spaceId &&
+          (space.scope.spaceId == 'personal' ||
+              tenants
+                  .any((tenant) => tenant.tenantId == space.scope.spaceId)) &&
+          (space.refreshToken.isNotEmpty || space.isReusableAt(now)))) {
+        return;
+      }
+    }
+    await logout(reason: reason, serverCode: error.code);
   }
 
   // ---------------------------------------------------------------------------
@@ -3419,6 +3562,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     String spaceId,
     String newAccessToken, {
     String? newRefreshToken,
+    int? expiresIn,
   }) async {
     final current = state.valueOrNull;
     if (current == null) return;
@@ -3427,6 +3571,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       await _replaceCommittedCredentials(
         tenantAccessToken: newAccessToken,
         tenantRefreshToken: newRefreshToken,
+        tenantExpiresIn: expiresIn,
       );
     }
   }
@@ -3465,10 +3610,13 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         return;
       }
       final current = state.valueOrNull;
-      if (current != null) {
-        state = AsyncData(
+      if (current != null && current.platformToken != newPlatformToken) {
+        final updated = AsyncData(
           current.copyWith(platformToken: newPlatformToken),
         );
+        state = state.isLoading
+            ? const AsyncLoading<AuthState>().copyWithPrevious(updated)
+            : updated;
       }
 
       final currentSpace = ref.read(currentSpaceProvider);
@@ -3483,9 +3631,9 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         ),
       );
     } catch (e) {
-      // 只有长期凭证被服务端明确判定失效时才登出。网络错误以及升级前没有
-      // 长期凭证的旧会话都保留现有租户登录态。
-      final shouldLogout = e is AuthError &&
+      // A rejected platform credential does not invalidate the space ticket.
+      final shouldLogout = e is CredentialRenewalError &&
+          e.failure == CredentialFailure.sessionRevoked &&
           expectedSessionId != null &&
           _committedSession?.sessionId == expectedSessionId;
       AppDiagnostics.instance.warning(
@@ -3498,9 +3646,9 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         },
       );
       if (shouldLogout) {
-        await logout(
+        await handleCredentialRenewalFailure(
+          e,
           reason: AuthLogoutReason.platformRenewalRejected,
-          serverCode: e.code,
         );
       }
     }

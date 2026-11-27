@@ -5,8 +5,10 @@ import {
   type HubConnection,
 } from '@microsoft/signalr';
 import type { ImSdkEvent } from './types.js';
+import { string } from './protocol.js';
 
 const RETRY_DELAYS = [1000, 2000, 5000, 10000, 30000] as const;
+const PERSONAL_TENANT_ID = '11111111-1111-1111-1111-111111111111';
 const SECURITY_EVENTS = [
   'auth.force_logout',
   'auth.session.revoked',
@@ -26,12 +28,14 @@ export class ImSdkGateway {
   private retryTimer?: ReturnType<typeof setTimeout>;
   private heartbeatTimer?: ReturnType<typeof setInterval>;
   private retryCount = 0;
+  private readonly invitations = new Set<string>();
 
   constructor(
     baseUrl: string,
     getToken: () => Promise<string>,
     private readonly emit: (event: ImSdkEvent) => void,
     private readonly onSecurityEvent: () => void,
+    private readonly account: { spaceId: string; userId: string },
   ) {
     const url = new URL(baseUrl);
     if (url.protocol === 'wss:') url.protocol = 'https:';
@@ -54,8 +58,16 @@ export class ImSdkGateway {
       this.connection.on(name, (...args: unknown[]) => {
         if (this.stopped) return;
         const conversationId = conversationFromEvent(args[0]);
-        this.send({ type: 'messagesChanged', reset: name === 'msg.updated' || name === 'msg.recalled', ...(conversationId ? { conversationId } : {}) });
+        const detail = eventFields(args[0]);
+        this.send({ type: 'messagesChanged',
+          reset: name === 'msg.updated' || name === 'msg.recalled',
+          ...(name === 'msg.read' ? { readReceipt: true } : {}),
+          ...(conversationId ? { conversationId } : {}),
+          ...(typeof detail.messageId === 'string' ? { messageId: detail.messageId } : {}),
+          recalled: name === 'msg.recalled',
+          silent: name === 'msg.recalled' && detail.silent === true });
         this.send({ type: 'conversationsChanged' });
+        if (name === 'msg.new' && conversationId) this.notifyGroupInvitation(conversationId, detail);
       });
     }
     this.connection.on('conversation.deleted', (...args: unknown[]) => {
@@ -64,6 +76,13 @@ export class ImSdkGateway {
       this.send({ type: 'conversationDeleted', ...(conversationId ? { conversationId } : {}) });
       this.send({ type: 'conversationsChanged' });
       this.send({ type: 'messagesChanged', ...(conversationId ? { conversationId } : {}) });
+    });
+    for (const name of ['friend.request.created', 'friend.request.accepted', 'friend.request.rejected', 'friend.profile.updated']) {
+      this.connection.on(name, () => this.send({ type: 'contactsChanged' }));
+    }
+    this.connection.on('group.settings.updated', (...args: unknown[]) => {
+      this.send({ type: 'conversationPresentationChanged', conversationId: conversationFromEvent(args[0]) });
+      this.send({ type: 'conversationsChanged' });
     });
     for (const name of [
       'customer_service.assigned',
@@ -147,7 +166,8 @@ export class ImSdkGateway {
     this.send({ type: 'connectionChanged', state: 'connected' });
     // A fresh REST snapshot reconciles messages missed while disconnected.
     this.send({ type: 'conversationsChanged' });
-    this.send({ type: 'messagesChanged' });
+    this.send({ type: 'messagesChanged', reconcile: true });
+    this.send({ type: 'contactsChanged' });
   }
 
   private scheduleRetry(): void {
@@ -164,10 +184,42 @@ export class ImSdkGateway {
     this.heartbeatTimer = undefined;
   }
 
+  private notifyGroupInvitation(conversationId: string, detail: Record<string, unknown>): void {
+    const { spaceId, userId } = this.account;
+    const messageId = string(detail.messageId);
+    const frameSpace = string(detail.spaceId);
+    const tenantId = string(detail.tenantId);
+    if (!messageId || detail.conversationType !== 'group' || detail.sourceType === 'widget' ||
+        detail.isRecalled === true || (detail.messageType !== 'event' && detail.messageType !== 'system') ||
+        (frameSpace && frameSpace !== spaceId) ||
+        (tenantId && tenantId !== spaceId && !(spaceId === 'personal' && tenantId === PERSONAL_TENANT_ID))) return;
+    let body = detail.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch { return; }
+    }
+    const event = record(record(body).event);
+    const eventType = event.type ?? event.eventType;
+    if ((eventType !== 'members_added' && eventType !== 'group_member_added') ||
+        !Array.isArray(event.addedUserIds) || !event.addedUserIds.some(id => string(id) === userId)) return;
+    const key = JSON.stringify([conversationId, messageId]);
+    if (this.invitations.has(key)) return;
+    this.invitations.add(key);
+    this.send({ type: 'groupInvitationReceived', spaceId, conversationId, messageId });
+  }
+
   private send(event: ImSdkEvent): void {
     if (this.stopped) return;
     try { this.emit(event); } catch { /* Listener failures must not break transport lifecycle. */ }
   }
+}
+
+function eventFields(value: unknown): Record<string, unknown> {
+  const event = record(Array.isArray(value) ? value[0] : value);
+  return { ...event, ...record(event.data ?? event.Data) };
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
 function conversationFromEvent(value: unknown): string | undefined {

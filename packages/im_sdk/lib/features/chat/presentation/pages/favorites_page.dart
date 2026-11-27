@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/core/network/error_handler.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/app_update/presentation/app_update_provider.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
+import 'package:im_sdk/features/chat/domain/entities/message.dart';
 import 'package:im_sdk/features/chat/presentation/models/conversation_route_policy.dart';
 import 'package:im_sdk/features/chat/presentation/providers/conversations_provider.dart';
 import 'package:im_sdk/l10n/app_localizations.dart';
@@ -32,6 +34,7 @@ class FavoriteItem {
   final DateTime? favoritedAt;
   final String? thumbnailUrl;
   final Map<String, dynamic>? body;
+  final MediaResource? media;
   final int conversationSeq; // 用于 beforeSeq 精确定位原消息
   final bool isRecalled; // 消息是否已被撤回
 
@@ -48,9 +51,34 @@ class FavoriteItem {
     this.favoritedAt,
     this.thumbnailUrl,
     this.body,
+    this.media,
     this.conversationSeq = 0,
     this.isRecalled = false,
   });
+
+  String? get previewUrl {
+    final candidates = category == FavoriteCategory.image
+        ? [media?.signedUrl, thumbnailUrl, media?.url]
+        : [thumbnailUrl];
+    for (final candidate in candidates) {
+      final value = candidate?.trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  MediaRequestContext? get mediaContext {
+    if (conversationId.isEmpty || messageId.isEmpty) return null;
+    final isVideo = category == FavoriteCategory.video;
+    return MediaRequestContext(
+      conversationId: conversationId,
+      messageId: messageId,
+      conversationSeq: conversationSeq,
+      kind: isVideo ? 'video' : 'image',
+      variant: isVideo ? 'videoPoster' : 'source',
+      fallbackUrl: isVideo ? thumbnailUrl : media?.url,
+    );
+  }
 
   factory FavoriteItem.fromJson(Map<String, dynamic> json) {
     FavoriteCategory cat;
@@ -78,6 +106,17 @@ class FavoriteItem {
       } catch (_) {}
     }
     final body = json['body'] as Map<String, dynamic>?;
+    final rawMedia = switch (cat) {
+      FavoriteCategory.image => body?['image'],
+      FavoriteCategory.video => body?['video'],
+      _ => null,
+    };
+    final media = rawMedia is Map
+        ? MediaResource.fromJson({
+            ...Map<String, dynamic>.from(rawMedia),
+            'url': rawMedia['url'] as String? ?? '',
+          })
+        : null;
     return FavoriteItem(
       favoriteId: json['favoriteId'] as String? ?? '',
       messageId: json['messageId'] as String? ?? '',
@@ -92,6 +131,7 @@ class FavoriteItem {
       thumbnailUrl: (body?['image']?['thumbnailUrl'] ??
           body?['video']?['thumbnailUrl']) as String?,
       body: body,
+      media: media,
       conversationSeq: json['conversationSeq'] as int? ?? 0,
       isRecalled: json['isRecalled'] as bool? ?? false,
     );
@@ -944,11 +984,12 @@ class _FavTile extends StatelessWidget {
                       color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: item.thumbnailUrl != null
+                    child: item.previewUrl != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: AuthNetworkImage(
-                              url: item.thumbnailUrl!,
+                              url: item.previewUrl!,
+                              mediaContext: item.mediaContext,
                               width: 48,
                               height: 48,
                               fit: BoxFit.cover,
@@ -1038,12 +1079,13 @@ class _DetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (item.category == FavoriteCategory.image) {
-      final url = item.thumbnailUrl ?? item.body?['image']?['url'] as String?;
+      final url = item.previewUrl;
       if (url != null) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: AuthNetworkImage(
               url: url,
+              mediaContext: item.mediaContext,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Icon(
                     Icons.broken_image,

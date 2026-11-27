@@ -5,9 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/app/theme/theme.dart';
 import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/permissions/app_permissions.dart';
 import 'package:im_sdk/core/providers/locale_provider.dart';
 import 'package:im_sdk/core/providers/theme_provider.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
+import 'package:im_sdk/features/app_update/presentation/app_update_provider.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 import 'package:im_sdk/features/chat/presentation/controllers/direct_chat_entry_controller.dart';
 import 'package:im_sdk/features/chat/presentation/pages/chat_page.dart';
@@ -31,6 +34,8 @@ import 'package:im_sdk/features/chat/presentation/pages/search_page.dart';
 import 'package:im_sdk/features/chat/presentation/pages/select_group_member_page.dart';
 import 'package:im_sdk/features/chat/presentation/pages/transfer_owner_page.dart';
 import 'package:im_sdk/features/chat/presentation/providers/conversations_provider.dart';
+import 'package:im_sdk/features/chat/presentation/providers/group_invitation_notice_provider.dart';
+import 'package:im_sdk/features/official_account/domain/entities/official_account_card.dart';
 import 'package:im_sdk/features/chat/presentation/widgets/conversation_list_item.dart';
 import 'package:im_sdk/features/contacts/domain/entities/contact.dart';
 import 'package:im_sdk/features/contacts/presentation/pages/profile_page.dart';
@@ -112,6 +117,7 @@ class _HostManagedMessagingView extends StatefulWidget {
 class _HostManagedMessagingViewState extends State<_HostManagedMessagingView>
     with WidgetsBindingObserver {
   bool _entryChecked = false;
+  int? _confirmedSessionRevision;
   int _checkRevision = 0;
   bool _failed = false;
   bool _signedOut = false;
@@ -132,6 +138,7 @@ class _HostManagedMessagingViewState extends State<_HostManagedMessagingView>
       } else if (event.type == 'authenticated') {
         ++_checkRevision;
         setState(() {
+          _confirmedSessionRevision = widget.client.sessionRevision;
           _entryChecked = true;
           _failed = false;
           _signedOut = false;
@@ -139,6 +146,7 @@ class _HostManagedMessagingViewState extends State<_HostManagedMessagingView>
       } else if (event.type == 'loggedOut') {
         ++_checkRevision;
         setState(() {
+          _confirmedSessionRevision = null;
           _entryChecked = false;
           _signedOut = true;
           _failed = false;
@@ -166,6 +174,8 @@ class _HostManagedMessagingViewState extends State<_HostManagedMessagingView>
       final authenticated = await widget.client.synchronizeHostSession();
       if (mounted && revision == _checkRevision) {
         setState(() {
+          _confirmedSessionRevision =
+              authenticated ? widget.client.sessionRevision : null;
           _entryChecked = true;
           _signedOut = !authenticated;
           _failed = false;
@@ -193,20 +203,11 @@ class _HostManagedMessagingViewState extends State<_HostManagedMessagingView>
   @override
   Widget build(BuildContext context) {
     final account = widget.client.accountContainer;
-    if (_entryChecked &&
-        !_failed &&
-        widget.client.isAuthenticated &&
-        account != null) {
-      return UncontrolledProviderScope(
-        container: account,
-        child: _MessagingNavigator(
-          key: ValueKey((widget.client, widget.client.sessionRevision)),
-          onClose: widget.onClose,
-          silentLoading: true,
-        ),
-      );
-    }
-    return SdkPresentationApp(
+    final keepNavigator = widget.client.isAuthenticated &&
+        account != null &&
+        _confirmedSessionRevision == widget.client.sessionRevision;
+    final showNavigator = keepNavigator && _entryChecked && !_failed;
+    final verificationView = SdkPresentationApp(
       client: widget.client,
       configuration: widget.configuration,
       homeBuilder: (context) => Scaffold(
@@ -225,6 +226,30 @@ class _HostManagedMessagingViewState extends State<_HostManagedMessagingView>
                 ? Center(child: Text(sdkText(context, '请先登录当前应用')))
                 : const SizedBox.expand(),
       ),
+    );
+    if (!keepNavigator) return verificationView;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Offstage(
+          offstage: !showNavigator,
+          child: ExcludeFocus(
+            excluding: !showNavigator,
+            child: TickerMode(
+              enabled: showNavigator,
+              child: UncontrolledProviderScope(
+                container: account,
+                child: _MessagingNavigator(
+                  key: ValueKey((widget.client, widget.client.sessionRevision)),
+                  onClose: widget.onClose,
+                  silentLoading: true,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (!showNavigator) verificationView,
+      ],
     );
   }
 }
@@ -525,6 +550,7 @@ class _MessagingNavigator extends ConsumerStatefulWidget {
 }
 
 class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final GoRouter _router = GoRouter(
     routes: [
       GoRoute(
@@ -546,6 +572,7 @@ class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
           builder: (context, s) {
             final extra = _extra(s);
             return ChatPage(
+              allowOfficialProfileRoute: false,
               conversationId: s.pathParameters['id']!,
               isGroup: extra['isGroup'] == true ||
                   extra['conversationType'] == 'group',
@@ -553,6 +580,10 @@ class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
               peerUserId: extra['peerUserId'] as String?,
               avatarUrl: extra['avatarUrl'] as String?,
               memberCount: extra['memberCount'] as int?,
+              initialOfficialAccount:
+                  extra['officialAccount'] is OfficialAccountCard
+                      ? extra['officialAccount'] as OfficialAccountCard
+                      : null,
               scrollToMessageId: extra['scrollToMessageId'] as String?,
               scrollBeforeSeq: extra['beforeSeq'] as int? ??
                   extra['scrollBeforeSeq'] as int?,
@@ -564,7 +595,8 @@ class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
           builder: (_, s) => ChatSettingsPage(chatId: s.pathParameters['id']!)),
       GoRoute(
           path: '/profile/:id',
-          builder: (_, s) => ProfilePage(userId: s.pathParameters['id']!)),
+          builder: (_, s) => ProfilePage(
+              userId: s.pathParameters['id']!, sdkSingleSpace: true)),
       GoRoute(
           path: '/group-settings/:id',
           builder: (_, s) => GroupSettingsPage(
@@ -665,21 +697,33 @@ class _MessagingNavigatorState extends ConsumerState<_MessagingNavigator> {
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ref.watch(themeModeProvider),
-        locale: ref.watch(localeProvider),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: _router,
-        builder: (_, child) => TeenModeRuntimeService(
-            child: Stack(children: [
-          child ?? const SizedBox.shrink(),
-          TeenModeGate(router: _router),
-        ])),
-      );
+  Widget build(BuildContext context) {
+    ref.listen<GroupInvitationNotice?>(groupInvitationNoticeProvider,
+        (_, notice) {
+      final messenger = _messengerKey.currentState;
+      if (notice == null || messenger == null) return;
+      final l10n = AppLocalizations.of(messenger.context);
+      messenger.showSnackBar(SnackBar(
+        content: Text(l10n.chatGroupAddedToGroup),
+      ));
+    });
+    return MaterialApp.router(
+      scaffoldMessengerKey: _messengerKey,
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ref.watch(themeModeProvider),
+      locale: ref.watch(localeProvider),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: _router,
+      builder: (_, child) => TeenModeRuntimeService(
+          child: Stack(children: [
+        child ?? const SizedBox.shrink(),
+        TeenModeGate(router: _router),
+      ])),
+    );
+  }
 }
 
 Map<dynamic, dynamic> _extra(GoRouterState state) =>
@@ -887,12 +931,16 @@ class _NewChatPageState extends ConsumerState<_NewChatPage> {
             title: Text(sdkText(context, '好友申请')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/new-friends')),
-        ListTile(
-          leading: const Icon(Icons.group_add_outlined),
-          title: Text(sdkText(context, '新建群聊')),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.push('/create-group'),
-        ),
+        if (AppPermissions.canCreateGroupForReleaseFace(
+          space,
+          releaseFaceBlocks: ref.watch(appUpdateGroupFeaturesBlockedProvider),
+        ))
+          ListTile(
+            leading: const Icon(Icons.group_add_outlined),
+            title: Text(sdkText(context, '新建群聊')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/create-group'),
+          ),
         Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -931,7 +979,10 @@ class _NewChatPageState extends ConsumerState<_NewChatPage> {
                         name: contact.displayName,
                         avatarUrl: contact.avatarUrl,
                         size: 40),
-                    title: Text(contact.displayName),
+                    title: OfficialVerifiedName(
+                      verified: contact.showOfficialVerification,
+                      name: Text(contact.displayName),
+                    ),
                     enabled: !_opening,
                     onTap: () => _open(contact),
                   );

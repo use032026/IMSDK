@@ -3341,4 +3341,18 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Akce se nezdařila. Zkuste to znovu.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Tato osoba vám již poslala žádost o přátelství. Nejprve ji zkontrolujte.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Přidali vás do skupinového chatu';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Výsledek přidání do oblíbených nebylo možné potvrdit. Zkuste to znovu';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

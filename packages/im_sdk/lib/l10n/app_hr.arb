@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Sustavno dijeljenje je dovršeno. Provjerite datoteku u odredišnoj aplikaciji.",
   "diagnosticsCancelled": "Dijeljenje je otkazano. Možete ponovno izvesti.",
   "diagnosticsUnconfirmed": "Dijeljenje nije potvrđeno. Provjerite odredišnu aplikaciju.",
-  "diagnosticsFailed": "Radnja nije uspjela. Pokušajte ponovno."
+  "diagnosticsFailed": "Radnja nije uspjela. Pokušajte ponovno.",
+  "scanIncomingFriendRequest": "Ova vam je osoba već poslala zahtjev za prijateljstvo. Najprije ga pregledajte.",
+  "chatGroupAddedToGroup": "Dodani ste u grupni razgovor",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Nije moguće potvrditi dodavanje u omiljene. Pokušajte ponovno",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

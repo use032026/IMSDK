@@ -45,7 +45,10 @@ class MessageTimelinePolicy {
   /// Reconciles two snapshots whose message/client identity already matches.
   /// A late local attempt cannot undo a server-confirmed send.
   Message reconcileUpdate(Message previous, Message incoming) {
-    if ((previous.status.isServerUsable && !incoming.status.isServerUsable) ||
+    if ((previous.isRecalled && !incoming.isRecalled) ||
+        (previous.status.isServerUsable &&
+            !incoming.status.isServerUsable &&
+            !incoming.isRecalled) ||
         (previous.conversationSeq > 0 && incoming.conversationSeq <= 0)) {
       return previous;
     }

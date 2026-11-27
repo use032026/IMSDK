@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/core/utils/debouncer.dart';
 import 'package:im_sdk/core/widgets/app_network_image.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/app_update/presentation/app_update_provider.dart';
 import 'package:im_sdk/features/chat/application/providers/conversation_type_resolver_provider.dart';
+import 'package:im_sdk/core/domain/official_verification.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 import 'package:im_sdk/features/chat/domain/entities/message.dart';
 import 'package:im_sdk/features/chat/domain/services/call_log_policy.dart';
@@ -27,6 +30,7 @@ class SearchResult {
   final String? signature;
   final int userType;
   final String? matchType;
+  final bool showOfficialVerification;
 
   const SearchResult({
     required this.userId,
@@ -36,6 +40,7 @@ class SearchResult {
     this.signature,
     this.userType = 0,
     this.matchType,
+    this.showOfficialVerification = false,
   });
 
   factory SearchResult.fromJson(Map<String, dynamic> json) {
@@ -47,6 +52,12 @@ class SearchResult {
       signature: json['signature'] as String?,
       userType: json['userType'] as int? ?? 0,
       matchType: json['matchType'] as String?,
+      showOfficialVerification: showsOfficialVerification(
+        verified: json['isOfficialVerified'] == true,
+        officialAccountKind: json['officialAccountKind'],
+        isOfficialAccount:
+            json['isOfficial'] == true || json['officialAccount'] != null,
+      ),
     );
   }
 }
@@ -747,8 +758,11 @@ class _UserSearchTab extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _HighlightText(
-                                  text: result.displayName, query: query),
+                              OfficialVerifiedName(
+                                verified: result.showOfficialVerification,
+                                name: _HighlightText(
+                                    text: result.displayName, query: query),
+                              ),
                               if (result.lppId != null) ...[
                                 const SizedBox(height: 2),
                                 Text(
@@ -1251,7 +1265,9 @@ _MessagePreview _messagePreview(
 }
 
 _SearchMediaSource? _imageSearchMedia(MediaResource? media, String type) {
-  final url = _nonEmpty(media?.thumbnailUrl) ?? _nonEmpty(media?.url);
+  final url = _nonEmpty(media?.signedUrl) ??
+      _nonEmpty(media?.thumbnailUrl) ??
+      _nonEmpty(media?.displayUrl);
   if (url == null) return null;
   return _SearchMediaSource(url: url, isVideo: false);
 }
@@ -1263,6 +1279,20 @@ _SearchMediaSource? _videoSearchMedia(MediaResource? media, String type) {
     url: url,
     isVideo: true,
     durationSeconds: media?.durationSeconds,
+  );
+}
+
+MediaRequestContext? _searchMediaContext(
+    MessageSearchResult message, bool isVideo) {
+  if (message.conversationId.isEmpty || message.messageId.isEmpty) return null;
+  return MediaRequestContext(
+    conversationId: message.conversationId,
+    messageId: message.messageId,
+    conversationSeq: message.conversationSeq,
+    kind: isVideo ? 'video' : 'image',
+    variant: isVideo ? 'videoPoster' : 'source',
+    fallbackUrl:
+        isVideo ? message.body.video?.thumbnailUrl : message.body.image?.url,
   );
 }
 
@@ -1321,6 +1351,7 @@ class _SearchMediaThumb extends StatelessWidget {
           children: [
             AppNetworkImage(
               url: source.url,
+              mediaContext: _searchMediaContext(message, source.isVideo),
               width: _size,
               height: _size,
               fit: BoxFit.cover,
@@ -1451,6 +1482,7 @@ class _MediaGridTile extends StatelessWidget {
                 children: [
                   AppNetworkImage(
                     url: media.url,
+                    mediaContext: _searchMediaContext(message, media.isVideo),
                     fit: BoxFit.cover,
                     placeholderBuilder: (context) => ColoredBox(
                       color:

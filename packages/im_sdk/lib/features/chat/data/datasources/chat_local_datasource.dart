@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
 import 'package:im_sdk/core/runtime/account_operation_guard.dart';
 import 'package:im_sdk/core/runtime/account_write_gate.dart';
 import 'package:im_sdk/features/chat/data/datasources/chat_local_search_index.dart';
@@ -28,6 +29,11 @@ class InterruptedOutgoingMessage {
   });
 }
 
+typedef SyncedConversationCommit = ({
+  Conversation? conversation,
+  List<Message> messages,
+});
+
 enum LocalMediaPageDirection { older, newer }
 
 class LocalMediaPage {
@@ -38,6 +44,41 @@ class LocalMediaPage {
     required this.items,
     required this.hasMore,
   });
+}
+
+/// An operation baseline, not another conversation cache. Only the local
+/// directory owner that captured it may use it to reconcile the same space.
+class ConversationDirectoryBaseline {
+  ConversationDirectoryBaseline._(this._owner, this.spaceId, this._rows);
+
+  final Object _owner;
+  final String spaceId;
+  final Map<String, Map<String, Object?>> _rows;
+}
+
+class ConversationDirectorySyncSuperseded implements Exception {}
+
+abstract interface class ConversationDirectoryLocalStore {
+  /// A fence owned by this datasource, not another directory snapshot. Readers
+  /// capture it before awaiting and reject results if a directory commit wins.
+  int get conversationDirectoryRevision;
+
+  Future<ConversationDirectoryBaseline> captureConversationDirectory(
+      String spaceId);
+
+  Future<List<Conversation>> reconcileConversationDirectory(
+    String spaceId, {
+    required ConversationDirectoryBaseline baseline,
+    required List<Conversation> remoteConversations,
+    required bool Function() isOperationCurrent,
+  });
+
+  Future<bool> isConversationDirectoryVisible(
+      String spaceId, String conversationId);
+
+  /// Reads access metadata even when the directory entry is hidden.
+  Future<Conversation?> getConversationForAccess(
+      String spaceId, String conversationId);
 }
 
 abstract class ChatLocalDataSource {
@@ -99,7 +140,7 @@ abstract class ChatLocalDataSource {
   /// Historical replay must never use the realtime unread increment rule.
   /// The read cursor from the server is reconciled monotonically and unread is
   /// derived from the persisted messages after that cursor.
-  Future<Conversation?> applySyncedConversation(
+  Future<SyncedConversationCommit> applySyncedConversation(
     String spaceId, {
     required String conversationId,
     required ConversationType fallbackType,
@@ -215,6 +256,7 @@ abstract class ChatLocalDataSource {
     String conversationId, {
     required bool isGroup,
     required int readSeq,
+    bool clearAllUnread = true,
   });
 
   Future<List<PendingReadReceipt>> getPendingReadReceipts(String spaceId);
@@ -242,7 +284,8 @@ List<Message> sortMessagesForTimeline(Iterable<Message> messages) {
   return const MessageTimelinePolicy().sort(messages);
 }
 
-class ChatLocalDataSourceImpl implements ChatLocalDataSource {
+class ChatLocalDataSourceImpl
+    implements ChatLocalDataSource, ConversationDirectoryLocalStore {
   static const _conversationSnapshotReadyKey =
       'conversation_first_page_snapshot_v1';
   static const _summaryPolicy = ConversationSummaryPolicy();
@@ -270,6 +313,11 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
   final AccountOperationContext? _operationContext;
   final ConversationDeletionBoundaryStore _deletionBoundaries;
   final ChatLocalSearchIndex _searchIndex;
+  final Object _directoryOwner = Object();
+  int _conversationDirectoryRevision = 0;
+
+  @override
+  int get conversationDirectoryRevision => _conversationDirectoryRevision;
 
   Future<T> _runGuardedWrite<T>(Future<T> Function() write) {
     final gate = _writeGate;
@@ -472,6 +520,10 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
       'member_avatar_urls':
           c.memberAvatarUrls != null ? jsonEncode(c.memberAvatarUrls) : null,
       'member_names': c.memberNames != null ? jsonEncode(c.memberNames) : null,
+      'is_official_service_user': c.isOfficialServiceUser ? 1 : 0,
+      'official_account_kind': c.officialAccountKind?.name,
+      'peer_official_verified': c.showsPeerOfficialVerification ? 1 : 0,
+      'customer_can_reply': c.customerCanReply ? 1 : 0,
     };
   }
 
@@ -550,6 +602,14 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
       memberCount: row['member_count'] as int?,
       memberAvatarUrls: memberAvatarUrls,
       memberNames: memberNames,
+      isOfficialServiceUser: row['is_official_service_user'] == 1,
+      officialAccountKind: switch (row['official_account_kind']) {
+        'service' => OfficialAccountKind.service,
+        'broadcast' => OfficialAccountKind.broadcast,
+        _ => null,
+      },
+      peerOfficialVerified: row['peer_official_verified'] == 1,
+      customerCanReply: (row['customer_can_reply'] as int? ?? 1) != 0,
     );
   }
 
@@ -821,7 +881,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
   }
 
   @override
-  Future<Conversation?> applySyncedConversation(
+  Future<SyncedConversationCommit> applySyncedConversation(
     String spaceId, {
     required String conversationId,
     required ConversationType fallbackType,
@@ -833,10 +893,9 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
     await _ensureMessageTable(db, conversationId);
     await _ensureConversationLastMessageColumns(db);
     final table = _messageTable(conversationId);
-    var sortedMessages = const <Message>[];
-
     return _runGuardedWrite(() async {
-      final result = await db.transaction((txn) async {
+      final result =
+          await db.transaction<SyncedConversationCommit>((txn) async {
         final deletion = await _deletionBoundaries.readStateWithExecutor(
             txn, conversationId);
         final visibleMessages = ConversationDeletionPolicy.visibleMessages(
@@ -844,7 +903,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
           deletedThroughSeq: deletion.deletedThroughSeq,
           explicitDeletedAt: deletion.explicitDeletedAt,
         );
-        sortedMessages = sortMessagesForTimeline(
+        final sortedMessages = sortMessagesForTimeline(
           await _withoutSupersededOptimisticMessages(
             txn,
             table,
@@ -888,7 +947,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
             ? null
             : _rowToConversation(existingRows.first);
         if (existing == null && sortedMessages.isEmpty) {
-          return null;
+          return (conversation: null, messages: sortedMessages);
         }
         var conversation = existing ??
             Conversation(
@@ -954,11 +1013,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
           lastReadSeq: unreadProjection.lastReadSeq,
           unreadCount: unreadProjection.unreadCount,
         );
-        await txn.insert(
-          'conversations',
-          _conversationToRow(conversation),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        await _writeConversationRow(txn, _conversationToRow(conversation));
         if (lastReadSeq > 0) {
           await txn.delete(
             'pending_read_receipts',
@@ -966,15 +1021,29 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
             whereArgs: [conversationId, lastReadSeq],
           );
         }
-        return conversation;
+        return (conversation: conversation, messages: sortedMessages);
       });
 
-      if (result != null && sortedMessages.isNotEmpty) {
-        await _searchIndex.upsertMessages(
-          spaceId,
-          conversationId,
-          sortedMessages,
-        );
+      if (result.messages.isNotEmpty) {
+        try {
+          await _searchIndex.upsertMessages(
+            spaceId,
+            conversationId,
+            result.messages,
+          );
+        } catch (error) {
+          // The authoritative rows are already committed. A derived index
+          // failure must not hide them or hold the global sync cursor back.
+          AppDiagnostics.instance.warning(
+            'gateway.sync.index',
+            'committed messages could not be indexed',
+            context: {
+              'spaceId': spaceId,
+              'conversationId': conversationId,
+              'errorType': error.runtimeType.toString(),
+            },
+          );
+        }
       }
       return result;
     });
@@ -1005,6 +1074,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
     return db.transaction((txn) async {
       final rows = await txn.query(
         'conversations',
+        where: 'directory_visible = 1',
         orderBy: 'is_pinned DESC, last_activity_at DESC',
       );
       final conversations = <Conversation>[];
@@ -1018,6 +1088,151 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
       }
       return conversations;
     });
+  }
+
+  @override
+  Future<ConversationDirectoryBaseline> captureConversationDirectory(
+      String spaceId) async {
+    final db = await _databaseProvider(spaceId);
+    await _ensureConversationLastMessageColumns(db);
+    final rows =
+        await db.query('conversations', where: 'directory_visible = 1');
+    return ConversationDirectoryBaseline._(
+      _directoryOwner,
+      spaceId,
+      {
+        for (final row in rows)
+          row['conversation_id'] as String:
+              Map<String, Object?>.unmodifiable(row),
+      },
+    );
+  }
+
+  @override
+  Future<List<Conversation>> reconcileConversationDirectory(
+    String spaceId, {
+    required ConversationDirectoryBaseline baseline,
+    required List<Conversation> remoteConversations,
+    required bool Function() isOperationCurrent,
+  }) async {
+    if (!identical(baseline._owner, _directoryOwner) ||
+        baseline.spaceId != spaceId) {
+      throw StateError('CONVERSATION_DIRECTORY_SCOPE_MISMATCH');
+    }
+    return _runGuardedWrite(() async {
+      final db = await _databaseProvider(spaceId);
+      await _ensureConversationLastMessageColumns(db);
+      // Normalize legacy deletion metadata before entering the transaction.
+      await _deletionBoundaries.readAllWatermarks(spaceId);
+      await db.transaction((txn) async {
+        void verifyCurrent() {
+          if (!isOperationCurrent()) {
+            throw ConversationDirectorySyncSuperseded();
+          }
+        }
+
+        verifyCurrent();
+        final currentRows = await txn.query('conversations');
+        final currentById = {
+          for (final row in currentRows) row['conversation_id'] as String: row,
+        };
+        final remoteIds = {
+          for (final conversation in remoteConversations)
+            conversation.conversationId,
+        };
+        // Only unchanged entries that existed before the network operation
+        // may disappear. Realtime/local additions and updates win this round.
+        for (final entry in baseline._rows.entries) {
+          if (remoteIds.contains(entry.key)) continue;
+          final current = currentById[entry.key];
+          if (current == null || !mapEquals(current, entry.value)) continue;
+          await txn.update(
+            'conversations',
+            {'directory_visible': 0},
+            where: 'conversation_id = ?',
+            whereArgs: [entry.key],
+          );
+        }
+        final boundaries = await txn.query(
+          'conversation_deletion_tombstones',
+          columns: const [
+            'conversation_id',
+            'deleted_through_seq',
+            'explicit_deletion',
+          ],
+        );
+        final deletedThrough = {
+          for (final row in boundaries)
+            if ((row['explicit_deletion'] as num?)?.toInt() == 1)
+              row['conversation_id'] as String:
+                  (row['deleted_through_seq'] as num).toInt(),
+        };
+        final clearWatermarks = {
+          for (final row in boundaries)
+            row['conversation_id'] as String:
+                (row['deleted_through_seq'] as num).toInt(),
+        };
+        for (final remote in remoteConversations) {
+          final boundary = deletedThrough[remote.conversationId];
+          if (boundary != null && remote.lastMessageSeq <= boundary) continue;
+          final row = currentById[remote.conversationId];
+          final merged = row == null
+              ? remote
+              : _summaryPolicy.mergeRemoteSnapshot(
+                  local: _rowToConversation(row), remote: remote);
+          final withMentions =
+              await _preserveExistingLastMessageMentions(txn, merged);
+          await _writeConversationRow(
+            txn,
+            _conversationRowRespectingWatermark(
+                withMentions, clearWatermarks[remote.conversationId]),
+            directoryVisible: true,
+          );
+        }
+        await txn.insert(
+          'migration_flags',
+          const {'key': _conversationSnapshotReadyKey, 'value': '1'},
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+        // A new refresh or identity change during the transaction rolls the
+        // entire operation back, including the visibility changes above.
+        verifyCurrent();
+      });
+      // Publish the commit fence before exposing the authoritative directory.
+      // A rollback never invalidates readers of the still-current directory.
+      _conversationDirectoryRevision++;
+      return getConversations(spaceId);
+    });
+  }
+
+  @override
+  Future<bool> isConversationDirectoryVisible(
+      String spaceId, String conversationId) async {
+    final db = await _databaseProvider(spaceId);
+    await _ensureConversationLastMessageColumns(db);
+    return _isDirectoryVisible(db, conversationId);
+  }
+
+  Future<bool> _isDirectoryVisible(
+      DatabaseExecutor executor, String conversationId) async {
+    final rows = await executor.query(
+      'conversations',
+      columns: const ['directory_visible'],
+      where: 'conversation_id = ?',
+      whereArgs: [conversationId],
+      limit: 1,
+    );
+    return rows.isEmpty || (rows.single['directory_visible'] as int? ?? 1) != 0;
+  }
+
+  @override
+  Future<Conversation?> getConversationForAccess(
+      String spaceId, String conversationId) async {
+    final db = await _databaseProvider(spaceId);
+    await _ensureConversationLastMessageColumns(db);
+    final rows = await db.query('conversations',
+        where: 'conversation_id = ?', whereArgs: [conversationId], limit: 1);
+    return rows.isEmpty ? null : _rowToConversation(rows.single);
   }
 
   /// Narrow, read-only identity lookup. Does not hydrate messages, repair
@@ -1103,11 +1318,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
       }
     }
     if (_sameStoredSummary(stored, repaired)) return stored;
-    await db.insert(
-      'conversations',
-      _conversationToRow(repaired),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await _writeConversationRow(db, _conversationToRow(repaired));
     return repaired;
   }
 
@@ -1166,13 +1377,12 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
           }
           final merged =
               await _preserveExistingLastMessageMentions(txn, conversation);
-          await txn.insert(
-              'conversations',
+          await _writeConversationRow(
+              txn,
               _conversationRowRespectingWatermark(
                 merged,
                 allWatermarks[conversation.conversationId],
-              ),
-              conflictAlgorithm: ConflictAlgorithm.replace);
+              ));
         }
       });
     });
@@ -1192,9 +1402,8 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
         if (boundary != null && conversation.lastMessageSeq <= boundary) return;
         final merged =
             await _preserveExistingLastMessageMentions(txn, conversation);
-        await txn.insert('conversations',
-            _conversationRowRespectingWatermark(merged, watermark),
-            conflictAlgorithm: ConflictAlgorithm.replace);
+        await _writeConversationRow(
+            txn, _conversationRowRespectingWatermark(merged, watermark));
       });
     });
   }
@@ -1297,11 +1506,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
           message: message,
           isSelf: isSelf,
         );
-        await txn.insert(
-          'conversations',
-          _conversationToRow(updated),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        await _writeConversationRow(txn, _conversationToRow(updated));
       });
     });
   }
@@ -1353,11 +1558,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
           message: normalizedMessage,
           isSelf: isSelf,
         );
-        await txn.insert(
-          'conversations',
-          _conversationToRow(updated),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        await _writeConversationRow(txn, _conversationToRow(updated));
         return updated;
       });
       await _searchIndex.upsertMessages(
@@ -1643,19 +1844,24 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
     String conversationId, {
     required bool isGroup,
     required int readSeq,
+    bool clearAllUnread = true,
   }) async {
+    if (readSeq <= 0) return;
     await _runGuardedWrite(() async {
       final db = await _databaseProvider(spaceId);
-      final normalizedSeq = readSeq < 0 ? 0 : readSeq;
       final now = DateTime.now().millisecondsSinceEpoch;
       await db.transaction((txn) async {
+        final unreadCount = clearAllUnread
+            ? '0'
+            : 'CASE WHEN last_message_seq > 0 AND last_message_seq <= ? '
+                'THEN 0 ELSE unread_count END';
         await txn.rawUpdate(
           '''
         UPDATE conversations
-        SET last_read_seq = MAX(last_read_seq, ?), unread_count = 0
+        SET last_read_seq = MAX(last_read_seq, ?), unread_count = $unreadCount
         WHERE conversation_id = ?
         ''',
-          [normalizedSeq, conversationId],
+          [readSeq, if (!clearAllUnread) readSeq, conversationId],
         );
         await txn.rawInsert(
           '''
@@ -1667,7 +1873,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
           read_seq = MAX(pending_read_receipts.read_seq, excluded.read_seq),
           updated_at = excluded.updated_at
         ''',
-          [conversationId, isGroup ? 1 : 0, normalizedSeq, now],
+          [conversationId, isGroup ? 1 : 0, readSeq, now],
         );
       });
     });
@@ -1804,10 +2010,12 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
 
     await _runGuardedWrite(() async {
       final db = await _databaseProvider(spaceId);
+      await _ensureConversationLastMessageColumns(db);
       await db.transaction((txn) async {
         final rows = await txn.query(
           'conversations',
           columns: const ['conversation_id', 'draft'],
+          where: 'directory_visible = 1',
         );
         for (final row in rows) {
           final conversationId = row['conversation_id'] as String;
@@ -1954,6 +2162,113 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
     });
   }
 
+  /// Resolves a search/favorite reference from the existing message owner.
+  /// This never creates a message table or fetches history.
+  Future<Message?> getMessageForMediaAccess(
+      String spaceId, String conversationId, String messageId) async {
+    final db = await _databaseProvider(spaceId);
+    final table = _messageTable(conversationId);
+    if (!await _tableExists(db, table)) return null;
+    final rows = await db.query(table,
+        where: 'message_id = ?', whereArgs: [messageId], limit: 1);
+    if (rows.isEmpty) return null;
+    return _rowToMessage(rows.single);
+  }
+
+  /// Replaces only short-lived access links on an existing media snapshot.
+  /// Uncached references may consume a visible server snapshot for this request;
+  /// a renewal never inserts messages or overwrites local business state.
+  Future<Message?> updateExistingMediaAccess(
+    String spaceId,
+    String conversationId,
+    Message snapshot, {
+    required bool Function() isOperationCurrent,
+  }) async {
+    return _runGuardedWrite(() async {
+      if (!isOperationCurrent()) throw AccountOperationSuperseded();
+      if (snapshot.conversationId != conversationId ||
+          snapshot.isRecalled ||
+          !snapshot.status.isServerUsable) {
+        return null;
+      }
+      final db = await _databaseProvider(spaceId);
+      final table = _messageTable(conversationId);
+      await _ensureConversationLastMessageColumns(db);
+      return db.transaction<Message?>((txn) async {
+        if (!await _isDirectoryVisible(txn, conversationId)) return null;
+        final deletion = await _deletionBoundaries.readStateWithExecutor(
+            txn, conversationId);
+        if (ConversationDeletionPolicy.visibleMessages([snapshot],
+                deletedThroughSeq: deletion.deletedThroughSeq,
+                explicitDeletedAt: deletion.explicitDeletedAt)
+            .isEmpty) {
+          return null;
+        }
+        final rows = await _tableExists(txn, table)
+            ? await txn.query(table,
+                where: 'message_id = ?',
+                whereArgs: [snapshot.messageId],
+                limit: 1)
+            : const <Map<String, Object?>>[];
+        if (rows.isEmpty) {
+          if (!isOperationCurrent()) throw AccountOperationSuperseded();
+          return snapshot;
+        }
+        final current = _rowToMessage(rows.single);
+        if (current.isRecalled ||
+            !current.status.isServerUsable ||
+            current.conversationSeq != snapshot.conversationSeq) {
+          return null;
+        }
+        if (ConversationDeletionPolicy.visibleMessages([current],
+                deletedThroughSeq: deletion.deletedThroughSeq,
+                explicitDeletedAt: deletion.explicitDeletedAt)
+            .isEmpty) {
+          return null;
+        }
+        final body = current.body.toLocalJson();
+        final freshBody = snapshot.body.toLocalJson();
+        var matchedResource = false;
+        for (final kind in const ['image', 'video', 'voice', 'file']) {
+          final oldMedia = body[kind];
+          final freshMedia = freshBody[kind];
+          if (oldMedia is! Map || freshMedia is! Map) continue;
+          final oldId = oldMedia['mediaId'];
+          final freshId = freshMedia['mediaId'];
+          if (oldId is String &&
+              oldId.isNotEmpty &&
+              freshId is String &&
+              freshId.isNotEmpty &&
+              oldId != freshId) {
+            continue;
+          }
+          final sameId = oldId is String &&
+              oldId.isNotEmpty &&
+              freshId is String &&
+              oldId == freshId;
+          if (!sameId && oldMedia['url'] != freshMedia['url']) continue;
+          matchedResource = true;
+          final merged = Map<String, dynamic>.from(oldMedia);
+          for (final key in const [
+            'signedUrl',
+            'downloadUrl',
+            'mediaId',
+            'thumbnailUrl',
+          ]) {
+            merged.remove(key);
+            if (freshMedia[key] != null) merged[key] = freshMedia[key];
+          }
+          body[kind] = merged;
+        }
+        if (!matchedResource) return null;
+        if (!isOperationCurrent()) throw AccountOperationSuperseded();
+        await txn.update(table, {'body': jsonEncode(body)},
+            where: 'message_id = ?', whereArgs: [snapshot.messageId]);
+        return current.copyWith(body: MessageBody.fromJson(body));
+      });
+    });
+  }
+
   // ── 内部工具 ──────────────────────────────────────────────────────────────
 
   Future<void> _deleteSupersededOptimisticRows(
@@ -2078,6 +2393,42 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
     );
     await _ensureColumn(db, 'conversations', 'last_message_direction', 'TEXT');
     await _ensureColumn(db, 'conversations', 'last_message_mentions', 'TEXT');
+    await _ensureColumn(db, 'conversations', 'official_account_kind', 'TEXT');
+    await _ensureColumn(db, 'conversations', 'is_official_service_user',
+        'INTEGER NOT NULL DEFAULT 0');
+    await _ensureColumn(db, 'conversations', 'peer_official_verified',
+        'INTEGER NOT NULL DEFAULT 0');
+    await _ensureColumn(db, 'conversations', 'customer_can_reply',
+        'INTEGER NOT NULL DEFAULT 1');
+    await _ensureColumn(
+        db, 'conversations', 'directory_visible', 'INTEGER NOT NULL DEFAULT 1');
+  }
+
+  /// Message/sync callbacks update the same summary row without reviving a
+  /// directory entry removed by a complete server snapshot. Only reconciliation
+  /// may explicitly restore that entry.
+  Future<void> _writeConversationRow(
+    DatabaseExecutor db,
+    Map<String, dynamic> row, {
+    bool? directoryVisible,
+  }) async {
+    final previous = await db.query(
+      'conversations',
+      columns: const ['directory_visible'],
+      where: 'conversation_id = ?',
+      whereArgs: [row['conversation_id']],
+      limit: 1,
+    );
+    final visible = directoryVisible == null
+        ? (previous.isEmpty
+            ? 1
+            : previous.single['directory_visible'] as int? ?? 1)
+        : (directoryVisible ? 1 : 0);
+    await db.insert(
+      'conversations',
+      {...row, 'directory_visible': visible},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }
 

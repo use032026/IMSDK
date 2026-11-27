@@ -3330,4 +3330,18 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'İşlem başarısız. Tekrar deneyin.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Bu kişi size zaten arkadaşlık isteği gönderdi. Önce inceleyin.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Grup sohbetine eklendiniz';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Favorilere ekleme sonucu doğrulanamadı. Yeniden deneyin';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

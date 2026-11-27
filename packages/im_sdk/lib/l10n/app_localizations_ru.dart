@@ -3344,4 +3344,18 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get diagnosticsFailed =>
       'Не удалось выполнить действие. Повторите попытку.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Этот человек уже отправил вам запрос в друзья. Сначала рассмотрите его.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Вас добавили в групповой чат';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Не удалось подтвердить добавление в избранное. Повторите попытку';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "පද්ධති බෙදාගැනීම අවසන් විය. ලබන යෙදුමේ ගොනුව තහවුරු කරන්න.",
   "diagnosticsCancelled": "බෙදාගැනීම අවලංගු කරන ලදි. ඔබට නැවත අපනයනය කළ හැකිය.",
   "diagnosticsUnconfirmed": "බෙදාගැනීම තහවුරු කළ නොහැකි විය. ලබන යෙදුම පරීක්ෂා කරන්න.",
-  "diagnosticsFailed": "ක්‍රියාව අසාර්ථකයි. නැවත උත්සාහ කරන්න."
+  "diagnosticsFailed": "ක්‍රියාව අසාර්ථකයි. නැවත උත්සාහ කරන්න.",
+  "scanIncomingFriendRequest": "මෙම පුද්ගලයා දැනටමත් ඔබට මිතුරු ඉල්ලීමක් යවා ඇත. පළමුව එය සමාලෝචනය කරන්න.",
+  "chatGroupAddedToGroup": "ඔබව සමූහ කතාබහට එක් කර ඇත",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "ප්‍රියතමයන්ට එක් කළ බව තහවුරු කළ නොහැකි විය. නැවත උත්සාහ කරන්න",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

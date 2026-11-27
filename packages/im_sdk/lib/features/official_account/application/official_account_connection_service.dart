@@ -41,10 +41,12 @@ class OfficialAccountConnectionService {
     OfficialAccountCard card, {
     String? qrToken,
     bool Function()? isActive,
+    bool activeSpaceOnly = false,
   }) {
     // A second tap cannot add twice or start a competing space transition.
     if (_pending != null) throw OfficialAccountConnectionFailure.switched;
-    final operation = _open(card, qrToken: qrToken, isActive: isActive);
+    final operation = _open(card,
+        qrToken: qrToken, isActive: isActive, activeSpaceOnly: activeSpaceOnly);
     _pending = operation;
     return operation.whenComplete(() => _pending = null);
   }
@@ -53,9 +55,14 @@ class OfficialAccountConnectionService {
     OfficialAccountCard initial, {
     String? qrToken,
     bool Function()? isActive,
+    required bool activeSpaceOnly,
   }) async {
     final actor = readActor();
-    if (actor == null) throw OfficialAccountConnectionFailure.unavailable;
+    if (actor == null ||
+        (activeSpaceOnly &&
+            (actor.spaceId != initial.tenantId || !initial.isMember))) {
+      throw OfficialAccountConnectionFailure.unavailable;
+    }
     void checkSource() {
       if (readActor() != actor || (isActive != null && !isActive())) {
         throw OfficialAccountConnectionFailure.switched;
@@ -79,15 +86,19 @@ class OfficialAccountConnectionService {
       card = accepted;
     }
 
-    if (!isTenantAuthorized(card.tenantId) || card.joined) {
-      await refreshDirectory();
+    if (activeSpaceOnly) {
       checkSource();
+    } else {
+      if (!isTenantAuthorized(card.tenantId) || card.joined) {
+        await refreshDirectory();
+        checkSource();
+      }
+      if (!isTenantAuthorized(card.tenantId)) {
+        throw OfficialAccountConnectionFailure.directory;
+      }
+      checkSource();
+      if (actor.spaceId != card.tenantId) await activateTenant(card.tenantId);
     }
-    if (!isTenantAuthorized(card.tenantId)) {
-      throw OfficialAccountConnectionFailure.directory;
-    }
-    checkSource();
-    if (actor.spaceId != card.tenantId) await activateTenant(card.tenantId);
     final target = readActor();
     if (target == null ||
         target.accountId != actor.accountId ||

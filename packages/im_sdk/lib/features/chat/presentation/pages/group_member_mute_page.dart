@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/permissions/app_permissions.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/chat/presentation/pages/group_settings_page.dart';
 import 'package:im_sdk/features/settings/presentation/providers/timezone_provider.dart';
@@ -385,11 +386,15 @@ class _MemberMuteTile extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  member.displayName,
-                  style: TextStyle(fontSize: 15, color: colorScheme.onSurface),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                OfficialVerifiedName(
+                  verified: member.showOfficialVerification,
+                  name: Text(
+                    member.displayName,
+                    style:
+                        TextStyle(fontSize: 15, color: colorScheme.onSurface),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const SizedBox(height: 5),
                 Wrap(

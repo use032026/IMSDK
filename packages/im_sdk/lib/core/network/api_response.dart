@@ -22,11 +22,12 @@ class ApiResponse<T> {
     Map<String, dynamic> json,
     T Function(Object? json)? fromData,
   ) {
+    final code = json['code'] as String? ?? '';
     return ApiResponse<T>(
-      code: json['code'] as String? ?? '',
+      code: code,
       message: json['message'] as String? ?? '',
       requestId: json['requestId'] as String?,
-      data: json['data'] != null && fromData != null
+      data: code == 'OK' && json['data'] != null && fromData != null
           ? fromData(json['data'])
           : null,
     );

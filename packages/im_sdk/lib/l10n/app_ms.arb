@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Perkongsian sistem selesai. Sahkan fail dalam aplikasi penerima.",
   "diagnosticsCancelled": "Perkongsian dibatalkan. Anda boleh mengeksport semula.",
   "diagnosticsUnconfirmed": "Perkongsian tidak dapat disahkan. Semak aplikasi penerima.",
-  "diagnosticsFailed": "Operasi gagal. Sila cuba lagi."
+  "diagnosticsFailed": "Operasi gagal. Sila cuba lagi.",
+  "scanIncomingFriendRequest": "Orang ini sudah menghantar permintaan rakan kepada anda. Semak dahulu.",
+  "chatGroupAddedToGroup": "Anda telah ditambahkan ke sembang kumpulan",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Hasil penambahan ke kegemaran tidak dapat disahkan. Cuba lagi",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

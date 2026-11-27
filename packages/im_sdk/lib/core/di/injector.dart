@@ -23,7 +23,6 @@ import 'package:im_sdk/core/privacy/privacy_consent_service.dart';
 import 'package:im_sdk/core/space/space_manager.dart';
 import 'package:im_sdk/features/app_update/presentation/app_update_provider.dart';
 import 'package:im_sdk/features/auth/presentation/providers/auth_provider.dart';
-import 'package:im_sdk/features/auth/domain/entities/auth_logout_reason.dart';
 
 // Re-export space providers so callers only need to import injector.dart
 export 'package:im_sdk/core/space/space_manager.dart'
@@ -40,8 +39,11 @@ final httpClientProvider = Provider<HttpClient>((ref) {
   final storage = ref.watch(secureStorageProvider);
   return HttpClient(
     storage: storage,
+    localeGetter: () => ref.read(localeProvider),
     tokenGetter: () => ref.read(currentSpaceProvider)?.accessToken,
     activeSpaceIdGetter: () => ref.read(currentSpaceProvider)?.spaceId,
+    tenantSessionIdGetter: () =>
+        ref.read(activeAccountSessionProvider)?.sessionId,
     refreshTokenGetter: () => ref.read(currentSpaceProvider)?.refreshToken,
     platformTokenGetter: () =>
         ref.read(authProvider).valueOrNull?.platformToken,
@@ -51,14 +53,8 @@ final httpClientProvider = Provider<HttpClient>((ref) {
         ref.read(authProvider.notifier).currentDeviceSessionToken,
     allowLegacyCredentialFallback: false,
     persistLegacyCredentialMirror: false,
-    onAuthFailed: (error) async {
-      // AuthNotifier owns the compare-and-clear sequence for the active v2
-      // Session. Clearing legacy space keys here would create a second owner.
-      await ref.read(authProvider.notifier).logout(
-            reason: AuthLogoutReason.httpAuthenticationFailed,
-            serverCode: error.code,
-          );
-    },
+    onAuthFailed: (error) => unawaited(
+        ref.read(authProvider.notifier).handleCredentialRenewalFailure(error)),
     // platformToken 刷新成功后同步更新 authProvider state
     onPlatformTokenRefreshed: (newToken, newRefreshToken) {
       final authNotifier = ref.read(authProvider.notifier);
@@ -68,12 +64,13 @@ final httpClientProvider = Provider<HttpClient>((ref) {
       );
     },
     // 租户 token 刷新成功后同步更新 authProvider state
-    onTenantTokenRefreshed: (spaceId, newAccessToken, newRefreshToken) {
+    onTenantTokenRefreshed: (spaceId, newAccessToken, newRefreshToken, expiresIn) {
       final authNotifier = ref.read(authProvider.notifier);
       return authNotifier.updateTenantToken(
         spaceId,
         newAccessToken,
         newRefreshToken: newRefreshToken,
+        expiresIn: expiresIn,
       );
     },
   );

@@ -38,6 +38,9 @@ typedef PendingDeletionBoundaryReader = Future<DateTime?> Function(
   String spaceId,
   String conversationId,
 );
+typedef PendingSendPermissionReader = Future<MessageSendFailure?> Function(
+  PendingMessage pending,
+);
 
 // ---------------------------------------------------------------------------
 // PendingMessage 模型
@@ -148,16 +151,19 @@ class PendingMessageQueue {
   PendingMessageQueue({
     required Box<dynamic> accountBox,
     required PendingDeletionBoundaryReader deletionBoundaryReader,
+    PendingSendPermissionReader? sendPermissionReader,
     AccountWriteGate? writeGate,
     AccountOperationContext? operationContext,
   })  : _accountBox = accountBox,
         _deletionBoundaryReader = deletionBoundaryReader,
+        _sendPermissionReader = sendPermissionReader,
         _writeGate = writeGate,
         _operationContext = operationContext;
 
   static const int _maxRetries = 3;
   final Box<dynamic> _accountBox;
   final PendingDeletionBoundaryReader _deletionBoundaryReader;
+  final PendingSendPermissionReader? _sendPermissionReader;
   final AccountWriteGate? _writeGate;
   final AccountOperationContext? _operationContext;
 
@@ -297,6 +303,8 @@ class PendingMessageQueue {
           await _remove(message);
           continue;
         }
+        final permissionFailure = await _sendPermissionReader?.call(message);
+        if (permissionFailure != null) throw permissionFailure;
         final type = _parseMessageType(message.messageType);
         if (type == MessageType.callLog) {
           await onAttemptFailed?.call(
@@ -339,6 +347,9 @@ class PendingMessageQueue {
 
         late final Message sent;
         try {
+          final latestPermissionFailure =
+              await _sendPermissionReader?.call(message);
+          if (latestPermissionFailure != null) throw latestPermissionFailure;
           sent = await messageRepository.sendMessage(
             conversationId: message.conversationId,
             isGroup: message.isGroup,
@@ -371,7 +382,8 @@ class PendingMessageQueue {
       } catch (error) {
         // 发送失败，更新重试次数
         final updated = message.copyWith(retryCount: message.retryCount + 1);
-        final failure = failureMapper?.call(error);
+        final failure =
+            error is MessageSendFailure ? error : failureMapper?.call(error);
         final exhausted =
             failure?.shouldRetry == false || updated.retryCount >= _maxRetries;
         await onAttemptFailed?.call(message, error, exhausted);

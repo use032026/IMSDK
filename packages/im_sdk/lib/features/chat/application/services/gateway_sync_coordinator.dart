@@ -1,14 +1,25 @@
 import 'dart:async';
 
+class GatewaySyncTemporarilyUnavailable implements Exception {
+  const GatewaySyncTemporarilyUnavailable();
+}
+
+typedef _SyncTask = ({
+  Future<void> Function() run,
+  bool Function()? canRetry,
+});
+
 class GatewaySyncCoordinator {
   final Map<String, Future<void>> _inFlight = {};
-  final Map<String, Future<void> Function()> _followUps = {};
+  final Map<String, _SyncTask> _followUps = {};
+  final Map<String, ({Timer timer, Completer<bool> ready})> _backoffs = {};
 
   Future<void> run({
     required String spaceId,
     required String userId,
     required Future<void> Function() task,
     bool rerunIfRunning = false,
+    bool Function()? canRetry,
   }) {
     final normalizedSpaceId = spaceId.trim();
     final normalizedUserId = userId.trim();
@@ -17,19 +28,37 @@ class GatewaySyncCoordinator {
     }
 
     final key = '$normalizedSpaceId::$normalizedUserId';
+    final work = (run: task, canRetry: canRetry);
     final running = _inFlight[key];
     if (running != null) {
-      if (rerunIfRunning) _followUps[key] = task;
+      if (rerunIfRunning) {
+        _followUps[key] = work;
+        _finishBackoff(key, retry: false);
+      }
       return running;
     }
 
     Future<void> drain() async {
-      var next = task;
+      var next = work;
+      var retryCount = 0;
       while (true) {
         Object? failure;
         StackTrace? failureStack;
         try {
-          await next();
+          await next.run();
+        } on GatewaySyncTemporarilyUnavailable {
+          final canRetry = next.canRetry;
+          if (_followUps[key] == null && canRetry != null && canRetry()) {
+            final delay =
+                Duration(seconds: retryCount >= 5 ? 30 : 1 << retryCount);
+            if (retryCount < 5) retryCount++;
+            final ready = Completer<bool>();
+            final timer = Timer(delay, () => _finishBackoff(key, retry: true));
+            _backoffs[key] = (timer: timer, ready: ready);
+            if (await ready.future && _followUps[key] == null && canRetry()) {
+              continue;
+            }
+          }
         } catch (error, stack) {
           failure = error;
           failureStack = stack;
@@ -45,6 +74,7 @@ class GatewaySyncCoordinator {
           return;
         }
         next = followUp;
+        retryCount = 0;
       }
     }
 
@@ -54,6 +84,19 @@ class GatewaySyncCoordinator {
         onError: (Object error, StackTrace stack) =>
             completion.completeError(error, stack)));
     return completion.future;
+  }
+
+  void cancelPendingRetries() {
+    for (final key in _backoffs.keys.toList()) {
+      _finishBackoff(key, retry: false);
+    }
+  }
+
+  void _finishBackoff(String key, {required bool retry}) {
+    final backoff = _backoffs.remove(key);
+    if (backoff == null) return;
+    backoff.timer.cancel();
+    backoff.ready.complete(retry);
   }
 
   Future<bool> runAfterSuccessfulSync({

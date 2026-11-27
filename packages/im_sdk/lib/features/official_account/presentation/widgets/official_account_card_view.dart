@@ -14,18 +14,26 @@ Future<void> openOfficialAccountConversation(
   WidgetRef ref,
   OfficialAccountCard card, {
   String? qrToken,
+  bool sdkSingleSpace = false,
 }) async {
   final router = GoRouter.of(context);
   final service = ref.read(officialAccountConnectionProvider);
   final fromPersonalSpace = service.readActor()?.spaceId == 'personal';
   final sourceLocation = router.routeInformationProvider.value.uri;
+  final sourceRoute = ModalRoute.of(context);
+  bool isCurrentRoute() =>
+      router.routeInformationProvider.value.uri == sourceLocation &&
+      (!sdkSingleSpace || (context.mounted && sourceRoute?.isCurrent != false));
   try {
     final target = await service.open(card,
         qrToken: qrToken,
-        isActive: () =>
-            context.mounted &&
-            router.routeInformationProvider.value.uri == sourceLocation);
-    if (router.routeInformationProvider.value.uri != sourceLocation) return;
+        activeSpaceOnly: sdkSingleSpace,
+        isActive: () => context.mounted && isCurrentRoute());
+    if (!isCurrentRoute()) return;
+    final conversationId = target.conversationId;
+    if (conversationId == null || conversationId.isEmpty) {
+      throw OfficialAccountConnectionFailure.unavailable;
+    }
     // The source runtime may have been disposed by the intentional space switch.
     // Navigation uses the stable app router, not the retired source WidgetRef.
     final extra = {
@@ -34,8 +42,11 @@ Future<void> openOfficialAccountConversation(
       'peerUserId': target.officialUserId,
       'conversationType': 'direct',
       'isGroup': false,
+      'officialAccount': target,
     };
-    if (fromPersonalSpace) {
+    if (sdkSingleSpace) {
+      router.push('/chat/${Uri.encodeComponent(conversationId)}', extra: extra);
+    } else if (fromPersonalSpace) {
       // Home is the declarative parent, so auth refresh keeps the same route
       // identity and only a real exit invokes personal-space restoration.
       router.go('/official-chat/${target.conversationId}', extra: extra);
@@ -98,9 +109,13 @@ class OfficialAccountBadge extends StatelessWidget {
 
 class OfficialAccountActionButton extends ConsumerStatefulWidget {
   const OfficialAccountActionButton(
-      {super.key, required this.card, this.qrToken});
+      {super.key,
+      required this.card,
+      this.qrToken,
+      this.sdkSingleSpace = false});
   final OfficialAccountCard card;
   final String? qrToken;
+  final bool sdkSingleSpace;
   @override
   ConsumerState<OfficialAccountActionButton> createState() =>
       _OfficialAccountActionButtonState();
@@ -118,7 +133,8 @@ class _OfficialAccountActionButtonState
           : () async {
               setState(() => _busy = true);
               await openOfficialAccountConversation(context, ref, widget.card,
-                  qrToken: widget.qrToken);
+                  qrToken: widget.qrToken,
+                  sdkSingleSpace: widget.sdkSingleSpace);
               if (mounted) setState(() => _busy = false);
             },
       child: _busy
@@ -134,8 +150,10 @@ class _OfficialAccountActionButtonState
 }
 
 class OfficialAccountCardView extends StatelessWidget {
-  const OfficialAccountCardView({super.key, required this.card});
+  const OfficialAccountCardView(
+      {super.key, required this.card, this.sdkSingleSpace = false});
   final OfficialAccountCard card;
+  final bool sdkSingleSpace;
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.all(24),
@@ -159,15 +177,20 @@ class OfficialAccountCardView extends StatelessWidget {
                 child:
                     Text(AppLocalizations.of(context).officialAccountJoinHint)),
           const SizedBox(height: 16),
-          OfficialAccountActionButton(card: card),
+          OfficialAccountActionButton(
+              card: card, sdkSingleSpace: sdkSingleSpace),
         ]),
       );
 }
 
 class OfficialAccountSearchTile extends StatelessWidget {
   const OfficialAccountSearchTile(
-      {super.key, required this.card, required this.onTap});
+      {super.key,
+      required this.card,
+      required this.onTap,
+      this.sdkSingleSpace = false});
   final OfficialAccountCard card;
+  final bool sdkSingleSpace;
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => ListTile(
@@ -184,7 +207,8 @@ class OfficialAccountSearchTile extends StatelessWidget {
         ]),
         subtitle:
             Text(card.tenantName, maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: OfficialAccountActionButton(card: card),
+        trailing: OfficialAccountActionButton(
+            card: card, sdkSingleSpace: sdkSingleSpace),
         onTap: onTap,
       );
 }

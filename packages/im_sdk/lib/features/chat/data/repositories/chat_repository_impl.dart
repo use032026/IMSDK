@@ -28,9 +28,12 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
   final String spaceId;
   final ChatDraftLocalStore? _draftStore;
   final String? _draftUserId;
+  final bool Function()? _isOperationCurrent;
 
   int _firstPageRequestGeneration = 0;
   Future<void> _firstPageApplyTail = Future<void>.value();
+  Future<List<Conversation>>? _directorySyncInFlight;
+  int? _directorySyncGeneration;
 
   ChatRepositoryImpl({
     required ChatRemoteDataSource remote,
@@ -38,10 +41,12 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
     required this.spaceId,
     ChatDraftLocalStore? draftStore,
     String? draftUserId,
+    bool Function()? isOperationCurrent,
   })  : _remote = remote,
         _local = local,
         _draftStore = draftStore,
-        _draftUserId = draftUserId;
+        _draftUserId = draftUserId,
+        _isOperationCurrent = isOperationCurrent;
 
   // ---------------------------------------------------------------------------
   // Conversations
@@ -180,6 +185,11 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
   Future<void> _cacheFirstPageConversationsBestEffort(
     List<Conversation> conversations,
   ) async {
+    // A page is never authority to remove directory entries. Complete
+    // reconciliation below handles empty directories as well as nonempty ones.
+    if (conversations.isEmpty && _local is ConversationDirectoryLocalStore) {
+      return;
+    }
     try {
       await _local.cacheConversations(spaceId, conversations);
     } catch (error) {
@@ -225,16 +235,95 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
     }
   }
 
-  /// 后台静默同步：拉取最新数据并 upsert 缓存，返回最新列表
+  /// Complete, unfiltered directory reconciliation. The caller keeps the local
+  /// first screen visible while this runs; ordinary pagination stays separate.
   Future<List<Conversation>> syncConversationsFromRemote({
     int limit = 50,
-  }) async {
+    bool restart = false,
+  }) {
+    final existing = _directorySyncInFlight;
+    if (!restart &&
+        existing != null &&
+        _directorySyncGeneration == _firstPageRequestGeneration) {
+      return existing;
+    }
     final generation = ++_firstPageRequestGeneration;
-    final page = await _remote.getConversations(limit: limit);
-    return _applyFirstPageSnapshot(
-      generation: generation,
-      remoteItems: page.items,
-    );
+    _directorySyncGeneration = generation;
+    final operation = _syncConversationDirectory(generation, limit);
+    _directorySyncInFlight = operation;
+    operation.then<void>((_) {
+      if (identical(_directorySyncInFlight, operation)) {
+        _directorySyncInFlight = null;
+      }
+    }, onError: (Object _, StackTrace __) {
+      if (identical(_directorySyncInFlight, operation)) {
+        _directorySyncInFlight = null;
+      }
+    });
+    return operation;
+  }
+
+  bool _acceptsDirectoryOperation(int generation) =>
+      generation == _firstPageRequestGeneration &&
+      (_isOperationCurrent?.call() ?? true);
+
+  Future<List<Conversation>> _syncConversationDirectory(
+      int generation, int limit) async {
+    final local = _local;
+    // Legacy/test adapters without the directory capability remain append-only.
+    if (local is! ConversationDirectoryLocalStore) {
+      final page = await _remote.getConversations(limit: limit);
+      return _applyFirstPageSnapshot(
+        generation: generation,
+        remoteItems: page.items,
+      );
+    }
+    if (!_acceptsDirectoryOperation(generation)) {
+      throw ConversationDirectorySyncSuperseded();
+    }
+    final directory = local as ConversationDirectoryLocalStore;
+    final baseline = await directory.captureConversationDirectory(spaceId);
+    final remoteById = <String, Conversation>{};
+    final requestedCursors = <String>{};
+    String? cursor;
+    do {
+      if (!_acceptsDirectoryOperation(generation)) {
+        throw ConversationDirectorySyncSuperseded();
+      }
+      final page = await _remote.getConversations(
+        cursor: cursor,
+        limit: limit.clamp(1, 100).toInt(),
+      );
+      for (final conversation in page.items) {
+        if (conversation.conversationId.trim().isEmpty) {
+          throw const FormatException('Missing conversation directory id');
+        }
+        final previous = remoteById[conversation.conversationId];
+        remoteById[conversation.conversationId] = previous == null
+            ? conversation
+            : _summaryPolicy.mergeRemoteSnapshot(
+                local: previous, remote: conversation);
+      }
+      cursor = page.nextCursor;
+      if (cursor != null &&
+          cursor.isNotEmpty &&
+          !requestedCursors.add(cursor)) {
+        throw const FormatException('Repeated conversation directory cursor');
+      }
+    } while (cursor != null && cursor.isNotEmpty);
+
+    return _serializeFirstPageApply(() async {
+      if (!_acceptsDirectoryOperation(generation)) {
+        throw ConversationDirectorySyncSuperseded();
+      }
+      final visible = await directory.reconcileConversationDirectory(
+        spaceId,
+        baseline: baseline,
+        remoteConversations: remoteById.values.toList(),
+        isOperationCurrent: () => _acceptsDirectoryOperation(generation),
+      );
+      return _homeConversations(visible);
+    });
   }
 
   Future<List<Conversation>> _mergeLocalConversationSnapshot(
@@ -417,6 +506,7 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
     bool isGroup = false,
     int? beforeSeq,
     int limit = 50,
+    bool allowCachedFallback = true,
   }) async {
     try {
       final effectiveIsGroup =
@@ -447,6 +537,7 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
       }
       return visibleMessages;
     } catch (_) {
+      if (!allowCachedFallback) rethrow;
       final cached = await _local.getCachedMessages(spaceId, conversationId);
       if (cached != null) return cached;
       rethrow;
@@ -456,6 +547,84 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
   /// 读取本地缓存消息（立即返回，不阻塞）
   Future<List<Message>?> getCachedMessages(String conversationId) async {
     return _local.getCachedMessages(spaceId, conversationId);
+  }
+
+  /// Reads one authoritative direct-history page without the cache fallback
+  /// used for opening a chat. A failed request cannot certify sequence coverage.
+  Future<({List<Message> messages, int? firstSeq, int? lastSeq})?>
+      recoverDirectHistoryPage(
+    String conversationId, {
+    int? beforeSeq,
+    required bool Function() isCurrent,
+  }) async {
+    const limit = 50;
+    final remote = await _remote.getDirectChatMessages(
+      conversationId,
+      beforeSeq: beforeSeq,
+      limit: limit,
+    );
+    if (!isCurrent()) return null;
+    if (remote.isEmpty) {
+      return (
+        messages: const <Message>[],
+        firstSeq: 1,
+        lastSeq: beforeSeq == null ? null : beforeSeq - 1,
+      );
+    }
+    int? oldest;
+    int? newest;
+    for (final message in remote) {
+      final seq = message.conversationSeq;
+      if (message.conversationId != conversationId ||
+          seq <= 0 ||
+          (beforeSeq != null && seq >= beforeSeq)) {
+        throw const FormatException('Invalid direct history sequence window');
+      }
+      if (oldest == null || seq < oldest) oldest = seq;
+      if (newest == null || seq > newest) newest = seq;
+    }
+
+    final stored = await _local.getMessages(
+      spaceId,
+      conversationId,
+      beforeSeq: newest == null ? beforeSeq : newest + 1,
+      limit: limit,
+    );
+    final confirmedByIdentity = {
+      for (final message in stored)
+        (message.messageId, message.conversationSeq): message,
+    };
+    final recovered = remote.map((message) {
+      final confirmed =
+          confirmedByIdentity[(message.messageId, message.conversationSeq)];
+      if (confirmed == null) return message;
+      if (message.isRecalled && !confirmed.isRecalled) {
+        return confirmed.copyWith(
+          isRecalled: true,
+          status: MessageStatus.recalled,
+        );
+      }
+      return confirmed;
+    });
+    final visible = await _visibleMessages(
+      conversationId,
+      recovered,
+    );
+    final missing = visible
+        .where((message) => !identical(
+              message,
+              confirmedByIdentity[(message.messageId, message.conversationSeq)],
+            ))
+        .toList(growable: false);
+    if (!isCurrent()) return null;
+    if (missing.isNotEmpty) {
+      await _local.upsertMessages(spaceId, conversationId, missing);
+    }
+    return (
+      messages: visible,
+      firstSeq: remote.length < limit ? 1 : oldest,
+      lastSeq: beforeSeq == null ? newest : beforeSeq - 1,
+    );
   }
 
   /// 后台增量同步：只拉 seq > localMaxSeq 的新消息，upsert 写入缓存
@@ -612,6 +781,7 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
     String? replyToMessageId,
     List<Mention>? mentions,
   }) async {
+    await _assertConversationCanSend(conversationId);
     if (isGroup) {
       return _remote.sendGroupMessage(
         groupId: conversationId,
@@ -641,6 +811,7 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
     required DateTime scheduledAt,
     String? replyToMessageId,
   }) async {
+    await _assertConversationCanSend(conversationId);
     final dto = await _remote.createScheduledMessage(
       conversationId: conversationId,
       isGroup: isGroup,
@@ -650,6 +821,35 @@ class ChatRepositoryImpl implements ChatRepository, DirectReadStatusReader {
       replyToMessageId: replyToMessageId,
     );
     return dto.toDomain();
+  }
+
+  Future<void> _assertConversationCanSend(String conversationId) async {
+    if (!(_isOperationCurrent?.call() ?? true)) {
+      throw ConversationDirectorySyncSuperseded();
+    }
+    final local = _local;
+    if (local is! ConversationDirectoryLocalStore) return;
+    final directory = local as ConversationDirectoryLocalStore;
+    if (!await directory.isConversationDirectoryVisible(
+        spaceId, conversationId)) {
+      throw const ServerError(
+        code: 'MSG_MEMBER_FORBIDDEN',
+        message: 'CONVERSATION_UNAVAILABLE',
+        statusCode: 403,
+      );
+    }
+    final access =
+        await directory.getConversationForAccess(spaceId, conversationId);
+    if (!(_isOperationCurrent?.call() ?? true)) {
+      throw ConversationDirectorySyncSuperseded();
+    }
+    if (access?.customerCanReply == false) {
+      throw const ServerError(
+        code: 'OFFICIAL_ACCOUNT_READONLY',
+        message: 'OFFICIAL_ACCOUNT_READONLY',
+        statusCode: 403,
+      );
+    }
   }
 
   @override

@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Thao tác chia sẻ đã hoàn tất. Hãy kiểm tra tệp trong ứng dụng nhận.",
   "diagnosticsCancelled": "Đã hủy chia sẻ. Bạn có thể xuất lại.",
   "diagnosticsUnconfirmed": "Không thể xác nhận kết quả chia sẻ. Hãy kiểm tra ứng dụng nhận.",
-  "diagnosticsFailed": "Thao tác thất bại. Vui lòng thử lại."
+  "diagnosticsFailed": "Thao tác thất bại. Vui lòng thử lại.",
+  "scanIncomingFriendRequest": "Người này đã gửi lời mời kết bạn cho bạn. Vui lòng xử lý lời mời đó trước.",
+  "chatGroupAddedToGroup": "Bạn đã được thêm vào cuộc trò chuyện nhóm",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Chưa xác nhận được kết quả thêm vào mục yêu thích. Vui lòng thử lại",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

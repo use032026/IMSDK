@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/core/platform/local_file.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/core/diagnostics/media_diagnostics.dart';
 import 'package:im_sdk/core/platform/local_video_poster.dart';
 import 'package:im_sdk/core/space/space_manager.dart';
@@ -25,6 +26,7 @@ import 'package:im_sdk/features/chat/presentation/models/message_media_preview_m
 import 'package:im_sdk/features/chat/presentation/models/call_log_display_model.dart';
 import 'package:im_sdk/features/chat/presentation/models/message_upload_progress_model.dart';
 import 'package:im_sdk/features/chat/presentation/providers/message_link_whitelist_provider.dart';
+import 'package:im_sdk/features/chat/presentation/providers/file_message_availability_provider.dart';
 import 'package:im_sdk/features/chat/presentation/widgets/link_message_bubble.dart';
 import 'package:im_sdk/features/chat/presentation/widgets/message_copy_button.dart';
 import 'package:im_sdk/features/chat/presentation/widgets/message_text_content.dart';
@@ -1222,6 +1224,7 @@ class _ReplyImagePreviewState extends State<_ReplyImagePreview> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: _ImageVisualFrame(
+              message: widget.message,
               media: widget.media,
               size: size,
               placeholderBuilder: (context, size) => ColoredBox(
@@ -1395,6 +1398,7 @@ class _ImageBubbleState extends ConsumerState<_ImageBubble> {
                 width: size.width,
                 height: size.height,
                 child: _ImageVisualFrame(
+                  message: message,
                   media: media,
                   size: size,
                   placeholderBuilder: _placeholder,
@@ -1467,6 +1471,7 @@ class _ImageLoadStatus extends StatelessWidget {
 }
 
 class _ImageVisualFrame extends ConsumerStatefulWidget {
+  final Message message;
   final MediaResource? media;
   final MediaBubbleSize size;
   final Widget Function(BuildContext, MediaBubbleSize) placeholderBuilder;
@@ -1475,6 +1480,7 @@ class _ImageVisualFrame extends ConsumerStatefulWidget {
   final ValueChanged<ImageProvider>? onImageProviderResolved;
 
   const _ImageVisualFrame({
+    required this.message,
     required this.media,
     required this.size,
     required this.placeholderBuilder,
@@ -1500,9 +1506,8 @@ class _ImageVisualFrameState extends ConsumerState<_ImageVisualFrame> {
   @override
   void didUpdateWidget(_ImageVisualFrame oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.media?.localPreviewUrl != widget.media?.localPreviewUrl ||
-        oldWidget.media?.url != widget.media?.url ||
-        oldWidget.media?.thumbnailUrl != widget.media?.thumbnailUrl) {
+    if (oldWidget.message.messageId != widget.message.messageId ||
+        imageBubbleVisualIdentityChanged(oldWidget.media, widget.media)) {
       _resolveVisualSource();
     }
   }
@@ -1516,9 +1521,7 @@ class _ImageVisualFrameState extends ConsumerState<_ImageVisualFrame> {
       final resolved = await resolveAvailableImageBubbleVisualSource(media);
       if (!mounted ||
           revision != _sourceRevision ||
-          widget.media?.localPreviewUrl != media?.localPreviewUrl ||
-          widget.media?.thumbnailUrl != media?.thumbnailUrl ||
-          widget.media?.url != media?.url) {
+          imageBubbleVisualIdentityChanged(widget.media, media)) {
         return;
       }
       if (resolved != _resolvedVisualUrl) {
@@ -1577,6 +1580,13 @@ class _ImageVisualFrameState extends ConsumerState<_ImageVisualFrame> {
     return AppNetworkImage(
       key: ValueKey(url),
       url: url,
+      mediaContext: MediaRequestContext(
+        conversationId: widget.message.conversationId,
+        messageId: widget.message.messageId,
+        conversationSeq: widget.message.conversationSeq,
+        kind: 'image',
+        fallbackUrl: widget.media?.url,
+      ),
       width: widget.size.width,
       height: widget.size.height,
       fit: BoxFit.contain,
@@ -1685,7 +1695,7 @@ class _VoiceBubbleState extends ConsumerState<_VoiceBubble>
 
   Future<void> _togglePlay() async {
     final svc = ref.read(audioPlayerServiceProvider);
-    final url = widget.message.body.voice?.url.trim();
+    final url = widget.message.body.voice?.downloadSourceUrl.trim();
     if (url == null || url.isEmpty) return;
 
     if (svc.currentlyPlayingId == widget.message.messageId && svc.isPlaying) {
@@ -2525,6 +2535,14 @@ class _VideoPosterFrameState extends ConsumerState<_VideoPosterFrame> {
     }
     return AppNetworkImage(
       url: source,
+      mediaContext: MediaRequestContext(
+        conversationId: widget.message.conversationId,
+        messageId: widget.message.messageId,
+        conversationSeq: widget.message.conversationSeq,
+        kind: 'video',
+        variant: 'videoPoster',
+        fallbackUrl: widget.media?.thumbnailUrl,
+      ),
       width: widget.width,
       height: widget.height,
       fit: BoxFit.cover,
@@ -2603,10 +2621,19 @@ class _FileBubble extends ConsumerWidget {
       messageStatus: message.status,
     );
     final fileType = _FileTypeStyle.from(file: file, fallbackName: name);
+    final spaceId =
+        ref.watch(currentSpaceProvider.select((space) => space?.spaceId));
+    final isDownloaded = file != null && spaceId != null && spaceId.isNotEmpty
+        ? ref
+                .watch(fileMessageAvailabilityProvider(
+                    (spaceId: spaceId, message: message)))
+                .valueOrNull ??
+            false
+        : false;
     final statusText = _fileStatusText(
       context: context,
       sizeBytes: size,
-      file: file,
+      isDownloaded: isDownloaded,
       uploadPresentation: uploadPresentation,
     );
     return LayoutBuilder(
@@ -2690,7 +2717,7 @@ class _FileBubble extends ConsumerWidget {
   String _fileStatusText({
     required BuildContext context,
     required int? sizeBytes,
-    required MediaResource? file,
+    required bool isDownloaded,
     required MessageUploadPresentation uploadPresentation,
   }) {
     final l10n = AppLocalizations.of(context);
@@ -2701,21 +2728,11 @@ class _FileBubble extends ConsumerWidget {
                 ? '${l10n.chatFileStatusUploading} '
                     '${uploadPresentation.progress}%'
                 : l10n.chatFileStatusUploading
-            : _hasLocalFileCandidate(file)
+            : isDownloaded
                 ? l10n.chatFileStatusDownloaded
                 : l10n.chatFileStatusNotDownloaded;
     final sizeText = _fmtSize(sizeBytes);
     return sizeText == null ? status : '$sizeText $status';
-  }
-
-  bool _hasLocalFileCandidate(MediaResource? file) {
-    if (file == null) return false;
-    final url = file.url.trim();
-    if (url.isNotEmpty && _isLocalMediaPath(url)) return true;
-    final localPreviewUrl = file.localPreviewUrl?.trim();
-    return localPreviewUrl != null &&
-        localPreviewUrl.isNotEmpty &&
-        _isLocalMediaPath(localPreviewUrl);
   }
 
   String? _fmtSize(int? bytes) {

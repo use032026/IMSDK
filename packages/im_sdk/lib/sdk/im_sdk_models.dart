@@ -439,9 +439,10 @@ class ImSdkEvent {
 }
 
 class ImSdkException implements Exception {
-  const ImSdkException(this.code, this.message);
+  const ImSdkException(this.code, this.message, {this.requestId});
   final String code;
   final String message;
+  final String? requestId;
   @override
   String toString() => 'ImSdkException($code): $message';
 }

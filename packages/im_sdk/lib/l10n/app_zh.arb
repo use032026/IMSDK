@@ -3721,5 +3721,15 @@
   "diagnosticsShared": "已完成系统分享操作，请在目标应用确认文件。",
   "diagnosticsCancelled": "已取消分享，可再次导出。",
   "diagnosticsUnconfirmed": "无法确认分享结果，请在目标应用检查。",
-  "diagnosticsFailed": "操作失败，请重试。"
+  "diagnosticsFailed": "操作失败，请重试。",
+  "scanIncomingFriendRequest": "对方已向你发送好友申请，请先处理",
+  "chatGroupAddedToGroup": "你已被加入群聊",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "收藏结果未确认，请重试",
+  "officialAccountVerifiedBadge": "官方认证",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

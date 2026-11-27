@@ -198,25 +198,30 @@ test('registration rejects unresolved space and contradictory enterprise markers
 
 test('registration distinguishes approval and created-account login failure', async t => {
   let pending = true;
-  const { client } = await harness(t, request => {
+  const { client, createClient, requests } = await harness(t, request => {
     if (request.path.endsWith('/verification/settings')) return ok(registrationSettings);
     if (request.path.endsWith('/auth/register')) return ok({ platformToken: 'new-token', pendingApproval: pending });
     if (request.path.endsWith('/select-personal-space')) return rejected(503, 'UNAVAILABLE');
   });
   await assert.rejects(client.registerWithPassword(registration()), { code: 'REGISTER_PENDING_APPROVAL' });
+  await assert.rejects(client.registerWithPassword(registration()), { code: 'REGISTER_PENDING_APPROVAL' });
   pending = false;
-  await assert.rejects(client.registerWithPassword(registration()), { code: 'REGISTER_LOGIN_FAILED' });
+  const separate = createClient();
+  await assert.rejects(separate.registerWithPassword(registration()), { code: 'REGISTER_LOGIN_FAILED' });
+  await assert.rejects(separate.registerWithPassword(registration()), { code: 'REGISTER_LOGIN_FAILED' });
+  assert.equal(requests.filter(request => request.path.endsWith('/auth/register')).length, 2);
   assert.equal(client.isAuthenticated, false);
 });
 
 test('registration rejects unresolved selected-space results without space identifiers', async t => {
   let spaceType = 0;
-  const { client, requests } = await harness(t, request => {
+  const { createClient, requests } = await harness(t, request => {
     if (request.path.endsWith('/verification/settings')) return ok(registrationSettings);
     if (request.path.endsWith('/auth/register')) return ok({ platformToken: 'new-platform-token' });
     if (request.path.endsWith('/select-personal-space')) return ok(authResult({ tenantId: undefined, spaceContext: { spaceType } }));
   });
   for (spaceType of [0, 2]) {
+    const client = createClient();
     await assert.rejects(client.registerWithPassword(registration()), { code: 'REGISTER_LOGIN_FAILED' });
     assert.equal(client.isAuthenticated, false);
   }
@@ -280,6 +285,181 @@ test('personal password login recognizes the same mobile and email identities us
     await client.loginWithPassword({ account, password: 'fixture-password' });
     assert.equal(requests.filter(r => r.path.endsWith('/auth/login')).at(-1).body.loginType, loginType);
   }
+});
+
+test('registration and password login share normalized identities and keep the legacy mainland format', async t => {
+  const { client, requests } = await harness(t, request => {
+    if (request.path.endsWith('/verification/settings')) return ok(registrationSettings);
+    if (request.path.endsWith('/verification/send')) return ok({ sent: true });
+    if (request.path.endsWith('/auth/register')) return ok(authResult({ spaceContext: { spaceType: 1 } }));
+    if (request.path.endsWith('/auth/login')) return ok({ platformToken: 'platform-token', platformUserId: 'platform-1' });
+    if (request.path.endsWith('/select-personal-space')) return ok(authResult({ spaceContext: { spaceType: 1 } }));
+  });
+  for (const [channel, input, identifier] of [
+    ['sms', '138-0000 0001', '13800000001'],
+    ['sms', '+86 138-0000-0001', '13800000001'],
+    ['sms', '+84 (0) 912-345-678', '+84912345678'],
+    ['sms', '+1 (415) 555-0101', '+14155550101'],
+    ['email', ' Alice@Example.Test ', 'alice@example.test'],
+  ]) {
+    await client.sendRegistrationCode({ channel, identifier: input });
+    assert.equal(requests.at(-1).body.identifier, identifier);
+    await client.registerWithPassword(registration({ channel, identifier: input }));
+    const registered = requests.filter(request => request.path.endsWith('/auth/register')).at(-1);
+    assert.equal(registered.body[channel === 'sms' ? 'mobile' : 'email'], identifier);
+    await client.loginWithPassword({ account: input, password: 'fixture-password' });
+    const login = requests.filter(request => request.path.endsWith('/auth/login')).at(-1);
+    assert.equal(login.body.identifier, identifier);
+    assert.equal(login.body.loginType, channel === 'sms' ? 'mobile' : 'email');
+  }
+  await assert.rejects(client.sendRegistrationCode({ channel: 'sms', identifier: '+86 11000000001' }), { code: 'INVALID_ARGUMENT' });
+});
+
+test('registration login retry follows the new account without creating it twice or using a fixed enterprise login', async t => {
+  let personalCalls = 0;
+  const { client, requests } = await harness(t, request => {
+    if (request.path.endsWith('/verification/settings')) return ok(registrationSettings);
+    if (request.path.endsWith('/auth/register')) return ok({ platformToken: 'registration-token' });
+    if (request.path === '/api/platform/v1/auth/login') return ok({ platformToken: 'new-token' });
+    if (request.path.endsWith('/select-personal-space')) {
+      return ++personalCalls === 1 ? rejected(503, 'AUTH_BACKEND_UNAVAILABLE') : ok(authResult({ spaceContext: { spaceType: 1 } }));
+    }
+  }, { passwordLogin: { space: 'tenant', loginType: 'login_name', tenantCode: 'fixed' } });
+  await assert.rejects(client.registerWithPassword(registration()), { code: 'REGISTER_LOGIN_FAILED' });
+  await assert.rejects(client.registerWithPassword(registration()), { code: 'REGISTER_LOGIN_FAILED' });
+  await client.loginWithPassword({ account: 'ALICE@example.test', password: 'fixture-password' });
+  assert.equal(client.currentUser.spaceId, 'personal');
+  assert.equal(requests.filter(request => request.path.endsWith('/auth/register')).length, 1);
+});
+
+test('concurrent registration does not post a second account creation', async t => {
+  let started, release;
+  const registrationStarted = new Promise(resolve => { started = resolve; });
+  const registrationResponse = new Promise(resolve => { release = resolve; });
+  const { client, requests } = await harness(t, request => {
+    if (request.path.endsWith('/verification/settings')) return ok(registrationSettings);
+    if (request.path.endsWith('/auth/register')) { started(); return registrationResponse; }
+  });
+  const pending = client.registerWithPassword(registration());
+  await registrationStarted;
+  await assert.rejects(client.registerWithPassword(registration()), { code: 'REGISTER_IN_PROGRESS' });
+  release(ok(authResult({ spaceContext: { spaceType: 1 } })));
+  await pending;
+  assert.equal(requests.filter(request => request.path.endsWith('/auth/register')).length, 1);
+});
+
+test('first-party HTTP uses the current host locale without writing the account locale', async t => {
+  const { client, requests } = await harness(t, request => {
+    if (request.path.endsWith('/conversations')) return ok({ items: [{ conversationId: 'chat-1', conversationType: 'direct', title: request.headers.get('X-Client-Locale') }] });
+  }, { locale: 'en' });
+  await client.authenticate(credentials());
+  await client.listConversations();
+  assert.equal(client.cachedConversations.items[0].title, 'en-US');
+  client.updatePresentation({ locale: 'vi' });
+  assert.equal(client.cachedConversations, undefined);
+  await client.listConversations();
+  assert.equal(client.cachedConversations.items[0].title, 'vi-VN');
+  assert.deepEqual(requests.map(request => request.headers.get('X-Client-Locale')), ['en-US', 'en-US', 'vi-VN']);
+  assert.ok(requests.every(request => request.method === 'GET'));
+});
+
+test('host re-exchange keeps the same account through temporary failures and retires it after logout', async t => {
+  let readUnavailable = false;
+  let exchangeUnavailable = false;
+  let providerSession = { hostUserId: 'host-1', sessionId: 'host-session-1' };
+  let exchanges = 0;
+  const { client } = await harness(t, request => {
+    if (request.path.endsWith('/conversations')) {
+      return request.headers.get('Authorization') === 'Bearer access-1'
+        ? rejected(401, 'AUTH_INVALID_TOKEN') : ok({ items: [] });
+    }
+    if (request.path.endsWith('/auth/refresh')) return rejected(401, 'REFRESH_TOKEN_EXPIRED');
+  }, { hostManagedAuth: true });
+  client.bindHostSessionProvider({
+    async readSession() {
+      if (readUnavailable) throw new Error('temporary');
+      return providerSession;
+    },
+    async fetchCredentials() {
+      exchanges++;
+      if (exchangeUnavailable) throw new Error('temporary');
+      return credentials(exchanges > 1 ? { accessToken: 'access-replacement' } : {});
+    },
+  });
+  assert.equal(await client.synchronizeHostSession(), true);
+  const revision = client.sessionRevision;
+  readUnavailable = true;
+  await assert.rejects(client.listConversations(), { code: 'HOST_SESSION_UNAVAILABLE' });
+  assert.equal(client.sessionRevision, revision);
+  readUnavailable = false;
+  exchangeUnavailable = true;
+  await assert.rejects(client.listConversations(), { code: 'HOST_CREDENTIALS_UNAVAILABLE' });
+  assert.equal(client.currentUser.userId, 'user-1');
+  assert.equal(client.sessionRevision, revision);
+  exchangeUnavailable = false;
+  assert.deepEqual(await client.listConversations(), { items: [], nextCursor: undefined });
+  assert.equal(client.sessionRevision, revision);
+  providerSession = null;
+  assert.equal(await client.synchronizeHostSession(), false);
+  assert.equal(client.currentUser, undefined);
+});
+
+test('an auth-shaped server failure during refresh preserves the session', async t => {
+  const { client } = await harness(t, request => {
+    if (request.path.endsWith('/auth/refresh')) return rejected(503, 'REFRESH_TOKEN_EXPIRED');
+    if (request.path.endsWith('/conversations')) return rejected(401, 'AUTH_INVALID_TOKEN');
+  });
+  await client.authenticate(credentials());
+  await assert.rejects(client.listConversations(), { code: 'REFRESH_TOKEN_EXPIRED', status: 503 });
+  assert.equal(client.currentUser.userId, 'user-1');
+});
+
+test('a temporary proactive refresh failure can still use the current unexpired token', async t => {
+  const { client, requests } = await harness(t, request => {
+    if (request.path.endsWith('/auth/refresh')) return rejected(503, 'UNAVAILABLE');
+    if (request.path.endsWith('/conversations')) return ok({ items: [] });
+  });
+  await client.authenticate(credentials({ expiresAt: new Date(Date.now() + 15_000).toISOString() }));
+  await client.listConversations();
+  assert.equal(requests.at(-1).headers.get('Authorization'), 'Bearer access-1');
+  assert.equal(client.isAuthenticated, true);
+});
+
+test('enterprise support can create a group from the tenant directory; technical staff cannot', async t => {
+  let membershipRole = 2;
+  const { client, createClient, requests } = await harness(t, request => {
+    if (request.path.endsWith('/profile/me')) return ok({ ...identity, userType: 2, tenantId: 'tenant-1' });
+    if (request.path.endsWith('/tenant/members')) return ok([
+      { userId: 'user-1', displayName: 'Me', membershipRole },
+      { userId: 'tenant-peer', displayName: 'Staff', membershipRole: 0 },
+    ]);
+    if (request.path.endsWith('/groups/')) return ok({ groupId: 'new-group' });
+  });
+  await client.authenticate(credentials({ spaceId: 'tenant-1' }));
+  assert.equal(await client.checkGroupCreateAccess(), true);
+  assert.deepEqual(await client.listGroupCandidates(), [{ userId: 'tenant-peer', displayName: 'Staff' }]);
+  await assert.rejects(client.createGroup({ title: 'Team' }), { code: 'GROUP_MEMBERS_REQUIRED' });
+  await client.createGroup({ title: 'Team', memberUserIds: ['tenant-peer'] });
+  assert.deepEqual(requests.at(-1).body, { title: 'Team', memberUserIds: ['tenant-peer'] });
+  membershipRole = 1;
+  const technical = createClient();
+  await technical.authenticate(credentials({ spaceId: 'tenant-1' }));
+  assert.equal(await technical.checkGroupCreateAccess(), false);
+  await assert.rejects(technical.createGroup({ title: 'Team', memberUserIds: ['tenant-peer'] }), { code: 'GROUP_CREATE_FORBIDDEN' });
+  assert.equal(requests.filter(request => request.path.endsWith('/groups/')).length, 1);
+});
+
+test('an incomplete conversation scan is distinct from an authoritative absence', async t => {
+  let repeat = true;
+  const { client } = await harness(t, request => {
+    if (request.path.endsWith('/conversations')) {
+      return ok({ items: [], nextCursor: !request.url.searchParams.has('cursor') || repeat ? 'same' : null });
+    }
+  });
+  await client.authenticate(credentials());
+  await assert.rejects(client.getConversation('missing'), { code: 'INVALID_RESPONSE' });
+  repeat = false;
+  await assert.rejects(client.getConversation('missing'), { code: 'CONVERSATION_NOT_FOUND' });
 });
 
 test('friend search, request outcomes, incoming actions and new groups use existing server contracts', async t => {
@@ -721,6 +901,30 @@ test('refresh rejects a credential pair for another identity and retires the acc
   assert.equal(attempts, 1);
   assert.equal(client.currentUser, undefined);
   assert.equal(client.isAuthenticated, false);
+});
+
+test('authentication errors keep a safe request ID and omit the backend message', async (t) => {
+  let requestId = 'test-request:7';
+  const { client } = await harness(t, request => {
+    if (request.path === '/api/platform/v1/auth/login') {
+      return new Response(JSON.stringify({
+        code: 'AUTH_INVALID_CREDENTIALS', requestId, message: 'private backend error',
+      }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+  });
+  const login = { account: 'alice@example.test', password: 'fixture-password' };
+  await assert.rejects(client.loginWithPassword(login), error => {
+    assert.equal(error.code, 'AUTH_INVALID_CREDENTIALS');
+    assert.equal(error.requestId, 'test-request:7');
+    assert.doesNotMatch(String(error), /private backend error/);
+    return true;
+  });
+  requestId = 'Bearer unsafe-request-id';
+  await assert.rejects(client.loginWithPassword(login), error => {
+    assert.equal(error.code, 'AUTH_INVALID_CREDENTIALS');
+    assert.equal(error.requestId, undefined);
+    return true;
+  });
 });
 
 test('request timeout has a stable public error and does not expose transport payloads', async (t) => {

@@ -269,6 +269,7 @@ final blocklistProvider = FutureProvider<List<BlockedUser>>((ref) async {
 
 class FriendsNotifier extends StateNotifier<AsyncValue<List<Contact>>> {
   final Ref _ref;
+  int _refreshRevision = 0;
 
   FriendsNotifier(this._ref) : super(const AsyncValue.loading()) {
     _loadWithCache();
@@ -289,7 +290,10 @@ class FriendsNotifier extends StateNotifier<AsyncValue<List<Contact>>> {
     }
 
     // 1. 先读本地缓存立即显示；头像后台预热，避免联系人首屏被头像 I/O 拖慢。
+    final revision = _refreshRevision;
     final cached = await _loadFromCache(space.spaceId, space.userId);
+    if (revision != _refreshRevision ||
+        !_isStillCurrentIdentity(space.spaceId, space.userId)) return;
     if (cached != null) {
       if (!_isStillCurrentIdentity(space.spaceId, space.userId)) return;
       state = AsyncValue.data(cached);
@@ -341,19 +345,23 @@ class FriendsNotifier extends StateNotifier<AsyncValue<List<Contact>>> {
 
   Future<void> _fetchAndCache(String spaceId, String userId) async {
     if (!mounted) return;
+    final revision = ++_refreshRevision;
+    bool isCurrent() =>
+        revision == _refreshRevision &&
+        _isStillCurrentIdentity(spaceId, userId);
     try {
       final repo = _ref.read(contactsRepositoryProvider);
       final friends = await repo.getFriends();
-      if (!_isStillCurrentIdentity(spaceId, userId)) return;
+      if (!isCurrent()) return;
       await _saveToCache(spaceId, userId, friends);
-      if (!_isStillCurrentIdentity(spaceId, userId)) return;
+      if (!isCurrent()) return;
       final current = state.valueOrNull;
       if (!_listEquals(current, friends)) {
         state = AsyncValue.data(friends);
       }
       Future.microtask(() => _prefetchAvatars(friends));
     } catch (e, st) {
-      if (!_isStillCurrentIdentity(spaceId, userId)) return;
+      if (!isCurrent()) return;
       // 401：token 过期，静默处理
       if (e.toString().contains('401')) return;
       if (state.valueOrNull == null) {
@@ -371,7 +379,10 @@ class FriendsNotifier extends StateNotifier<AsyncValue<List<Contact>>> {
       if (x.userId != y.userId ||
           x.avatarUrl != y.avatarUrl ||
           x.name != y.name ||
-          x.remark != y.remark) {
+          x.remark != y.remark ||
+          x.isOfficial != y.isOfficial ||
+          x.officialAccountKind != y.officialAccountKind ||
+          x.isOfficialVerified != y.isOfficialVerified) {
         return false;
       }
     }
@@ -461,6 +472,7 @@ final customerContactsProvider = Provider<AsyncValue<List<Contact>>>((ref) {
 
 class TenantMembersNotifier extends StateNotifier<AsyncValue<List<Contact>>> {
   final Ref _ref;
+  int _refreshRevision = 0;
 
   TenantMembersNotifier(this._ref) : super(const AsyncValue.loading()) {
     _loadWithCache();
@@ -479,7 +491,10 @@ class TenantMembersNotifier extends StateNotifier<AsyncValue<List<Contact>>> {
       state = const AsyncValue.data([]);
       return;
     }
+    final revision = _refreshRevision;
     final cached = await _loadFromCache(space.spaceId, space.userId);
+    if (revision != _refreshRevision ||
+        !_isStillCurrentIdentity(space.spaceId, space.userId)) return;
     if (cached != null) {
       if (!_isStillCurrentIdentity(space.spaceId, space.userId)) return;
       state = AsyncValue.data(cached);
@@ -527,19 +542,23 @@ class TenantMembersNotifier extends StateNotifier<AsyncValue<List<Contact>>> {
 
   Future<void> _fetchAndCache(String spaceId, String userId) async {
     if (!mounted) return;
+    final revision = ++_refreshRevision;
+    bool isCurrent() =>
+        revision == _refreshRevision &&
+        _isStillCurrentIdentity(spaceId, userId);
     try {
       final repo = _ref.read(contactsRepositoryProvider);
       final members = await repo.getTenantMembers();
-      if (!_isStillCurrentIdentity(spaceId, userId)) return;
+      if (!isCurrent()) return;
       await _saveToCache(spaceId, userId, members);
       // 检查 provider 是否已被销毁
-      if (!_isStillCurrentIdentity(spaceId, userId)) return;
+      if (!isCurrent()) return;
       final current = state.valueOrNull;
       if (!FriendsNotifier._listEquals(current, members)) {
         state = AsyncValue.data(members);
       }
     } catch (e, st) {
-      if (!_isStillCurrentIdentity(spaceId, userId)) return;
+      if (!isCurrent()) return;
       // 403 TENANT_MEMBER_LIST_FORBIDDEN：客户无权访问，静默返回空列表
       // 401：token 过期，静默处理，不覆盖现有状态
       final isPermissionError = e is ServerError &&

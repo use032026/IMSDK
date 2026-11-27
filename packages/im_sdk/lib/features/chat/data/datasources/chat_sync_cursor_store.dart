@@ -29,10 +29,13 @@ class ChatSyncCursorStore {
     required String userId,
     required int sinceSeq,
   }) {
-    Future<void> action() => _box.put(
-          syncCursorStorageKey(spaceId: spaceId, userId: userId),
-          sinceSeq,
-        );
+    Future<void> action() async {
+      final key = syncCursorStorageKey(spaceId: spaceId, userId: userId);
+      final previous = _box.get(key) as int?;
+      if (previous != null && sinceSeq <= previous) return;
+      await _box.put(key, sinceSeq);
+    }
+
     final gate = _writeGate;
     final context = _operationContext;
     return gate == null || context == null

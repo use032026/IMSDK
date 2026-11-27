@@ -3324,4 +3324,18 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'कार्रवाई विफल हुई। फिर कोशिश करें।';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'इस व्यक्ति ने आपको पहले से दोस्ती का अनुरोध भेजा है। पहले उसे देखें।';
+
+  @override
+  String get chatGroupAddedToGroup => 'आपको समूह चैट में जोड़ दिया गया है';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'पसंदीदा में जोड़ने के परिणाम की पुष्टि नहीं हो सकी। फिर कोशिश करें';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

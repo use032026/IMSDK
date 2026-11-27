@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "System sharing completed. Confirm the file in the receiving app.",
   "diagnosticsCancelled": "Sharing cancelled. You can export again.",
   "diagnosticsUnconfirmed": "Sharing could not be confirmed. Check the receiving app.",
-  "diagnosticsFailed": "The operation failed. Please retry."
+  "diagnosticsFailed": "The operation failed. Please retry.",
+  "scanIncomingFriendRequest": "This person has already sent you a friend request. Review it first.",
+  "chatGroupAddedToGroup": "You were added to the group chat",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Favorite status could not be confirmed. Try again",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

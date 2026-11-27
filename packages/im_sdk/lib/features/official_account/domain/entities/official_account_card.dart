@@ -1,3 +1,5 @@
+import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
+
 /// A public official identity. Its conversation always belongs to [tenantId],
 /// even when this card is discovered from the personal space.
 class OfficialAccountCard {
@@ -14,6 +16,8 @@ class OfficialAccountCard {
     this.conversationId,
     this.customerUserId,
     this.joined = false,
+    this.kind,
+    this.customerCanReply = true,
   });
 
   final String tenantId;
@@ -28,6 +32,8 @@ class OfficialAccountCard {
   final String? conversationId;
   final String? customerUserId;
   final bool joined;
+  final OfficialAccountKind? kind;
+  final bool customerCanReply;
 
   bool get canOpenConversation => isMember && conversationId != null;
   String? get effectiveAvatarUrl => avatarUrl ?? tenantLogoUrl;

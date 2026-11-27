@@ -249,6 +249,18 @@ void main() {
         imSdkPasswordLoginFailure(const AuthError('AUTH_INVALID_CREDENTIALS'))
             .message,
         '账号或密码错误');
+    expect(
+        imSdkPasswordLoginFailure(const AuthError(
+          'AUTH_INVALID_CREDENTIALS',
+          requestId: 'test-request:7',
+        )).requestId,
+        'test-request:7');
+    expect(
+        imSdkPasswordLoginFailure(const AuthError(
+          'AUTH_INVALID_CREDENTIALS',
+          requestId: 'Bearer unsafe-request-id',
+        )).requestId,
+        isNull);
   });
 
   test('tenant password requests skip session injection and diagnostic logging',

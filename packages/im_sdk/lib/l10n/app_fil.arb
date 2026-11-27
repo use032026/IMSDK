@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Natapos ang pagbabahagi ng system. Tiyakin ang file sa tumanggap na app.",
   "diagnosticsCancelled": "Nakansela ang pagbabahagi. Maaari kang mag-export muli.",
   "diagnosticsUnconfirmed": "Hindi makumpirma ang pagbabahagi. Suriin ang tumanggap na app.",
-  "diagnosticsFailed": "Hindi naisagawa. Subukang muli."
+  "diagnosticsFailed": "Hindi naisagawa. Subukang muli.",
+  "scanIncomingFriendRequest": "Nagpadala na sa iyo ng friend request ang taong ito. Suriin muna iyon.",
+  "chatGroupAddedToGroup": "Idinagdag ka sa panggrupong chat",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Hindi makumpirma kung naidagdag sa mga paborito. Subukang muli",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

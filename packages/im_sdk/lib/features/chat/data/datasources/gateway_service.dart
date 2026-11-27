@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
 import 'package:im_sdk/core/platform/app_platform.dart';
+import 'package:signalr_netcore/errors.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 
 Object? _readField(Map<String, dynamic> map, List<String> keys) {
@@ -63,17 +64,8 @@ enum GatewayConnectionStatus {
   reconnecting,
 }
 
-GatewayConnectionStatus effectiveGatewayConnectionStatus(
-  GatewayConnectionStatus status, {
-  required bool isConnected,
-}) {
-  if (isConnected && status != GatewayConnectionStatus.disconnected) {
-    return GatewayConnectionStatus.connected;
-  }
-  return status;
-}
-
 const Duration gatewayConnectionStartTimeout = Duration(seconds: 12);
+const _gatewayConnectionStopTimeout = Duration(seconds: 2);
 
 Future<T?> awaitGatewayConnectionStart<T>(
   Future<T>? startFuture, {
@@ -364,6 +356,7 @@ class FriendRequestChangedEvent extends GatewayEvent {
   final String requestId;
   final String status;
   final String eventName;
+  final bool autoAccepted;
   final String? peerUserId;
   final String? peerDisplayName;
   final String? peerAvatarUrl;
@@ -373,6 +366,7 @@ class FriendRequestChangedEvent extends GatewayEvent {
     required this.requestId,
     required this.status,
     required this.eventName,
+    this.autoAccepted = false,
     this.peerUserId,
     this.peerDisplayName,
     this.peerAvatarUrl,
@@ -406,7 +400,12 @@ FriendRequestChangedEvent? parseFriendRequestChangedEvent(
   final eventName = subscribedEventName.trim().isNotEmpty
       ? subscribedEventName.trim()
       : payloadEventName;
-  final payloadStatus = _readString(data, const ['status', 'Status']);
+  final payloadStatus = _readString(data, const ['status', 'Status']).trim();
+  final status = payloadStatus.isNotEmpty
+      ? payloadStatus.toLowerCase()
+      : _friendRequestStatusFromEventName(eventName);
+  final autoAccepted = status == 'accepted' &&
+      _readString(data, const ['autoAccepted']).trim().toLowerCase() == 'true';
   return FriendRequestChangedEvent(
     requestId: _readString(
       data,
@@ -416,10 +415,9 @@ FriendRequestChangedEvent? parseFriendRequestChangedEvent(
         const ['entityId', 'EntityId', 'requestId', 'RequestId'],
       ),
     ),
-    status: payloadStatus.isNotEmpty
-        ? payloadStatus.toLowerCase()
-        : _friendRequestStatusFromEventName(eventName),
+    status: status,
     eventName: eventName,
+    autoAccepted: autoAccepted,
     peerUserId: _readString(
       data,
       const [
@@ -522,21 +520,89 @@ class VoiceCallIncomingEvent extends GatewayEvent {
 // GatewayService
 // ---------------------------------------------------------------------------
 
+class _GatewayConnectionTarget {
+  const _GatewayConnectionTarget(
+      this.accessToken, this.baseUrl, this.isCurrent);
+
+  final String accessToken;
+  final String baseUrl;
+  final bool Function()? isCurrent;
+}
+
+/// Records negotiate separately from the rest of HubConnection.start(). The
+/// SDK logger includes credentials, URLs and transport payloads in raw text.
+class _GatewayHttpClient extends WebSupportingHttpClient {
+  _GatewayHttpClient(this.scope, this.traceId, this.isCurrent) : super(null);
+
+  final DiagnosticScope? scope;
+  final String traceId;
+  final bool Function() isCurrent;
+
+  @override
+  Future<SignalRHttpResponse> send(SignalRHttpRequest request) async {
+    if (request.method != 'POST' ||
+        !(Uri.tryParse(request.url ?? '')?.path.endsWith('/negotiate') ??
+            false)) {
+      return super.send(request);
+    }
+    final stopwatch = Stopwatch()..start();
+    void record({int? statusCode, Object? error}) {
+      if (!isCurrent()) return;
+      AppDiagnostics.instance.record(
+        error == null ? AppDiagnosticLevel.info : AppDiagnosticLevel.warning,
+        'gateway.connection',
+        'negotiate',
+        scope: scope,
+        traceId: traceId,
+        context: {
+          'stage': 'negotiate',
+          'state': error == null ? 'completed' : 'failed',
+          'elapsedMs': stopwatch.elapsedMilliseconds,
+          if (statusCode != null) 'statusCode': statusCode,
+          if (error != null) 'errorType': error.runtimeType.toString(),
+        },
+      );
+    }
+
+    try {
+      final response = await super.send(request);
+      record(statusCode: response.statusCode);
+      return response;
+    } catch (error) {
+      record(
+        statusCode: error is HttpError ? error.statusCode.toInt() : null,
+        error: error,
+      );
+      rethrow;
+    }
+  }
+}
+
 /// SignalR Gateway 服务
 ///
 /// - Hub 路径：/ws/client
 /// - 认证：Authorization: Bearer {accessToken}（通过 accessTokenFactory 注入）
 /// - 指数退避重连：初始 1 秒，最大 30 秒
-/// - 重连成功后触发 [onReconnected] 回调（由 gateway_provider 调用 /sync）
+/// - 每次建连成功后触发 [onConnected] 回调（由 gateway_provider 调用 /sync）
 class GatewayService {
   static const String _publicVoiceRelayHost = '64.185.229.74';
 
-  GatewayService({HubConnection Function(String, String)? connectionFactory})
-      : _connectionFactory = connectionFactory;
+  GatewayService({
+    HubConnection Function(String, String)? connectionFactory,
+    Duration connectionStartTimeout = gatewayConnectionStartTimeout,
+    DiagnosticScope? diagnosticScope,
+  })  : _connectionFactory = connectionFactory,
+        _connectionStartTimeout = connectionStartTimeout,
+        _diagnosticScope = diagnosticScope;
 
   final HubConnection Function(String, String)? _connectionFactory;
+  final Duration _connectionStartTimeout;
+  final DiagnosticScope? _diagnosticScope;
 
+  _GatewayConnectionTarget? _target;
   HubConnection? _connection;
+  Future<void>? _attempt;
+  Future<void> _closing = Future<void>.value();
   final StreamController<GatewayEvent> _eventController =
       StreamController<GatewayEvent>.broadcast();
   final StreamController<GatewayConnectionStatus> _statusController =
@@ -548,46 +614,71 @@ class GatewayService {
   Timer? _heartbeatTimer;
   GatewayConnectionStatus _status = GatewayConnectionStatus.disconnected;
 
-  // 重连成功回调（由外部注入，用于触发 /sync）
-  Future<void> Function()? onReconnected;
+  Future<void> Function()? onConnected;
 
   // ---------------------------------------------------------------------------
   // 公开 API
   // ---------------------------------------------------------------------------
 
-  bool get isConnected => _connection?.state == HubConnectionState.Connected;
+  bool get isConnected {
+    final target = _target;
+    return target != null &&
+        _ownsTarget(target) &&
+        _connection?.state == HubConnectionState.Connected;
+  }
 
   Stream<GatewayEvent> get events => _eventController.stream;
-  GatewayConnectionStatus get status => effectiveGatewayConnectionStatus(
-        _status,
-        isConnected: isConnected,
-      );
+  GatewayConnectionStatus get status => _status;
   Stream<GatewayConnectionStatus> get statusStream => _statusController.stream;
 
-  /// 连接到 Gateway
-  Future<void> connect(String accessToken, String baseUrl) async {
-    // 如果已连接，先断开
-    if (_connection != null) {
-      await disconnect();
+  /// 同一账号线路共用当前连接尝试。网络恢复或回前台可以提前结束退避。
+  Future<void> connect(
+    String accessToken,
+    String baseUrl, {
+    bool Function()? isCurrent,
+  }) {
+    if (_disposed || isCurrent?.call() == false) return Future<void>.value();
+    final current = _target;
+    if (current != null &&
+        _ownsTarget(current) &&
+        current.accessToken == accessToken &&
+        current.baseUrl == baseUrl) {
+      if (isConnected) return Future<void>.value();
+      return _attempt ?? _startAttempt(current);
     }
+
+    _closeConnection();
     _retryCount = 0;
-    await _doConnect(accessToken, baseUrl);
+    final target = _GatewayConnectionTarget(accessToken, baseUrl, isCurrent);
+    _target = target;
+    return _startAttempt(target);
   }
 
   /// 断开连接
-  Future<void> disconnect() async {
+  Future<void> disconnect() {
+    _target = null;
     _retryTimer?.cancel();
     _retryTimer = null;
+    _attempt = null;
+    _closeConnection();
+    _setStatus(GatewayConnectionStatus.disconnected);
+    return _closing;
+  }
+
+  void _closeConnection() {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
     final conn = _connection;
     _connection = null;
-    _setStatus(GatewayConnectionStatus.disconnected);
-    if (conn != null) {
-      try {
-        await conn.stop();
-      } catch (_) {}
-    }
+    if (conn != null) _closing = _stopConnection(conn);
+  }
+
+  Future<void> _stopConnection(HubConnection connection) async {
+    try {
+      // The SDK may wait on its original start future during stop(). Retire
+      // this attempt immediately and bound how long a replacement waits.
+      await connection.stop().timeout(_gatewayConnectionStopTimeout);
+    } catch (_) {}
   }
 
   /// 心跳（HeartbeatAsync）
@@ -610,8 +701,7 @@ class GatewayService {
   /// 释放资源
   void dispose() {
     _disposed = true;
-    _retryTimer?.cancel();
-    disconnect();
+    unawaited(disconnect());
     _eventController.close();
     _statusController.close();
   }
@@ -620,33 +710,145 @@ class GatewayService {
   // 内部实现
   // ---------------------------------------------------------------------------
 
-  Future<void> _doConnect(String accessToken, String baseUrl) async {
-    if (_disposed) return;
-    _setStatus(
-      _retryCount == 0
-          ? GatewayConnectionStatus.connecting
-          : GatewayConnectionStatus.reconnecting,
-    );
+  bool _ownsTarget(_GatewayConnectionTarget target) =>
+      !_disposed &&
+      identical(_target, target) &&
+      target.isCurrent?.call() != false;
 
-    final wsUrl = '${baseUrl.replaceFirst(RegExp(r'/$'), '')}/ws/client';
+  Future<void> _startAttempt(_GatewayConnectionTarget target) {
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _setStatus(_retryCount == 0
+        ? GatewayConnectionStatus.connecting
+        : GatewayConnectionStatus.reconnecting);
+    return _attempt = _doConnect(target);
+  }
 
-    final connection = _connectionFactory?.call(wsUrl, accessToken) ??
-        HubConnectionBuilder()
-            .withUrl(
-              wsUrl,
-              options: HttpConnectionOptions(
-                accessTokenFactory: () async => accessToken,
+  Future<void> _doConnect(_GatewayConnectionTarget target) async {
+    await _closing;
+    if (!_ownsTarget(target)) return;
+
+    final diagnostics = AppDiagnostics.instance;
+    final traceId = diagnostics.nextTraceId('gateway');
+    final stopwatch = Stopwatch()..start();
+    final attempt = _retryCount + 1;
+
+    void record(String stage, String state, {Object? error}) {
+      diagnostics.record(
+        error == null ? AppDiagnosticLevel.info : AppDiagnosticLevel.warning,
+        'gateway.connection',
+        stage,
+        scope: _diagnosticScope,
+        traceId: traceId,
+        context: {
+          'stage': stage,
+          'state': state,
+          'attempt': attempt,
+          'elapsedMs': stopwatch.elapsedMilliseconds,
+          if (error != null) 'errorType': error.runtimeType.toString(),
+        },
+      );
+    }
+
+    try {
+      final wsUrl =
+          '${target.baseUrl.replaceFirst(RegExp(r'/$'), '')}/ws/client';
+      late final HubConnection connection;
+      bool ownsConnection() =>
+          _ownsTarget(target) && identical(_connection, connection);
+      connection = _connectionFactory?.call(wsUrl, target.accessToken) ??
+          HubConnectionBuilder()
+              .withUrl(
+            wsUrl,
+            options: HttpConnectionOptions(
+              accessTokenFactory: () async => target.accessToken,
+              httpClient: _GatewayHttpClient(
+                _diagnosticScope,
+                traceId,
+                ownsConnection,
               ),
-            )
-            .withAutomaticReconnect(retryDelays: _retryDelays())
-            .build();
+              requestTimeout: 8000,
+            ),
+          )
+              // The service owns retries so every Hub start shares the same
+              // deadline, backoff and account/route fence. An omitted retry
+              // policy still enables the SDK default, so pass an empty list.
+              .withAutomaticReconnect(retryDelays: const []).build();
 
-    // 注册下行事件
-    connection.on('msg.new', _onMsgNew);
-    connection.on('msg.updated', _onMsgUpdated);
-    connection.on('msg.read', _onMsgRead);
-    connection.on('msg.recalled', _onMsgRecalled);
-    connection.on('msg.typing', _onDirectTyping);
+      _connection = connection;
+      _registerEvents(connection, ownsConnection);
+
+      connection.onclose(({Exception? error}) {
+        if (!ownsConnection() || _status != GatewayConnectionStatus.connected) {
+          return;
+        }
+        record('close', 'disconnected', error: error);
+        _closeConnection();
+        _scheduleReconnect(target);
+      });
+
+      await awaitGatewayConnectionStart(
+        connection.start(),
+        timeout: _connectionStartTimeout,
+      );
+      if (!ownsConnection()) {
+        if (!identical(_connection, connection) &&
+            connection.state == HubConnectionState.Connected) {
+          unawaited(_stopConnection(connection));
+        }
+        return;
+      }
+      if (connection.state != HubConnectionState.Connected) {
+        throw StateError('Gateway closed during start');
+      }
+      _attempt = null;
+      _retryCount = 0;
+      record('hub_start', 'connected');
+      _setStatus(GatewayConnectionStatus.connected);
+      _startHeartbeat();
+      unawaited(_notifyConnected(target));
+    } catch (error) {
+      if (!_ownsTarget(target)) return;
+      _attempt = null;
+      record(
+        'hub_start',
+        error is TimeoutException ? 'timed_out' : 'failed',
+        error: error,
+      );
+      _closeConnection();
+      _scheduleReconnect(target);
+    }
+  }
+
+  Future<void> _notifyConnected(_GatewayConnectionTarget target) async {
+    try {
+      await onConnected?.call();
+    } catch (error) {
+      if (!_ownsTarget(target)) return;
+      AppDiagnostics.instance.warning(
+        'gateway.sync',
+        'connection recovery failed',
+        scope: _diagnosticScope,
+        context: {
+          'stage': 'after_connect',
+          'errorType': error.runtimeType.toString(),
+        },
+      );
+    }
+  }
+
+  void _registerEvents(HubConnection connection, bool Function() isCurrent) {
+    void on(String event, MethodInvocationFunc handler) {
+      connection.on(event, (args) {
+        if (isCurrent()) handler(args);
+      });
+    }
+
+    on('msg.new', _onMsgNew);
+    on('msg.updated', _onMsgUpdated);
+    on('msg.read', _onMsgRead);
+    on('msg.recalled', _onMsgRecalled);
+    on('msg.typing', _onDirectTyping);
     for (final eventType in const [
       'auth.force_logout',
       'auth.session.revoked',
@@ -655,45 +857,42 @@ class GatewayService {
       'auth.security.required',
       'auth.reuse.detected',
     ]) {
-      connection.on(eventType, (args) => _onForceLogout(args, eventType));
+      on(eventType, (args) => _onForceLogout(args, eventType));
     }
-    connection.on('customer_service.assigned', _onCustomerServiceAssigned);
-    connection.on('temp_session.assigned', _onTempSessionAssigned);
-    connection.on('temp_session.closed', _onTempSessionClosed);
-    connection.on('temp_session.rated', _onTempSessionRated);
-    connection.on('temp_session.typing', _onTempSessionTyping);
-    connection.on('temp_session.transferred', _onTempSessionTransferred);
-    connection.on('customer_service.thread.transferred',
+    on('customer_service.assigned', _onCustomerServiceAssigned);
+    on('temp_session.assigned', _onTempSessionAssigned);
+    on('temp_session.closed', _onTempSessionClosed);
+    on('temp_session.rated', _onTempSessionRated);
+    on('temp_session.typing', _onTempSessionTyping);
+    on('temp_session.transferred', _onTempSessionTransferred);
+    on('customer_service.thread.transferred',
         _onCustomerServiceThreadTransferred);
-    connection.on('tenant.join_request.reviewed', _onTenantJoinRequestReviewed);
-    connection.on(
+    on('tenant.join_request.reviewed', _onTenantJoinRequestReviewed);
+    on(
       'friend.request.created',
       (args) => _onFriendRequestChanged('friend.request.created', args),
     );
-    connection.on(
+    on(
       'friend.request.accepted',
       (args) => _onFriendRequestChanged('friend.request.accepted', args),
     );
-    connection.on(
+    on(
       'friend.request.rejected',
       (args) => _onFriendRequestChanged('friend.request.rejected', args),
     );
-    connection.on(
-        'customer_service.status_changed', _onCustomerServiceStatusChanged);
-    connection.on('customer_service.auto_status_changed',
+    on('customer_service.status_changed', _onCustomerServiceStatusChanged);
+    on('customer_service.auto_status_changed', _onCustomerServiceStatusChanged);
+    on('customer_service.staff.status_changed',
         _onCustomerServiceStatusChanged);
-    connection.on('customer_service.staff.status_changed',
-        _onCustomerServiceStatusChanged);
-    connection.on(
-        'customer_service.staff.auto_offline', _onCustomerServiceStatusChanged);
-    connection.on('customer_service.sla.warning', _onCustomerServiceSla);
-    connection.on('customer_service.sla.breached', _onCustomerServiceSla);
-    connection.on('friend.profile.updated', _onFriendProfileUpdated);
-    connection.on('voicecall.incoming', _onVoiceCallIncoming);
-    connection.on('push.notice', _onPushNotice);
-    connection.on('conversation.deleted', _onConversationDeleted);
-    connection.on('presence.changed', _onPresenceChanged);
-    connection.on('space.notice', _onSpaceNotice);
+    on('customer_service.staff.auto_offline', _onCustomerServiceStatusChanged);
+    on('customer_service.sla.warning', _onCustomerServiceSla);
+    on('customer_service.sla.breached', _onCustomerServiceSla);
+    on('friend.profile.updated', _onFriendProfileUpdated);
+    on('voicecall.incoming', _onVoiceCallIncoming);
+    on('push.notice', _onPushNotice);
+    on('conversation.deleted', _onConversationDeleted);
+    on('presence.changed', _onPresenceChanged);
+    on('space.notice', _onSpaceNotice);
     for (final eventName in const [
       'guardian.approval.created',
       'guardian.approval.decided',
@@ -702,57 +901,10 @@ class GatewayService {
       'teen.policy.changed',
       'teen.time.extended',
     ]) {
-      connection.on(
+      on(
         eventName,
         (args) => _onTeenModeRealtime(eventName, args),
       );
-    }
-
-    // 连接关闭时触发重连
-    connection.onclose(({Exception? error}) {
-      if (!_disposed && identical(_connection, connection)) {
-        _heartbeatTimer?.cancel();
-        _heartbeatTimer = null;
-        _setStatus(GatewayConnectionStatus.reconnecting);
-        _scheduleReconnect(accessToken, baseUrl);
-      } else if (!_disposed && _connection == null) {
-        _setStatus(GatewayConnectionStatus.disconnected);
-      }
-    });
-
-    // 重连成功回调
-    connection.onreconnected(({String? connectionId}) {
-      if (_disposed || !identical(_connection, connection)) return;
-      _retryCount = 0;
-      _setStatus(GatewayConnectionStatus.connected);
-      _startHeartbeat();
-      onReconnected?.call();
-    });
-
-    _connection = connection;
-
-    try {
-      await awaitGatewayConnectionStart(connection.start());
-      if (_connection != connection) {
-        unawaited(connection.stop().catchError((_) {}));
-        return;
-      }
-      final recoveredAfterFailedStart = _retryCount > 0;
-      _retryCount = 0;
-      _setStatus(GatewayConnectionStatus.connected);
-      _startHeartbeat();
-      if (recoveredAfterFailedStart) onReconnected?.call();
-    } on TimeoutException catch (error) {
-      if (!identical(_connection, connection) || _disposed) return;
-      debugPrint('[GatewayService] connection start timeout: $error');
-      _setStatus(GatewayConnectionStatus.reconnecting);
-      _scheduleReconnect(accessToken, baseUrl);
-      unawaited(connection.stop().catchError((_) {}));
-    } catch (error) {
-      if (!identical(_connection, connection) || _disposed) return;
-      debugPrint('[GatewayService] connection start failed: $error');
-      _setStatus(GatewayConnectionStatus.reconnecting);
-      _scheduleReconnect(accessToken, baseUrl);
     }
   }
 
@@ -1196,27 +1348,18 @@ class GatewayService {
     return _readMap(args[0]);
   }
 
-  void _scheduleReconnect(String accessToken, String baseUrl) {
-    if (_disposed) return;
+  void _scheduleReconnect(_GatewayConnectionTarget target) {
+    if (!_ownsTarget(target)) return;
     _setStatus(GatewayConnectionStatus.reconnecting);
-    final delay = _backoffDelay(_retryCount);
+    final delay = Duration(seconds: _retryCount >= 5 ? 30 : 1 << _retryCount);
     _retryCount++;
     _retryTimer?.cancel();
     _retryTimer = Timer(delay, () {
-      if (!_disposed) {
-        _doConnect(accessToken, baseUrl);
+      if (_ownsTarget(target) && _attempt == null) {
+        unawaited(_startAttempt(target));
       }
     });
   }
-
-  /// 指数退避延迟：初始 1 秒，最大 30 秒
-  Duration _backoffDelay(int attempt) {
-    final seconds = (1 << attempt).clamp(1, 30);
-    return Duration(seconds: seconds);
-  }
-
-  /// SignalR 自动重连延迟序列（毫秒）
-  List<int> _retryDelays() => [1000, 2000, 4000, 8000, 16000, 30000];
 
   void _setStatus(GatewayConnectionStatus status) {
     final previousStatus = _status;

@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Systemdeling gennemført. Kontrollér filen i modtagerappen.",
   "diagnosticsCancelled": "Deling annulleret. Du kan eksportere igen.",
   "diagnosticsUnconfirmed": "Deling kunne ikke bekræftes. Kontrollér modtagerappen.",
-  "diagnosticsFailed": "Handlingen mislykkedes. Prøv igen."
+  "diagnosticsFailed": "Handlingen mislykkedes. Prøv igen.",
+  "scanIncomingFriendRequest": "Denne person har allerede sendt dig en venneanmodning. Gennemgå den først.",
+  "chatGroupAddedToGroup": "Du er blevet føjet til gruppechatten",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Resultatet af tilføjelsen til favoritter kunne ikke bekræftes. Prøv igen",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

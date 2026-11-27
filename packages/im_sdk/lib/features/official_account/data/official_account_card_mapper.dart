@@ -1,4 +1,5 @@
 import 'package:im_sdk/features/official_account/domain/entities/official_account_card.dart';
+import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 
 OfficialAccountCard? optionalOfficialAccountCard(Object? value) {
   if (value == null) return null;
@@ -20,6 +21,12 @@ OfficialAccountCard? optionalOfficialAccountCard(Object? value) {
     conversationId: _optional(data['conversationId']),
     customerUserId: _optional(data['customerUserId']),
     joined: data['joined'] == true,
+    kind: switch (data['kind']) {
+      'service' => OfficialAccountKind.service,
+      'broadcast' => OfficialAccountKind.broadcast,
+      _ => null,
+    },
+    customerCanReply: data['customerCanReply'] != false,
   );
 }
 
@@ -57,6 +64,8 @@ Map<String, Object?> officialAccountCardToJson(OfficialAccountCard card) => {
       'conversationId': card.conversationId,
       'customerUserId': card.customerUserId,
       'joined': card.joined,
+      'kind': card.kind?.name,
+      'customerCanReply': card.customerCanReply,
     };
 
 Map<String, Object?> officialAccountSummaryToJson(

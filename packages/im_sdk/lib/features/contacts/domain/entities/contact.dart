@@ -1,3 +1,4 @@
+import 'package:im_sdk/core/domain/official_verification.dart';
 import 'package:im_sdk/features/official_account/domain/entities/official_account_card.dart';
 
 class Contact {
@@ -14,6 +15,9 @@ class Contact {
   /// userType: 1=客户, 2=员工/客服（来自 API）
   final int? userType;
   final OfficialAccountCard? officialAccount;
+  final bool isOfficial;
+  final bool isOfficialVerified;
+  final String? officialAccountKind;
 
   const Contact({
     required this.userId,
@@ -27,12 +31,21 @@ class Contact {
     this.isFriend,
     this.userType,
     this.officialAccount,
+    this.isOfficial = false,
+    this.isOfficialVerified = false,
+    this.officialAccountKind,
   });
 
   String get displayName => remark?.isNotEmpty == true ? remark! : name;
 
   bool get isEmployee => userType == 2;
   bool get isCustomer => userType == 1;
+
+  bool get showOfficialVerification => showsOfficialVerification(
+        verified: isOfficialVerified,
+        officialAccountKind: officialAccountKind,
+        isOfficialAccount: isOfficial || officialAccount != null,
+      );
 }
 
 /// Resolves the display name from the current account's point of view.

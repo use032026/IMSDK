@@ -10,6 +10,7 @@ import 'package:im_sdk/core/diagnostics/media_diagnostics.dart';
 import 'package:im_sdk/core/diagnostics/media_image_observer.dart';
 import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
 import 'package:im_sdk/core/media/image_resource.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 
 export 'package:im_sdk/core/media/authenticated_image_cache.dart'
     show
@@ -128,6 +129,7 @@ class UserAvatarCircle extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class AuthNetworkImage extends ConsumerWidget {
+  final MediaRequestContext? mediaContext;
   final String url;
   final double? width;
   final double? height;
@@ -149,6 +151,7 @@ class AuthNetworkImage extends ConsumerWidget {
     this.cacheScope = NetworkImageCacheScope.accountSpace,
     this.onImageSize,
     this.onImageProviderResolved,
+    this.mediaContext,
   });
 
   static String resolveUrl(String url) {
@@ -293,7 +296,10 @@ class _AuthNetworkImageState extends State<_AuthNetworkImageContent> {
       _svgLoading = false;
     }
     try {
-      await for (final bytes in cm.imageBytes(url)) {
+      await for (final bytes in cm.imageBytes(
+        url,
+        headers: widget.image.mediaContext?.headers,
+      )) {
         if (!current()) return;
         setState(() {
           _svgBytes = bytes;
@@ -381,6 +387,7 @@ class _AuthNetworkImageState extends State<_AuthNetworkImageContent> {
     // 内存无缓存：走 CachedNetworkImage，同时异步写入内存缓存
     return CachedNetworkImage(
       imageUrl: resolvedUrl,
+      httpHeaders: widget.image.mediaContext?.headers,
       cacheManager: _cacheManager,
       cacheKey: memoryKey,
       width: widget.image.width,

@@ -1,3 +1,5 @@
+import 'package:im_sdk/core/domain/official_verification.dart';
+
 class ParsedGroupMemberPayload {
   final String userId;
   final String displayName;
@@ -6,6 +8,7 @@ class ParsedGroupMemberPayload {
   final bool? isMuted;
   final String? muteUntil;
   final String? muteReason;
+  final bool showOfficialVerification;
 
   const ParsedGroupMemberPayload({
     required this.userId,
@@ -15,6 +18,7 @@ class ParsedGroupMemberPayload {
     this.isMuted,
     this.muteUntil,
     this.muteReason,
+    this.showOfficialVerification = false,
   });
 }
 
@@ -65,6 +69,17 @@ ParsedGroupMemberPayload parseGroupMemberPayload(Map<String, dynamic> json) {
     muteUntil: firstString(json, const ['muteUntil', 'mutedUntil']),
     muteReason:
         firstString(json, const ['muteReason', 'reason', 'mutedReason']),
+    showOfficialVerification: showsOfficialVerification(
+      verified:
+          (json['isOfficialVerified'] ?? userMap?['isOfficialVerified']) ==
+              true,
+      officialAccountKind: firstString(json, const ['officialAccountKind']) ??
+          firstString(userMap, const ['officialAccountKind']),
+      isOfficialAccount: json['isOfficial'] == true ||
+          userMap?['isOfficial'] == true ||
+          json['officialAccount'] != null ||
+          userMap?['officialAccount'] != null,
+    ),
   );
 }
 

@@ -3348,4 +3348,18 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'A művelet sikertelen. Próbálja újra.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Ez a személy már küldött Önnek barátkérelmet. Először ellenőrizze azt.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Hozzáadtak a csoportos beszélgetéshez';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'A kedvencekhez adás eredményét nem sikerült megerősíteni. Próbálja újra';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

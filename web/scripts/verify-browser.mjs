@@ -42,6 +42,9 @@ try {
     let messageNumber = 3;
     let failNextSend = false;
     const submittedIds = [];
+    const restLocales = [];
+    const groupReads = [];
+    let holdDirectSnapshot;
     const direct = [{ messageId: 'm1', conversationId: 'chat-1', conversationSeq: 1, senderUserId: 'peer-1', messageType: 'text', body: { text: '<img src=x onerror="window.fixtureXss=true">' }, sentAt: '2026-10-27T09:00:00Z' }];
     const group = [{ messageId: 'm2', conversationId: 'group-1', conversationSeq: 1, senderUserId: 'peer-2', senderDisplayName: '小林', messageType: 'text', body: { text: '群聊历史' }, sentAt: '2026-10-27T09:01:00Z' }];
     const conversations = [
@@ -53,6 +56,7 @@ try {
       const request = route.request();
       const path = new URL(request.url()).pathname;
       const body = request.postDataJSON();
+      if (path.startsWith('/api/')) restLocales.push(request.headers()['x-client-locale']);
       let data;
       if (path.endsWith('/negotiate')) data = { negotiateVersion: 1, connectionId: `fixture-${connects}`, connectionToken: 'fixture', availableTransports: [{ transport: 'WebSockets', transferFormats: ['Text', 'Binary'] }] };
       else if (path.endsWith('/verification/settings')) data = { smsEnabled: true, emailEnabled: true, smsRequired: true, emailRequired: true };
@@ -98,7 +102,10 @@ try {
         data = { groupId: 'new-group' };
       }
       else if (path.endsWith('/direct-chats')) { assert.equal(body.peerUserId, 'peer-1'); data = { conversationId: 'chat-1', title: '同事' }; }
-      else if (path.endsWith('/read')) data = {};
+      else if (path.endsWith('/read')) {
+        if (path.includes('/groups/group-1/')) groupReads.push(body.readSeq);
+        data = {};
+      }
       else if (path.endsWith('/contact-brand')) data = { threadId: 'thread-1', threadStatus: 'queued', conversationId: 'must-not-open' };
       else if (path.endsWith('/messages')) {
         const messages = path.includes('/groups/') ? group : direct;
@@ -108,7 +115,17 @@ try {
           const next = { messageId: `m${messageNumber++}`, conversationId: path.includes('/groups/') ? 'group-1' : 'chat-1', conversationSeq: messages.length + 1, senderUserId: 'user-1', messageType: 'text', body: body.body, sentAt: '2026-10-27T09:05:00Z' };
           messages.push(next);
           data = { messageId: next.messageId, conversationSeq: next.conversationSeq, serverTime: next.sentAt };
-        } else data = path.includes('/new-group/') ? [] : messages;
+        } else {
+          const query = new URL(request.url()).searchParams;
+          const before = Number(query.get('beforeSeq') ?? Infinity);
+          data = path.includes('/new-group/') ? [] : messages.filter(row => row.conversationSeq < before).slice(-Number(query.get('limit') ?? 50));
+          if (holdDirectSnapshot && messages === direct) {
+            const hold = holdDirectSnapshot;
+            holdDirectSnapshot = undefined;
+            hold.started();
+            await hold.until;
+          }
+        }
       } else throw new Error(`Unexpected fixture request: ${path}`);
       await route.fulfill({ json: path.endsWith('/negotiate') ? data : { code: 'OK', data } });
     });
@@ -219,7 +236,45 @@ try {
     direct.push({ messageId: 'peer-reply', conversationId: 'chat-1', conversationSeq: direct.length + 1, senderUserId: 'peer-1', messageType: 'text', body: { text: '实时回复' }, sentAt: '2026-10-27T09:06:00Z' });
     socket.send(JSON.stringify({ type: 1, target: 'msg.new', arguments: [{ data: { conversationId: 'chat-1' } }] }) + '\x1e');
     await page.getByText('实时回复', { exact: true }).waitFor();
+    await page.evaluate(() => {
+      window.fixtureInvitations = [];
+      IMSDK_HOST.client.on(event => {
+        if (event.type === 'groupInvitationReceived') window.fixtureInvitations.push(event);
+      });
+    });
+    const invitation = {
+      tenantId: '11111111-1111-1111-1111-111111111111', conversationType: 'group',
+      conversationId: 'group-1', messageId: 'invite-self', messageType: 'event',
+      body: { event: { eventType: 'members_added', addedUserIds: ['user-1'] } },
+    };
+    const invitationFrames = [
+      { ...invitation, messageId: 'invite-other-user', body: { event: { eventType: 'members_added', addedUserIds: ['different-user'] } } },
+      { ...invitation, messageId: 'invite-other-tenant', tenantId: 'elsewhere' },
+      { ...invitation, messageId: 'invite-text', messageType: 'text' },
+      { ...invitation, messageId: 'invite-direct', conversationType: 'direct' },
+      invitation, invitation,
+      { ...invitation, messageId: 'alias-event', messageType: 'system',
+        body: JSON.stringify({ event: { type: 'group_member_added', addedUserIds: ['user-1'] } }) },
+    ];
+    socket.send(invitationFrames.map(data => JSON.stringify({ type: 1, target: 'msg.new', arguments: [{ data }] }) + '\x1e').join(''));
+    await expect.poll(() => page.evaluate(() => window.fixtureInvitations)).toEqual([
+      { type: 'groupInvitationReceived', spaceId: 'personal', conversationId: 'group-1', messageId: 'invite-self' },
+      { type: 'groupInvitationReceived', spaceId: 'personal', conversationId: 'group-1', messageId: 'alias-event' },
+    ]);
+    let snapshotStarted, releaseSnapshot;
+    const snapshotStartedPromise = new Promise(resolve => { snapshotStarted = resolve; });
+    holdDirectSnapshot = { started: snapshotStarted, until: new Promise(resolve => { releaseSnapshot = resolve; }) };
+    socket.send(JSON.stringify({ type: 1, target: 'msg.new', arguments: [{ data: { conversationId: 'chat-1' } }] }) + '\x1e');
+    await snapshotStartedPromise;
+    direct.push({ messageId: 'peer-while-busy', conversationId: 'chat-1', conversationSeq: direct.length + 1, senderUserId: 'peer-1', messageType: 'text', body: { text: '快照请求期间到达' }, sentAt: '2026-10-27T09:06:01Z' });
+    socket.send(JSON.stringify({ type: 1, target: 'msg.new', arguments: [{ data: { conversationId: 'chat-1' } }] }) + '\x1e');
+    releaseSnapshot();
+    await expect(page.getByText('快照请求期间到达', { exact: true })).toBeVisible({ timeout: 3000 });
     await page.getByRole('textbox', { name: '消息内容' }).fill('撤回时保留的草稿');
+    await page.evaluate(() => IMSDK_HOST.client.updatePresentation({ locale: 'vi' }));
+    await expect.poll(() => restLocales.includes('vi-VN'), { timeout: 3000 }).toBe(true);
+    await expect(page.locator('textarea')).toHaveValue('撤回时保留的草稿');
+    await page.evaluate(() => IMSDK_HOST.client.updatePresentation({ locale: 'zh-CN' }));
     direct[0].isRecalled = true;
     socket.send(JSON.stringify({ type: 1, target: 'msg.recalled', arguments: [{ data: { conversationId: 'chat-1' } }] }) + '\x1e');
     await page.getByText('[消息已撤回]', { exact: true }).waitFor();
@@ -241,8 +296,30 @@ try {
     await page.getByText('群聊发送', { exact: true }).waitFor();
     const previousConnects = connects;
     socket.close({ code: 1012, reason: 'Fixture reconnect' });
+    for (let index = 1; index <= 56; index++) {
+      group.push({ messageId: `offline-${index}`, conversationId: 'group-1', conversationSeq: group.at(-1).conversationSeq + 1,
+        senderUserId: 'peer-2', messageType: 'text', body: { text: `断线消息 ${index}` }, sentAt: '2026-10-27T09:07:00Z' });
+    }
     await expect.poll(() => connects, { timeout: 10000 }).toBeGreaterThan(previousConnects);
     await page.getByText('已连接', { exact: true }).waitFor();
+    await expect(page.getByText('断线消息 1', { exact: true })).toBeAttached();
+    await expect(page.getByText('断线消息 56', { exact: true })).toBeAttached();
+    const lastVisible = group.at(-1).conversationSeq;
+    await expect.poll(() => groupReads.at(-1)).toBe(lastVisible);
+    await page.evaluate(() => {
+      const main = document.querySelector('#messenger > div').shadowRoot.querySelector('main');
+      main.scrollTop = 0;
+      main.dispatchEvent(new Event('scroll'));
+    });
+    group.push({ messageId: 'offscreen', conversationId: 'group-1', conversationSeq: lastVisible + 1,
+      senderUserId: 'peer-2', messageType: 'text', body: { text: '视口外消息' }, sentAt: '2026-10-27T09:07:01Z' });
+    socket.send(JSON.stringify({ type: 1, target: 'msg.new', arguments: [{ data: { conversationId: 'group-1' } }] }) + '\x1e');
+    await expect(page.getByText('视口外消息', { exact: true })).toBeAttached();
+    // Give the SDK's debounced visible-read callback an opportunity to run.
+    await page.waitForTimeout(250);
+    assert.equal(groupReads.at(-1), lastVisible);
+    await page.getByText('视口外消息', { exact: true }).scrollIntoViewIfNeeded();
+    await expect.poll(() => groupReads.at(-1)).toBe(lastVisible + 1);
     await page.screenshot({ path: resolve(evidence, `chat-${viewport.width}.png`), fullPage: true });
     await page.getByRole('button', { name: '关闭', exact: true }).click();
     assert.equal(await page.getByRole('textbox', { name: '消息内容' }).count(), 0);
@@ -293,7 +370,7 @@ try {
     await page.evaluate(() => testClient.shutdown());
     assert.deepEqual(pageErrors, []);
     report.browsers.push({ engine: 'Chromium (installed Chrome)', version: browser.version(), viewport });
-    report.checks.push({ viewport: viewport.width, passed: ['example configuration', 'registration verification and captcha', 'registration default personal login', 'direct enterprise registration preserves actual assigned space without chooser', 'single active session cleared on logout', 'friend search and pending request', 'accept/reject friend requests', 'accepted friend available in contacts', 'create group with selected friend', 'password login', 'SignalR handshake', 'bfcache lifecycle events preserve account', 'bfcache lifecycle events preserve draft without sending', 'conversation list', 'contact selection starts direct chat', 'direct text send', 'legacy requestSubmit shortcut fallback', 'XSS text rendering', 'stable send retry ID', 'realtime REST refresh', 'recall hides original', 'recall preserves draft', 'group text send', 'SignalR reconnect', 'close/reopen', 'security revocation clears UI', 'logout clears chat', 'queued service gate', 'shutdown', 'no unhandled errors'] });
+    report.checks.push({ viewport: viewport.width, passed: ['example configuration', 'registration verification and captcha', 'registration default personal login', 'direct enterprise registration preserves actual assigned space without chooser', 'single active session cleared on logout', 'friend search and pending request', 'accept/reject friend requests', 'accepted friend available in contacts', 'create group with selected friend', 'password login', 'SignalR handshake', 'bfcache lifecycle events preserve account', 'bfcache lifecycle events preserve draft without sending', 'conversation list', 'contact selection starts direct chat', 'direct text send', 'legacy requestSubmit shortcut fallback', 'XSS text rendering', 'stable send retry ID', 'realtime REST refresh', 'scoped and deduplicated group invitation events', 'gateway invalidation during a busy snapshot', 'host locale without losing draft', 'recall hides original', 'recall preserves draft', 'group text send', 'SignalR reconnect and multi-page backfill', 'visible read progress', 'close/reopen', 'security revocation clears UI', 'logout clears chat', 'queued service gate', 'shutdown', 'no unhandled errors'] });
     await context.close();
   }
   console.log('Browser contract checks passed at desktop 1280px and mobile 390px.');

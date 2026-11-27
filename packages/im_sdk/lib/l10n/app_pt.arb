@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Compartilhamento do sistema concluído. Confirme o arquivo no aplicativo destinatário.",
   "diagnosticsCancelled": "Compartilhamento cancelado. Você pode exportar novamente.",
   "diagnosticsUnconfirmed": "Não foi possível confirmar o compartilhamento. Verifique o aplicativo destinatário.",
-  "diagnosticsFailed": "Falha na operação. Tente novamente."
+  "diagnosticsFailed": "Falha na operação. Tente novamente.",
+  "scanIncomingFriendRequest": "Esta pessoa já enviou uma solicitação de amizade para você. Analise-a primeiro.",
+  "chatGroupAddedToGroup": "Adicionaram você ao chat em grupo",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Não foi possível confirmar a adição aos favoritos. Tente novamente",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

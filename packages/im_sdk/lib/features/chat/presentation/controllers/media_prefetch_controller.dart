@@ -36,8 +36,12 @@ List<MediaPrefetchRequest> mediaPrefetchRequestsForMessage(
   switch (message.type) {
     case MessageType.image:
       final image = message.body.image;
-      final thumbnailUrl = image?.thumbnailUrl?.trim();
-      if (image == null || thumbnailUrl == null || thumbnailUrl.isEmpty) {
+      if (image == null) return const [];
+      final signedUrl = image.signedUrl?.trim();
+      final previewUrl = signedUrl?.isNotEmpty == true
+          ? signedUrl
+          : image.thumbnailUrl?.trim();
+      if (previewUrl == null || previewUrl.isEmpty) {
         return const [];
       }
       return [
@@ -45,7 +49,7 @@ List<MediaPrefetchRequest> mediaPrefetchRequestsForMessage(
           message: message,
           mediaKind: MediaKind.image,
           variant: MediaVariant.thumbnail,
-          resource: image.copyWith(url: thumbnailUrl),
+          resource: image.copyWith(url: previewUrl),
           fallbackName: image.fileName ?? 'image_thumb.jpg',
         ),
       ];

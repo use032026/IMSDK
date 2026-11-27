@@ -79,16 +79,18 @@ def attach_localization(out):
     target.mkdir(exist_ok=True)
     for name, source in LOCALIZATION_FILES.items():
         shutil.copy2(source, target / name)
+    resource = json.loads(LOCALIZATION_FILES['sdk_locale_manifest.json'].read_text())
     (target / 'README.md').write_text(
         '# 35-language resource update\n\n'
-        'Catalog 0.3.0; 35 locales and1040 common ARB keys per locale. '
+        f"Catalog {resource['catalogVersion']}, {resource['localeCount']} locales, "
+        f"and {resource['keysPerLocale']} ARB keys per locale. "
         'Original six-language values are retained. SDK/Web exclusive missing '
         'translations explicitly fall back to English; see sdk_coverage.json. '
         'Legal bodies keep their existing resources and fallback.\n\n'
         'Hosts can select locale at initialization or call updatePresentation '
         'with locale and/or themeMode. pt-BR and pt-PT are distinct. '
         'The SDK changes its own presentation without resetting the account or route.\n\n'
-        'This package is a local localization rebuild. Build, resource integrity '
+        'Build, resource integrity '
         'and independent-consumer results are in MANIFEST.json. Current-version '
         'real-backend, physical-device and all-screen visual acceptance are not claimed.\n')
 
@@ -185,8 +187,9 @@ def finalize(platform, report_path):
     if archive.exists() or not out.is_dir():
         raise ValueError('Prepare a new, unarchived package first')
     report = json.loads(report_path.read_text())
-    if report.get('validationScope') != 'localization-rebuild' or report.get('sdkVersions') != versions():
-        raise ValueError('A matching localization-rebuild report is required')
+    scope = report.get('validationScope')
+    if scope not in {'localization-rebuild', 'sdk-release-validation'} or report.get('sdkVersions') != versions():
+        raise ValueError('A validation report for the current SDK versions is required')
     if report.get('localization') != localization() or report.get('runtimeSourceSha256') != runtime_sources():
         raise ValueError('Localization or runtime sources differ from validated inputs')
     result = report.get('platforms', {}).get(platform, {})
@@ -213,9 +216,9 @@ def finalize(platform, report_path):
                 path.suffix.lower() in {'.apk', '.ipa', '.keystore', '.jks', '.p12', '.mobileprovision', '.p8', '.pem', '.key'}:
             raise ValueError(f'Private/build input in handoff: {path}')
     manifest = {'product': f'IM SDK {label}', 'sdkVersion': version, 'validatedOn': report['validatedOn'],
-                'validationScope': 'localization-rebuild', 'localization': report['localization'],
+                'validationScope': scope, 'localization': report['localization'],
                 'binaryTreeSha256': result['binaryTreeSha256'], 'validation': result,
-                'realServiceValidation': {'status': 'not_run_for_this_rebuild'},
+                'realServiceValidation': {'status': 'not_run'},
                 'physicalDeviceValidation': 'not_run', 'remotelyPublished': False}
     if platform == 'ios':
         manifest.update({'modes': ['Debug', 'Release'], 'frameworksPerMode': 35})

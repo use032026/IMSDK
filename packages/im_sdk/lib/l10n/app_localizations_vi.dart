@@ -3327,4 +3327,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Thao tác thất bại. Vui lòng thử lại.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Người này đã gửi lời mời kết bạn cho bạn. Vui lòng xử lý lời mời đó trước.';
+
+  @override
+  String get chatGroupAddedToGroup =>
+      'Bạn đã được thêm vào cuộc trò chuyện nhóm';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Chưa xác nhận được kết quả thêm vào mục yêu thích. Vui lòng thử lại';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

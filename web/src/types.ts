@@ -12,7 +12,7 @@ export interface ImSdkConfig {
   /** Follow the host account through a bound HostSessionProvider; never show SDK login UI. */
   hostManagedAuth?: boolean;
   themeMode?: ImSdkThemeMode;
-  /** Six SDK languages; `system` follows the browser language. Default: zh-CN. */
+  /** SDK interface languages; `system` follows the browser language. Default: zh-CN. */
   locale?: string;
   /** 30 seconds by default. */
   requestTimeoutMs?: number;
@@ -70,6 +70,7 @@ export interface ConversationTarget {
 export interface Conversation extends ConversationTarget {
   title: string;
   unreadCount: number;
+  lastReadSeq?: number;
   peerUserId?: string;
   lastMessage?: string;
   lastMessageAt?: string;
@@ -114,7 +115,8 @@ export interface MessagePageOptions { beforeSeq?: number; limit?: number }
 
 /** Stable error codes, without raw backend payloads, tokens or passwords. */
 export class ImSdkError extends Error {
-  constructor(public readonly code: string, message: string, public readonly status?: number) {
+  constructor(public readonly code: string, message: string, public readonly status?: number,
+    public readonly requestId?: string) {
     super(message);
     this.name = 'ImSdkError';
   }

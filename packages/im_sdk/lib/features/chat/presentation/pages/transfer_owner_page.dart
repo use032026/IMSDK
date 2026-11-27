@@ -5,6 +5,7 @@ import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/utils/debouncer.dart';
 import 'package:im_sdk/core/widgets/app_alert_dialog.dart';
 import 'package:im_sdk/core/widgets/app_toast.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/chat/presentation/pages/group_settings_page.dart';
 
@@ -372,11 +373,14 @@ class _MemberTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(member.displayName,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: colorScheme.onSurface,
-                      )),
+                  OfficialVerifiedName(
+                    verified: member.showOfficialVerification,
+                    name: Text(member.displayName,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: colorScheme.onSurface,
+                        )),
+                  ),
                   if (member.role == GroupRole.admin)
                     Text(
                       '管理员',

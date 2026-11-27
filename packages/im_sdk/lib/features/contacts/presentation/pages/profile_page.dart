@@ -11,6 +11,7 @@ import 'package:im_sdk/core/permissions/app_permissions.dart';
 import 'package:im_sdk/core/storage/account_profile_box_provider.dart';
 import 'package:im_sdk/core/widgets/app_alert_dialog.dart';
 import 'package:im_sdk/core/widgets/identity_badge.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/app_toast.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/call/presentation/models/call_route_intent.dart';
@@ -44,6 +45,7 @@ class ProfilePage extends ConsumerStatefulWidget {
   final String userId;
   final bool? allowAddFriendFromGroup;
   final bool adminCustomerView;
+  final bool sdkSingleSpace;
   final ProfileAccessContext accessContext;
 
   const ProfilePage({
@@ -51,6 +53,7 @@ class ProfilePage extends ConsumerStatefulWidget {
     required this.userId,
     this.allowAddFriendFromGroup,
     this.adminCustomerView = false,
+    this.sdkSingleSpace = false,
     this.accessContext = const ProfileAccessContext.standard(),
   });
 
@@ -363,7 +366,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.more_horiz, color: colors.onSurface),
-            onPressed: profileAsync.valueOrNull == null || profileAsync.valueOrNull?.officialAccount != null
+            onPressed: profileAsync.valueOrNull == null ||
+                    profileAsync.valueOrNull?.officialAccount != null
                 ? null
                 : () => _showMoreActions(profileAsync.requireValue),
           ),
@@ -374,7 +378,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         error: (e, _) => Center(child: Text('加载失败: $e')),
         data: (profile) {
           if (profile.officialAccount != null) {
-            return SingleChildScrollView(child: OfficialAccountCardView(card: profile.officialAccount!));
+            return SingleChildScrollView(
+                child: OfficialAccountCardView(
+              card: profile.officialAccount!,
+              sdkSingleSpace: widget.sdkSingleSpace,
+            ));
           }
           final space = ref.watch(currentSpaceProvider);
           final relation = _relationFor(profile);
@@ -528,11 +536,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     Row(
                       children: [
                         Flexible(
-                          child: Text(displayName,
-                              style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w500,
-                                  color: colors.onSurface)),
+                          child: OfficialVerifiedName(
+                            verified: profile.showOfficialVerification,
+                            name: Text(displayName,
+                                style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w500,
+                                    color: colors.onSurface)),
+                          ),
                         ),
                         if (_genderMarkFrom(gender) != null) ...[
                           const SizedBox(width: 6),

@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Системното споделяне е завършено. Проверете файла в приемащото приложение.",
   "diagnosticsCancelled": "Споделянето е отменено. Можете да експортирате отново.",
   "diagnosticsUnconfirmed": "Споделянето не можа да бъде потвърдено. Проверете приемащото приложение.",
-  "diagnosticsFailed": "Действието е неуспешно. Опитайте отново."
+  "diagnosticsFailed": "Действието е неуспешно. Опитайте отново.",
+  "scanIncomingFriendRequest": "Този човек вече ви е изпратил покана за приятелство. Първо я прегледайте.",
+  "chatGroupAddedToGroup": "Добавиха ви в груповия чат",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Резултатът от добавянето в любими не е потвърден. Опитайте отново",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

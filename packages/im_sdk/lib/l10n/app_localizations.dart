@@ -6401,6 +6401,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'操作失败，请重试。'**
   String get diagnosticsFailed;
+
+  /// No description provided for @scanIncomingFriendRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方已向你发送好友申请，请先处理'**
+  String get scanIncomingFriendRequest;
+
+  /// In-app hint shown to the current user when another member adds them to a group chat.
+  ///
+  /// In zh, this message translates to:
+  /// **'你已被加入群聊'**
+  String get chatGroupAddedToGroup;
+
+  /// No description provided for @chatFavoriteUnconfirmed.
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏结果未确认，请重试'**
+  String get chatFavoriteUnconfirmed;
+
+  /// Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales.
+  ///
+  /// In zh, this message translates to:
+  /// **'官方认证'**
+  String get officialAccountVerifiedBadge;
 }
 
 class _AppLocalizationsDelegate

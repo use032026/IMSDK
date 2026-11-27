@@ -3303,4 +3303,18 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'ดำเนินการไม่สำเร็จ โปรดลองอีกครั้ง';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'บุคคลนี้ส่งคำขอเป็นเพื่อนถึงคุณแล้ว โปรดตรวจสอบก่อน';
+
+  @override
+  String get chatGroupAddedToGroup => 'คุณถูกเพิ่มในแชทกลุ่มแล้ว';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'ยังยืนยันผลการเพิ่มในรายการโปรดไม่ได้ โปรดลองอีกครั้ง';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

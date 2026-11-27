@@ -1,6 +1,6 @@
 # Android IM SDK 交付包
 
-SDK 版本：`0.1.3` · 文档更新：2026-10-29
+SDK 版本：`0.1.4` · 文档更新：2026-11-27
 
 本版统一注册 / 登录、会话列表、好友申请处理、单聊和新建群聊 / 群聊。注册不选择空间：默认进入个人空间，服务端返回有效企业登录态时进入该企业，同时只有一个活跃空间。
 
@@ -25,7 +25,7 @@ SDK 版本：`0.1.3` · 文档更新：2026-10-29
 使用前在交付包根目录执行 `shasum -a 256 -c SHA256SUMS`，确认文件与清单一致。
 
 1. 使用 JDK 17、Android SDK 36；已验证基线为 minSdk 24、compileSdk / targetSdk 36、AGP 8.11.1、Gradle 8.14。
-2. 保留完整 `maven/`，在宿主中声明本地仓库和公共依赖仓库，添加 `com.imsdk:im-sdk-native:0.1.3`，开启 AndroidX 与 Java 17 desugaring。
+2. 保留完整 `maven/`，在宿主中声明本地仓库和公共依赖仓库，添加 `com.imsdk:im-sdk-native:0.1.4`，开启 AndroidX 与 Java 17 desugaring。
 3. 默认 `sample-host/app/src/main/assets/im_sdk_configuration.json` 已配置现有真实服务，无需编辑或复制。
 4. 编译安装后启动示例即自动进入聊天登录 / 注册页。嵌入其他应用时，宿主取得用户隐私同意后再初始化 SDK；通用接口校验不变。
 5. 按 [验收说明](docs/ACCEPTANCE.md) 在接入方应用与真实设备完成验收。
@@ -35,8 +35,8 @@ SDK 版本：`0.1.3` · 文档更新：2026-10-29
 个人账号请显式使用 `passwordLogin: {"space":"personal","loginType":"lpp_id"}`。企业账号由开发者固定 `tenantCode` 与登录方式。跨应用账号打通需接入方可信后端完成账号映射及 IM 凭证签发、刷新；生产签名与通知推送由宿主集成。
 
 
-## 35语本地重编范围
+## 版本验证
 
-本包从当前35语源码重新编译，包含公共词库0.3.0。宿主可在初始化设置locale，或调用updatePresentation更新主题/语言；支持的35种语言及专属缺译英语回退见 `localization/`。原六语值保持一致；葡语区分pt-BR与pt-PT。
+本包包含 35 种语言，每种 1044 个词条，来源为公共词库 0.3.15。语言以宿主 App 为准，可在初始化传入 `locale`，切换时调用 `updatePresentation`。专属译文的英语回退见 `localization/`，葡语区分 `pt-BR` 与 `pt-PT`。
 
 本轮验证实际二进制构建、资源清单与独立消费，详见MANIFEST.json。0.1.2的真实服务注册、好友和单/群聊结果属于历史，未重做本版真实后端或真机验收；35语全部页面的翻译质量、字体及视觉矩阵仍需接入方验收。包内服务配置沿用已有示例，不包含账号密码或Token。

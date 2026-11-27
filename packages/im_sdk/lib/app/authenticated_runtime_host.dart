@@ -1,6 +1,19 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:im_sdk/core/runtime/account_runtime.dart';
+import 'package:im_sdk/core/media/media_access_retry.dart';
+import 'package:im_sdk/features/chat/presentation/providers/chat_media_access_provider.dart';
+
+ProviderContainer createAuthenticatedRuntimeContainer(
+    ProviderContainer parent, AccountRuntime runtime) {
+  late final ProviderContainer container;
+  container = ProviderContainer(parent: parent, overrides: [
+    ...runtime.providerOverrides,
+    mediaUrlRefreshProvider.overrideWithValue((request, url) =>
+        container.read(chatMediaUrlRefreshProvider)(request, url)),
+  ]);
+  return container;
+}
 
 /// Installs the active account-space container without recreating the app
 /// shell. Runtime-scoped service listeners are mounted separately with a
@@ -46,12 +59,14 @@ class _AuthenticatedRuntimeHostState extends State<AuthenticatedRuntimeHost> {
 
     final previous = _container;
     _installedRuntime = nextRuntime;
-    _container = isActive
-        ? ProviderContainer(
-            parent: ProviderScope.containerOf(context),
-            overrides: runtime.providerOverrides,
-          )
-        : null;
+    if (isActive) {
+      _container = createAuthenticatedRuntimeContainer(
+        ProviderScope.containerOf(context),
+        runtime,
+      );
+    } else {
+      _container = null;
+    }
 
     if (previous != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());

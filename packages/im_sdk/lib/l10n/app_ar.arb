@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "اكتملت مشاركة النظام. تحقق من الملف في التطبيق المستلِم.",
   "diagnosticsCancelled": "أُلغيت المشاركة. يمكنك التصدير مجددًا.",
   "diagnosticsUnconfirmed": "تعذّر تأكيد المشاركة. تحقق من التطبيق المستلِم.",
-  "diagnosticsFailed": "فشلت العملية. حاول مجددًا."
+  "diagnosticsFailed": "فشلت العملية. حاول مجددًا.",
+  "scanIncomingFriendRequest": "أرسل لك هذا الشخص طلب صداقة بالفعل. راجعه أولًا.",
+  "chatGroupAddedToGroup": "تمت إضافتك إلى الدردشة الجماعية",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "تعذّر تأكيد نتيجة الإضافة إلى المفضلة. أعد المحاولة",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

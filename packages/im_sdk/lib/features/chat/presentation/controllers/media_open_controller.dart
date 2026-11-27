@@ -5,6 +5,8 @@ import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/platform/local_file.dart';
 import 'package:im_sdk/core/platform/media_file_runtime.dart';
 import 'package:im_sdk/core/storage/account_storage_context_provider.dart';
+import 'package:im_sdk/core/media/media_access_retry.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/features/chat/data/datasources/media_download_service.dart';
 import 'package:im_sdk/features/chat/data/datasources/media_local_store.dart';
 import 'package:im_sdk/features/chat/domain/entities/media_local_file.dart';
@@ -20,8 +22,15 @@ final mediaFileRuntimeProvider = Provider<MediaFileRuntime>((ref) {
 }, dependencies: [accountStorageContextProvider]);
 
 final mediaDownloadServiceProvider = Provider<MediaDownloadService>((ref) {
-  return MediaDownloadService(ref.watch(dioProvider));
-}, dependencies: [dioProvider]);
+  var active = true;
+  final service = MediaDownloadService(ref.watch(dioProvider),
+      refresh: ref.watch(mediaUrlRefreshProvider), isCurrent: () => active);
+  ref.onDispose(() {
+    active = false;
+    service.dispose();
+  });
+  return service;
+}, dependencies: [dioProvider, mediaUrlRefreshProvider]);
 
 final mediaOpenControllerProvider =
     Provider.family<MediaOpenController, String>((ref, spaceId) {
@@ -49,6 +58,7 @@ class MediaOpenRequest {
   final String fileName;
   final String? mimeType;
   final int? sizeBytes;
+  final MediaRequestContext? context;
 
   const MediaOpenRequest({
     required this.conversationId,
@@ -60,6 +70,7 @@ class MediaOpenRequest {
     required this.fileName,
     this.mimeType,
     this.sizeBytes,
+    this.context,
   });
 
   factory MediaOpenRequest.fromResource({
@@ -74,7 +85,23 @@ class MediaOpenRequest {
       messageId: message.messageId,
       mediaKind: mediaKind,
       variant: variant,
-      remoteUrl: resource.url,
+      remoteUrl: switch (variant) {
+        MediaVariant.videoPoster => resource.thumbnailUrl ?? resource.url,
+        MediaVariant.thumbnail => resource.displayUrl,
+        _ => resource.downloadSourceUrl,
+      },
+      context: MediaRequestContext(
+        conversationId: message.conversationId,
+        messageId: message.messageId,
+        conversationSeq: message.conversationSeq,
+        kind: mediaKind.name,
+        download: variant != MediaVariant.thumbnail &&
+            variant != MediaVariant.videoPoster,
+        variant: variant.name,
+        fallbackUrl: variant == MediaVariant.videoPoster
+            ? resource.thumbnailUrl
+            : resource.url,
+      ),
       localCandidateUrl: switch (variant) {
         MediaVariant.original ||
         MediaVariant.videoSource ||
@@ -193,15 +220,31 @@ class MediaOpenController {
     return file.localPath;
   }
 
-  Future<List<int>> bytesForResource(MediaResource resource) async {
-    final rawUrl = resource.url.trim();
+  /// Availability is a read-only projection of the existing media ledger and
+  /// actual local files. Watching never starts a download or repairs the ledger.
+  Stream<bool> watchCachedAvailabilityFor(MediaOpenRequest request) {
+    return store
+        .watch(
+          spaceId: spaceId,
+          conversationId: request.conversationId,
+          messageId: request.messageId,
+          mediaKind: request.mediaKind,
+          variant: request.variant,
+        )
+        .asyncMap((_) async => await cachedLocalPathFor(request) != null)
+        .distinct();
+  }
+
+  Future<List<int>> bytesForResource(MediaResource resource,
+      {MediaRequestContext? context}) async {
+    final rawUrl = resource.downloadSourceUrl.trim();
     if (rawUrl.isEmpty) throw ArgumentError('Media url is empty');
     if (_isLocalMediaPath(rawUrl)) {
       final bytes = await runtime.readFileBytes(localPathFromUriOrPath(rawUrl));
       if (bytes.isEmpty) throw StateError('Media response is empty');
       return bytes;
     }
-    final bytes = await downloadService.fetchBytes(rawUrl);
+    final bytes = await downloadService.fetchBytes(rawUrl, context: context);
     if (bytes.isEmpty) throw StateError('Media response is empty');
     return bytes;
   }
@@ -255,6 +298,7 @@ class MediaOpenController {
       await downloadService.download(
         remoteUrl: request.remoteUrl,
         partPath: partPath,
+        context: request.context,
       );
       await runtime.promotePartFile(partPath: partPath, finalPath: finalPath);
       final size = await runtime.fileLength(finalPath);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 
 class AppNetworkImage extends StatelessWidget {
@@ -9,6 +10,7 @@ class AppNetworkImage extends StatelessWidget {
   final WidgetBuilder? placeholderBuilder;
   final WidgetBuilder? errorBuilder;
   final bool cacheInMemory;
+  final MediaRequestContext? mediaContext;
   final ValueChanged<Size>? onImageSize;
   final ValueChanged<ImageProvider>? onImageProviderResolved;
 
@@ -21,6 +23,7 @@ class AppNetworkImage extends StatelessWidget {
     this.placeholderBuilder,
     this.errorBuilder,
     this.cacheInMemory = false,
+    this.mediaContext,
     this.onImageSize,
     this.onImageProviderResolved,
   });
@@ -33,6 +36,7 @@ class AppNetworkImage extends StatelessWidget {
       height: height,
       fit: fit,
       cacheInMemory: cacheInMemory,
+      mediaContext: mediaContext,
       onImageSize: onImageSize,
       onImageProviderResolved: onImageProviderResolved,
       errorBuilder: (ctx, error, stackTrace) {

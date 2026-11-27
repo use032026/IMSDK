@@ -2,10 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:im_sdk/core/utils/validators.dart';
+import 'package:im_sdk/l10n/app_localizations.dart';
 
 import 'im_sdk_client.dart';
 import 'im_sdk_models.dart';
 import 'im_sdk_presentation.dart';
+
+enum _RegistrationAction { sendCode, register, captcha, activate }
+
+class _CaptchaLoadFailure implements Exception {
+  const _CaptchaLoadFailure();
+}
 
 /// Personal registration inside the SDK's unauthenticated navigator.
 class ImSdkRegistrationPage extends StatefulWidget {
@@ -25,6 +32,7 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
   ImSdkRegistrationVerificationSettings? _settings;
   String _channel = 'sms';
   String? _error;
+  _RegistrationAction? _errorAction;
   bool _busy = false;
   bool _loading = true;
   bool _created = false;
@@ -65,7 +73,12 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
       await action(null, null);
     } on ImSdkException catch (error) {
       if (!error.code.contains('CAPTCHA')) rethrow;
-      final challenge = await widget.client.requestLoginCaptcha();
+      final ImSdkCaptchaChallenge challenge;
+      try {
+        challenge = await widget.client.requestLoginCaptcha();
+      } catch (_) {
+        throw const _CaptchaLoadFailure();
+      }
       if (!mounted) return;
       final answer = await showDialog<String>(
           context: context,
@@ -79,10 +92,13 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
   Future<void> _sendCode() async {
     if (_busy || _countdown > 0) return;
     final validation = _channel == 'sms'
-        ? Validators.validateMobile(_identifier.text)
+        ? Validators.validateMobile(_identifier.text, acceptFormatted: true)
         : Validators.validateEmail(_identifier.text);
     if (validation != null) {
-      setState(() => _error = validation);
+      setState(() {
+        _error = validation;
+        _errorAction = null;
+      });
       return;
     }
     setState(() {
@@ -112,10 +128,8 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
       });
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(sdkText(context, '验证码已发送'))));
-    } on ImSdkException catch (error) {
-      if (mounted) setState(() => _error = error.message);
-    } catch (_) {
-      if (mounted) setState(() => _error = '验证码发送失败，请稍后重试');
+    } catch (error) {
+      _showFailure(error, _RegistrationAction.sendCode);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -146,9 +160,11 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
         _confirmation.clear();
       }
     } on ImSdkException catch (error) {
-      if (!mounted) return;
+      if (!mounted) {
+        widget.client.discardPendingRegistrationActivation();
+        return;
+      }
       setState(() {
-        _error = error.message;
         _created = error.code == 'REGISTER_LOGIN_FAILED' ||
             error.code == 'REGISTER_PENDING_APPROVAL';
         if (_created) {
@@ -156,15 +172,66 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
           _confirmation.clear();
         }
       });
-    } catch (_) {
-      if (mounted) setState(() => _error = '注册未完成，请稍后重试');
+      _showFailure(
+          error,
+          switch (error.code) {
+            'REGISTER_PENDING_APPROVAL' => null,
+            'REGISTER_LOGIN_FAILED' => _RegistrationAction.activate,
+            _ => _RegistrationAction.register,
+          });
+    } catch (error) {
+      _showFailure(error, _RegistrationAction.register);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
+  Future<void> _retryActivation() async {
+    if (_busy || !widget.client.canRetryRegistrationActivation) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await widget.client.retryRegistrationActivation();
+    } catch (error) {
+      _showFailure(error, _RegistrationAction.activate);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _showFailure(Object error, _RegistrationAction? action) {
+    if (!mounted) return;
+    setState(() {
+      _errorAction =
+          error is _CaptchaLoadFailure ? _RegistrationAction.captcha : action;
+      _error = error is ImSdkException &&
+              !(action == _RegistrationAction.activate &&
+                  widget.client.canRetryRegistrationActivation)
+          ? error.message
+          : '';
+    });
+  }
+
+  String _failureText(BuildContext context, String message) {
+    final details = message.isEmpty ? null : sdkErrorText(context, message);
+    final l10n = AppLocalizations.of(context);
+    final title = switch (_errorAction) {
+      _RegistrationAction.sendCode => l10n.authSendFailed,
+      _RegistrationAction.register => l10n.authRegisterErrorTitle,
+      _RegistrationAction.captcha => l10n.authCaptchaFailed,
+      _RegistrationAction.activate => l10n.authLoginFailed,
+      null => null,
+    };
+    if (title == null) return details ?? l10n.commonOperationFailed;
+    if (details == null || details == title) return title;
+    return '$title\n$details';
+  }
+
   @override
   void dispose() {
+    if (_created) widget.client.discardPendingRegistrationActivation();
     _timer?.cancel();
     for (final controller in [
       _name,
@@ -182,6 +249,7 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
   Widget build(BuildContext context) {
     final available = _settings?.isEnabled(_channel) == true;
     final enabled = !_busy && !_created && available;
+    final canRetry = _created && widget.client.canRetryRegistrationActivation;
     return Scaffold(
       appBar: AppBar(title: Text(sdkText(context, '注册账号'))),
       body: SafeArea(
@@ -270,7 +338,8 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                           validator: (value) => sdkValidationText(
                               context,
                               _channel == 'sms'
-                                  ? Validators.validateMobile(value ?? '')
+                                  ? Validators.validateMobile(value ?? '',
+                                      acceptFormatted: true)
                                   : Validators.validateEmail(value ?? ''))),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -333,7 +402,7 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Semantics(
                               liveRegion: true,
-                              child: Text(sdkErrorText(context, _error!),
+                              child: Text(_failureText(context, _error!),
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .colorScheme
@@ -341,9 +410,16 @@ class _ImSdkRegistrationPageState extends State<ImSdkRegistrationPage> {
                     const SizedBox(height: 20),
                     FilledButton(
                         key: const ValueKey('registration.submit'),
-                        onPressed: enabled ? _register : null,
-                        child: Text(
-                            sdkText(context, _busy ? '正在处理…' : '注册并进入聊天'))),
+                        onPressed: canRetry
+                            ? (_busy ? null : _retryActivation)
+                            : (enabled ? _register : null),
+                        child: Text(sdkText(
+                            context,
+                            _busy
+                                ? '正在处理…'
+                                : canRetry
+                                    ? '重试'
+                                    : '注册并进入聊天'))),
                     TextButton(
                         onPressed:
                             _busy ? null : () => Navigator.of(context).pop(),

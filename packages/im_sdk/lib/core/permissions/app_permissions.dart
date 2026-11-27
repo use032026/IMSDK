@@ -192,7 +192,9 @@ class AppPermissions {
     if (isGroupCreationDisabled || releaseFaceBlocks) return false;
     if (space == null) return false;
     if (space.isCustomer) return false;
-    if (space.isEmployee) return space.isAdminOrAbove;
+    if (space.isEmployee) {
+      return space.isCustomerService || space.isAdminOrAbove;
+    }
     return true;
   }
 

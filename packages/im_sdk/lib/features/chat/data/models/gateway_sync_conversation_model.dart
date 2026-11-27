@@ -26,20 +26,26 @@ class GatewaySyncConversationModel {
 
     final normalizedUserId = currentUserId.trim().toLowerCase();
     final rawMessages = json['messages'];
-    final messages = rawMessages is List
-        ? rawMessages.whereType<Map>().map((raw) {
-            final message =
-                MessageModel.fromJson(Map<String, dynamic>.from(raw));
-            final senderUserId = message.senderUserId.trim().toLowerCase();
-            final isSelf = message.isSelf ||
-                (normalizedUserId.isNotEmpty &&
-                    senderUserId.isNotEmpty &&
-                    senderUserId == normalizedUserId);
-            return isSelf == message.isSelf
-                ? message
-                : message.copyWith(isSelf: true);
-          }).toList(growable: false)
-        : const <Message>[];
+    if (rawMessages is! List) {
+      throw const FormatException('Invalid sync messages list');
+    }
+    final messages = rawMessages.map((raw) {
+      if (raw is! Map<String, dynamic>) {
+        throw const FormatException('Invalid sync message record');
+      }
+      final message = MessageModel.fromJson(raw);
+      if (message.conversationId != conversationId ||
+          message.messageId.trim().isEmpty ||
+          message.conversationSeq <= 0) {
+        throw const FormatException('Invalid sync message identity');
+      }
+      final senderUserId = message.senderUserId.trim().toLowerCase();
+      final isSelf = message.isSelf ||
+          (normalizedUserId.isNotEmpty && senderUserId == normalizedUserId);
+      return isSelf == message.isSelf
+          ? message
+          : message.copyWith(isSelf: true);
+    }).toList(growable: false);
 
     final rawLastReadSeq = json['lastReadSeq'];
     final lastReadSeq = rawLastReadSeq is num

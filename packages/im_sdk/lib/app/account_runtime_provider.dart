@@ -2,11 +2,11 @@ import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:im_sdk/features/auth/domain/entities/auth_logout_reason.dart';
 import 'package:im_sdk/core/admin/admin_http_client.dart';
 import 'package:im_sdk/core/auth/account_session.dart';
 import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/network/http_client.dart';
+import 'package:im_sdk/core/providers/locale_provider.dart';
 import 'package:im_sdk/core/runtime/account_runtime.dart';
 import 'package:im_sdk/core/space/space_transition.dart';
 import 'package:im_sdk/core/storage/account_storage_registry.dart';
@@ -215,11 +215,16 @@ class AccountRuntimeNotifier extends Notifier<AsyncValue<AccountRuntime?>> {
       accountHttpClient = HttpClient(
         diagnosticScope: () => DiagnosticScope.account(session.scope),
         storage: secureStorage,
+        localeGetter: () => ref.read(localeProvider),
         operationIsCurrent: operationIsCurrent,
         // Platform rotation belongs to the root account, not this activation.
         // Its durable write must complete even if a space switch retires us.
         platformSessionRefresher: () =>
             ref.read(httpClientProvider).refreshPlatformSession(),
+        tenantSessionRefresher: () =>
+            ref.read(httpClientProvider).refreshTenantSession(),
+        tenantSessionIdGetter: () =>
+            ref.read(activeAccountSessionProvider)?.sessionId,
         tokenGetter: () {
           if (!operationIsCurrent()) return null;
           return ref.read(currentSpaceProvider)?.accessToken;
@@ -248,19 +253,9 @@ class AccountRuntimeNotifier extends Notifier<AsyncValue<AccountRuntime?>> {
         persistLegacyCredentialMirror: false,
         onAuthFailed: (error) {
           if (operationIsCurrent()) {
-            unawaited(ref.read(authProvider.notifier).logout(
-                  reason: AuthLogoutReason.httpAuthenticationFailed,
-                  serverCode: error.code,
-                ));
-          }
-        },
-        onTenantTokenRefreshed: (spaceId, token, refreshToken) {
-          if (operationIsCurrent() && spaceId == session.scope.spaceId) {
-            return ref.read(authProvider.notifier).updateTenantToken(
-                  spaceId,
-                  token,
-                  newRefreshToken: refreshToken,
-                );
+            unawaited(ref
+                .read(authProvider.notifier)
+                .handleCredentialRenewalFailure(error));
           }
         },
       );

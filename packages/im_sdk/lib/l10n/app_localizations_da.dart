@@ -3332,4 +3332,18 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Handlingen mislykkedes. Prøv igen.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Denne person har allerede sendt dig en venneanmodning. Gennemgå den først.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Du er blevet føjet til gruppechatten';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Resultatet af tilføjelsen til favoritter kunne ikke bekræftes. Prøv igen';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

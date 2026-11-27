@@ -4,17 +4,28 @@ abstract final class Validators {
   static bool isMobile(String value) =>
       RegExp(r'^1[3-9]\d{9}$').hasMatch(value.trim());
 
+  /// Accepts formatted mainland input while preserving the bare-number
+  /// contract of the existing SDK endpoints.
+  static String? normalizeMainlandMobile(String value) {
+    final compact = value.trim().replaceAll(RegExp(r'[\s-]'), '');
+    final national = compact.startsWith('+86') ? compact.substring(3) : compact;
+    return isMobile(national) ? national : null;
+  }
+
   /// 邮箱基础格式
   static bool isEmail(String value) =>
-      RegExp(r'^[\w.+\-]+@[\w\-]+\.[a-zA-Z]{2,}$').hasMatch(value.trim());
+      RegExp(r'^[\w.+\-]+@(?:[\w\-]+\.)+[a-zA-Z]{2,}$').hasMatch(value.trim());
 
   /// 微界号：字母开头，6-20 位，仅字母/数字/下划线
   static bool isZtId(String value) =>
       RegExp(r'^[a-zA-Z][a-zA-Z0-9_]{5,19}$').hasMatch(value.trim());
 
-  static String? validateMobile(String value) {
+  static String? validateMobile(String value, {bool acceptFormatted = false}) {
     if (value.trim().isEmpty) return '请输入手机号';
-    if (!isMobile(value)) return '手机号格式不正确';
+    final valid = acceptFormatted
+        ? normalizeMainlandMobile(value) != null
+        : isMobile(value);
+    if (!valid) return '手机号格式不正确';
     return null;
   }
 

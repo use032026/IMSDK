@@ -3304,4 +3304,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'فشلت العملية. حاول مجددًا.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'أرسل لك هذا الشخص طلب صداقة بالفعل. راجعه أولًا.';
+
+  @override
+  String get chatGroupAddedToGroup => 'تمت إضافتك إلى الدردشة الجماعية';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'تعذّر تأكيد نتيجة الإضافة إلى المفضلة. أعد المحاولة';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

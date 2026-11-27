@@ -1,7 +1,9 @@
 import 'package:path/path.dart' as p;
 
 import 'package:im_sdk/features/chat/domain/entities/message.dart';
+import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 import 'package:im_sdk/features/chat/domain/services/message_send_failure.dart';
+import 'package:im_sdk/features/official_account/domain/entities/official_account_card.dart';
 
 enum MessageSendPolicyContext {
   personal,
@@ -12,6 +14,20 @@ enum MessageSendPolicyContext {
 class MessageSendPolicy {
   final MessageSendPolicyContext context;
   final MessageSendRestrictions restrictions;
+  final bool customerCanReply;
+  final bool conversationVisible;
+
+  static const conversationUnavailableFailure =
+      MessageSendFailure.serverRejected(
+    code: 'MSG_MEMBER_FORBIDDEN',
+    message: 'conversation is no longer available to this member',
+  );
+
+  static const officialAccountReadOnlyFailure =
+      MessageSendFailure.serverRejected(
+    code: 'OFFICIAL_ACCOUNT_READONLY',
+    message: 'customer replies are disabled for this official account',
+  );
 
   static const callLogReadOnlyFailure = MessageSendFailure.serverRejected(
     code: 'LOCAL_POLICY_CALL_LOG_READ_ONLY',
@@ -21,16 +37,45 @@ class MessageSendPolicy {
   const MessageSendPolicy({
     required this.context,
     this.restrictions = const MessageSendRestrictions(),
+    this.customerCanReply = true,
+    this.conversationVisible = true,
   });
 
   static const allowAll = MessageSendPolicy(
     context: MessageSendPolicyContext.personal,
   );
 
+  static bool customerCanReplyForConversation({
+    required String spaceId,
+    required String userId,
+    required String conversationId,
+    Conversation? conversation,
+    OfficialAccountCard? initialOfficialAccount,
+  }) {
+    final matchingConversation =
+        conversation?.conversationId == conversationId ? conversation : null;
+    if (matchingConversation != null &&
+        (matchingConversation.officialAccountKind != null ||
+            matchingConversation.isCustomerReadOnly)) {
+      return matchingConversation.customerCanReply;
+    }
+    final initial = initialOfficialAccount;
+    final matchesInitial = initial != null &&
+        initial.tenantId == spaceId &&
+        initial.conversationId == conversationId &&
+        (initial.customerUserId == null || initial.customerUserId == userId);
+    // Old SQLite rows have no official kind and default to writable. That
+    // absence cannot override an explicitly readonly card from this actor.
+    if (matchesInitial && !initial.customerCanReply) return false;
+    return matchingConversation?.customerCanReply ?? true;
+  }
+
   MessageSendFailure? validate({
     required MessageType type,
     required MessageBody body,
   }) {
+    final accessFailure = validateConversationAccess();
+    if (accessFailure != null) return accessFailure;
     if (!restrictions.allowed) {
       return MessageSendFailure.serverRejected(
         code: restrictions.blockedCode,
@@ -72,6 +117,12 @@ class MessageSendPolicy {
         message: 'message blocked by local send policy',
       );
     }
+    return null;
+  }
+
+  MessageSendFailure? validateConversationAccess() {
+    if (!conversationVisible) return conversationUnavailableFailure;
+    if (!customerCanReply) return officialAccountReadOnlyFailure;
     return null;
   }
 

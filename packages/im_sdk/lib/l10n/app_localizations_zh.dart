@@ -3224,6 +3224,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => '操作失败，请重试。';
+
+  @override
+  String get scanIncomingFriendRequest => '对方已向你发送好友申请，请先处理';
+
+  @override
+  String get chatGroupAddedToGroup => '你已被加入群聊';
+
+  @override
+  String get chatFavoriteUnconfirmed => '收藏结果未确认，请重试';
+
+  @override
+  String get officialAccountVerifiedBadge => '官方认证';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -6447,4 +6459,16 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get diagnosticsFailed => '操作失敗，請重試。';
+
+  @override
+  String get scanIncomingFriendRequest => '對方已向你傳送好友申請，請先處理';
+
+  @override
+  String get chatGroupAddedToGroup => '你已被加入群聊';
+
+  @override
+  String get chatFavoriteUnconfirmed => '收藏結果尚未確認，請重試';
+
+  @override
+  String get officialAccountVerifiedBadge => '官方认证';
 }

@@ -22,8 +22,7 @@ import 'package:im_sdk/features/chat/data/datasources/gateway_event_handler.dart
 import 'package:im_sdk/features/chat/data/datasources/gateway_service.dart';
 import 'package:im_sdk/features/chat/data/datasources/pending_message_queue.dart';
 import 'package:im_sdk/features/chat/data/models/conversation_model.dart';
-import 'package:im_sdk/features/chat/data/models/conversation_clear_watermark_model.dart';
-import 'package:im_sdk/features/chat/data/models/gateway_sync_conversation_model.dart';
+import 'package:im_sdk/features/chat/data/models/gateway_sync_page_model.dart';
 import 'package:im_sdk/features/chat/data/repositories/chat_repository_impl.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 import 'package:im_sdk/features/chat/domain/entities/message.dart';
@@ -39,6 +38,7 @@ import 'package:im_sdk/features/chat/presentation/providers/chat_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/chat_draft_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/chat_local_resources_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/conversations_provider.dart';
+import 'package:im_sdk/features/chat/presentation/providers/group_invitation_notice_provider.dart';
 import 'package:im_sdk/features/chat/presentation/pages/group_settings_page.dart'
     show groupDetailProvider;
 import 'package:im_sdk/features/chat/presentation/providers/presence_provider.dart';
@@ -61,10 +61,12 @@ import 'package:im_sdk/features/teen_mode/presentation/providers/teen_mode_provi
 
 /// 全局单例 GatewayService Provider
 ///
-/// 监听 Runtime 拥有的当前空间，自动重连或断开。
-/// 重连成功后调用 GET /sync 补齐离线消息。
+/// 当前账号 Runtime 持有 Gateway 与 HTTP 增量同步。
 final gatewayProvider = Provider<GatewayService>((ref) {
-  final service = GatewayService();
+  final storageScope = ref.read(accountStorageContextProvider)?.scope;
+  final diagnosticScope =
+      storageScope == null ? null : DiagnosticScope.account(storageScope);
+  final service = GatewayService(diagnosticScope: diagnosticScope);
   final handler = GatewayEventHandler();
   final syncCoordinator = GatewaySyncCoordinator();
   // Captured before this runtime exposes its chat UI. Sends started while the
@@ -73,48 +75,26 @@ final gatewayProvider = Provider<GatewayService>((ref) {
   final recoveredIdentityKeys = <String>{};
   StreamSubscription<GatewayEvent>? subscription;
   var disposed = false;
-  Future<void> connectionTail = Future<void>.value();
-  var connectionIntent = 0;
-  var connectedRouteRevision = -1;
-
-  Future<bool> connectOnCurrentRoute(String accessToken) {
-    final intent = ++connectionIntent;
-    final routeRevision = SiteLineManager.instance.routeRevision;
-    final gatewayBaseUrl = SiteLineManager.instance.gatewayBaseUrl;
-    final completion = connectionTail.catchError((Object _) {}).then((_) async {
-      if (disposed ||
-          intent != connectionIntent ||
-          routeRevision != SiteLineManager.instance.routeRevision) {
-        return false;
-      }
-      connectedRouteRevision = -1;
-      await service.connect(accessToken, gatewayBaseUrl);
-      if (disposed ||
-          intent != connectionIntent ||
-          routeRevision != SiteLineManager.instance.routeRevision) {
-        await service.disconnect();
-        return false;
-      }
-      connectedRouteRevision = routeRevision;
-      return service.isConnected;
-    });
-    connectionTail =
-        completion.then<void>((_) {}, onError: (Object _, StackTrace __) {});
-    return completion;
-  }
-
-  void disconnectCurrentRoute() {
-    connectionIntent++;
-    connectedRouteRevision = -1;
-    connectionTail = connectionTail
-        .catchError((Object _) {})
-        .then((_) => service.disconnect());
-  }
 
   bool ownsCurrentRuntime(SpaceContext? space) {
     if (disposed || space == null) return false;
     final storage = ref.read(accountStorageContextProvider);
     return storage?.scope.ownsSpace(space) == true;
+  }
+
+  void connectOnCurrentRoute(SpaceContext space) {
+    final site = SiteLineManager.instance;
+    final routeRevision = site.routeRevision;
+    unawaited(
+        service.connect(space.accessToken, site.gatewayBaseUrl, isCurrent: () {
+      if (disposed || routeRevision != site.routeRevision) return false;
+      final current = ref.read(accountRuntimeCurrentSpaceProvider);
+      return current != null &&
+          ownsCurrentRuntime(current) &&
+          current.spaceId == space.spaceId &&
+          current.userId == space.userId &&
+          current.accessToken == space.accessToken;
+    }));
   }
 
   Future<void> synchronizeCurrentIdentity({bool rerunIfRunning = false}) async {
@@ -130,22 +110,41 @@ final gatewayProvider = Provider<GatewayService>((ref) {
       );
       return;
     }
+    final routeRevision = SiteLineManager.instance.routeRevision;
+    bool isCurrent() {
+      if (disposed || routeRevision != SiteLineManager.instance.routeRevision) {
+        return false;
+      }
+      final current = ref.read(accountRuntimeCurrentSpaceProvider);
+      return current != null &&
+          ownsCurrentRuntime(current) &&
+          current.spaceId == space.spaceId &&
+          current.userId.trim() == userId &&
+          current.accessToken == space.accessToken;
+    }
+
     await syncCoordinator.run(
       spaceId: space.spaceId,
       userId: userId,
       rerunIfRunning: rerunIfRunning,
+      canRetry: () =>
+          isCurrent() &&
+          ref.read(connectivityStatusProvider).valueOrNull !=
+              AppConnectivityStatus.offline,
       task: () async {
-        if (disposed) return;
-        final current = ref.read(accountRuntimeCurrentSpaceProvider);
-        if (current?.spaceId != space.spaceId ||
-            current?.userId.trim() != userId) {
-          return;
-        }
+        if (!isCurrent()) return;
         final dio = ref.read(dioProvider);
         await syncCoordinator.runAfterSuccessfulSync(
-          synchronize: () => _syncMessages(dio, space.spaceId, userId, ref),
+          synchronize: () => syncGatewayMessages(
+            dio,
+            space.spaceId,
+            userId,
+            ref,
+            isActive: isCurrent,
+            retryOnTransientFailure: true,
+          ),
           onSynchronized: () async {
-            if (disposed) return;
+            if (!isCurrent()) return;
             final identityKey = '${space.spaceId}:$userId';
             if (!recoveredIdentityKeys.contains(identityKey)) {
               try {
@@ -174,56 +173,50 @@ final gatewayProvider = Provider<GatewayService>((ref) {
                 );
               }
             }
-            if (disposed) return;
-            final afterSync = ref.read(accountRuntimeCurrentSpaceProvider);
-            if (afterSync?.spaceId == space.spaceId &&
-                afterSync?.userId.trim() == userId) {
-              await _flushPendingMessages(dio, space.spaceId, ref);
-              await ref
-                  .read(conversationsProvider(space.spaceId).notifier)
-                  .flushPendingReadReceipts();
-            }
+            if (!isCurrent()) return;
+            await _flushPendingMessages(dio, space.spaceId, ref);
+            if (!isCurrent()) return;
+            await ref
+                .read(conversationsProvider(space.spaceId).notifier)
+                .flushPendingReadReceipts();
           },
         );
       },
     );
   }
 
-  void reconnectForCurrentSite() {
+  void startSync({bool rerunIfRunning = false}) {
+    unawaited(synchronizeCurrentIdentity(rerunIfRunning: rerunIfRunning)
+        .catchError((Object error) {
+      if (disposed) return;
+      AppDiagnostics.instance.warning(
+        'gateway.sync',
+        'runtime recovery failed',
+        scope: diagnosticScope,
+        context: {'errorType': error.runtimeType.toString()},
+      );
+    }));
+  }
+
+  void recoverCurrentRuntime() {
+    if (disposed) return;
     final space = ref.read(accountRuntimeCurrentSpaceProvider);
     if (space == null || !ownsCurrentRuntime(space)) return;
-    connectOnCurrentRoute(space.accessToken).then((connected) {
-      if (connected) {
-        return synchronizeCurrentIdentity(rerunIfRunning: true);
-      }
-    }).catchError((Object error) {
-      AppDiagnostics.instance.warning(
-        'gateway.site_line',
-        'site line reconnect failed',
-        context: {
-          'spaceId': space.spaceId,
-          'siteId': SiteLineManager.instance.currentSite.id,
-          'error': error.toString(),
-        },
-      );
-    });
+    connectOnCurrentRoute(space);
+    startSync(rerunIfRunning: true);
   }
 
   var observedRouteRevision = SiteLineManager.instance.routeRevision;
   void onSiteLineChanged() {
     if (observedRouteRevision == SiteLineManager.instance.routeRevision) return;
     observedRouteRevision = SiteLineManager.instance.routeRevision;
-    reconnectForCurrentSite();
+    recoverCurrentRuntime();
   }
 
   SiteLineManager.instance.addListener(onSiteLineChanged);
 
-  // 重连成功后调用 /sync 补齐离线消息
-  service.onReconnected = () async {
-    if (connectedRouteRevision == SiteLineManager.instance.routeRevision) {
-      await synchronizeCurrentIdentity(rerunIfRunning: true);
-    }
-  };
+  // Close the gap between the HTTP catch-up and a live Hub connection.
+  service.onConnected = () => synchronizeCurrentIdentity(rerunIfRunning: true);
 
   // 监听空间变化
   ref.listen(accountRuntimeCurrentSpaceProvider, (prev, next) {
@@ -235,58 +228,45 @@ final gatewayProvider = Provider<GatewayService>((ref) {
       // or persists settings.
       ref.read(notificationSettingsProvider(next.spaceId));
 
-      // 连接新空间
-      connectOnCurrentRoute(next.accessToken).then((connected) async {
-        if (!connected) return;
-        // 首次连接成功后立即调 /sync 初始化增量游标
-        // 如果已有游标则补齐离线消息，如果没有则拿到初始 nextSinceSeq
-        await synchronizeCurrentIdentity(rerunIfRunning: true);
-      }).catchError((Object error) {
-        AppDiagnostics.instance.warning(
-          'gateway.space',
-          'space reconnect failed',
-          context: {'spaceId': next.spaceId, 'error': error.toString()},
-        );
-      });
-
       // 订阅事件流
       subscription = service.events.listen((event) {
-        _handleEvent(event, next.spaceId, handler, ref);
+        if (disposed) return;
+        if (ownsCurrentRuntime(ref.read(accountRuntimeCurrentSpaceProvider))) {
+          _handleEvent(event, next.spaceId, handler, ref);
+        }
       });
+      connectOnCurrentRoute(next);
+      startSync(
+        rerunIfRunning: prev?.accessToken != next.accessToken ||
+            prev?.spaceId != next.spaceId ||
+            prev?.userId != next.userId,
+      );
     } else {
+      syncCoordinator.cancelPendingRetries();
       subscription?.cancel();
       subscription = null;
-      disconnectCurrentRoute();
+      unawaited(service.disconnect());
     }
   }, fireImmediately: true);
 
-  // 系统网络恢复时主动拉起 Gateway，避免等 SignalR 下一轮退避。
+  final lifecycle = AppLifecycleListener(onResume: recoverCurrentRuntime);
+
+  // A network restore can complete HTTP sync even if the Hub is unavailable.
   ref.listen<AsyncValue<AppConnectivityStatus>>(connectivityStatusProvider,
       (prev, next) {
-    if (next.valueOrNull != AppConnectivityStatus.online) return;
-    final space = ref.read(accountRuntimeCurrentSpaceProvider);
-    if (space == null || !ownsCurrentRuntime(space) || service.isConnected) {
-      return;
+    if (next.valueOrNull == AppConnectivityStatus.offline) {
+      syncCoordinator.cancelPendingRetries();
+    } else if (prev?.valueOrNull == AppConnectivityStatus.offline &&
+        next.valueOrNull == AppConnectivityStatus.online) {
+      recoverCurrentRuntime();
     }
-    connectOnCurrentRoute(space.accessToken)
-        .then((connected) =>
-            connected ? synchronizeCurrentIdentity(rerunIfRunning: true) : null)
-        .catchError((Object error) {
-      AppDiagnostics.instance.warning(
-        'gateway.connectivity',
-        'resume reconnect failed',
-        context: {
-          'spaceId': space.spaceId,
-          'error': error.toString(),
-        },
-      );
-    });
   });
 
   // Provider 销毁时清理
   ref.onDispose(() {
     disposed = true;
-    connectionIntent++;
+    syncCoordinator.cancelPendingRetries();
+    lifecycle.dispose();
     SiteLineManager.instance.removeListener(onSiteLineChanged);
     subscription?.cancel();
     service.dispose();
@@ -304,6 +284,7 @@ final gatewayProvider = Provider<GatewayService>((ref) {
   pendingMessageQueueProvider,
   chatProvider,
   conversationsProvider,
+  groupInvitationNoticeProvider,
   mediaPrefetchControllerProvider,
   spacesProvider,
   friendsProvider,
@@ -427,6 +408,16 @@ void _handleEvent(
         final normalizedMessage = isSelf && !message.isSelf
             ? message.copyWith(isSelf: true)
             : message;
+        if (fallbackType == ConversationType.group &&
+            normalizedMessage.type == MessageType.event &&
+            currentUserId != null) {
+          ref.read(groupInvitationNoticeProvider.notifier).receiveLiveMessage(
+                spaceId: spaceId,
+                userId: currentUserId,
+                type: fallbackType,
+                message: normalizedMessage,
+              );
+        }
         final customerServiceCapabilities =
             ref.read(currentCustomerServiceRoleCapabilitiesProvider);
         final canUseCustomerServiceReception =
@@ -561,7 +552,7 @@ void _handleEvent(
             );
           }
         }));
-        _appendMessageToChatIfKnown(
+        appendGatewayMessageToKnownChat(
           ref,
           spaceId,
           conversationId,
@@ -1017,6 +1008,7 @@ Future<void> _handleFriendRequestChanged(
       requestId: event.requestId,
       status: FriendRequestStatus.fromWire(event.status),
       eventName: event.eventName,
+      autoAccepted: event.autoAccepted,
       peerUserId: event.peerUserId,
       peerDisplayName: event.peerDisplayName,
       peerAvatarUrl: event.peerAvatarUrl,
@@ -1167,169 +1159,249 @@ void _handleMessageRecalled(
 // /sync 补齐离线消息
 // ---------------------------------------------------------------------------
 
-Future<bool> _syncMessages(
+@visibleForTesting
+Future<bool> syncGatewayMessages(
   Dio dio,
   String spaceId,
   String userId,
-  Ref ref,
-) async {
-  try {
-    final currentIdentity = ref.read(accountRuntimeCurrentSpaceProvider);
-    if (currentIdentity?.spaceId != spaceId ||
-        currentIdentity?.userId.trim() != userId ||
-        userId.isEmpty) {
+  Ref ref, {
+  required bool Function() isActive,
+  bool retryOnTransientFailure = false,
+}) async {
+  const pageLimit = 200;
+  const maxPages = 8;
+  final storage = ref.read(accountStorageContextProvider);
+  final routeRevision = SiteLineManager.instance.routeRevision;
+  bool isCurrent() {
+    if (!isActive() ||
+        storage == null ||
+        !identical(storage, ref.read(accountStorageContextProvider)) ||
+        routeRevision != SiteLineManager.instance.routeRevision) {
       return false;
     }
+    final space = ref.read(accountRuntimeCurrentSpaceProvider);
+    return storage.scope.ownsSpace(space) &&
+        space?.spaceId == spaceId &&
+        space?.userId.trim() == userId;
+  }
+
+  int? sinceSeq;
+  int? statusCode;
+  String? serverCode;
+  String? requestId;
+  String? conversationId;
+  int? nextSinceSeq;
+  var stage = 'read_cursor';
+  try {
+    if (!isCurrent()) return false;
     final cursorStore = ref.read(chatSyncCursorStoreProvider);
-    final sinceSeq = cursorStore.read(spaceId: spaceId, userId: userId);
-
-    final response = await dio.get<Map<String, dynamic>>(
-      '/api/client/v1/sync',
-      queryParameters: {
-        if (sinceSeq != null) 'sinceSeq': sinceSeq,
-        'limit': 200,
-      },
-    );
-
-    final body = response.data;
-    if (body == null) return false;
-
-    final data = body['data'] as Map<String, dynamic>?;
-    if (data == null) return false;
-
-    final nextSinceSeq = (data['nextSinceSeq'] as num?)?.toInt();
-    final clearWatermarks = ConversationClearWatermarkModel.parseList(
-      data['clearWatermarks'],
-    );
-    final conversations = data['conversations'] as List<dynamic>? ?? [];
-
     final local = ref.read(chatLocalDataSourceProvider);
-    var syncedMessageCount = 0;
-    var normalConversationChanged = false;
+    sinceSeq = cursorStore.read(spaceId: spaceId, userId: userId);
 
-    for (final watermark in clearWatermarks) {
-      await ref
-          .read(conversationsProvider(spaceId).notifier)
-          .applyClearWatermark(
-            watermark.conversationId,
-            clearedSeq: watermark.clearedSeq,
-            removeConversation: false,
-          );
-      ref.invalidate(chatProvider((spaceId, watermark.conversationId, false)));
-      ref.invalidate(chatProvider((spaceId, watermark.conversationId, true)));
-    }
-
-    for (final convData in conversations) {
-      final conv = convData as Map<String, dynamic>;
-      final syncConversation = GatewaySyncConversationModel.tryParse(
-        conv,
-        currentUserId: userId,
+    for (var pageNumber = 1; pageNumber <= maxPages; pageNumber++) {
+      stage = 'request';
+      statusCode = null;
+      serverCode = null;
+      requestId = null;
+      conversationId = null;
+      nextSinceSeq = null;
+      final response = await dio.get<Map<String, dynamic>>(
+        '/api/client/v1/sync',
+        queryParameters: {
+          if (sinceSeq != null) 'sinceSeq': sinceSeq,
+          'limit': pageLimit,
+        },
       );
-      if (syncConversation == null) continue;
-      final conversationId = syncConversation.conversationId;
+      if (!isCurrent()) return false;
 
-      final existingConvs =
-          ref.read(conversationsProvider(spaceId)).valueOrNull;
-      final existingConv = existingConvs
-          ?.where((c) => c.conversationId == conversationId)
-          .firstOrNull;
-      final convType = syncConversation.conversationType ??
-          existingConv?.type ??
-          ConversationType.direct;
-      final isCustomerServiceConversation =
-          _isCustomerServiceConversation(ref, conversationId, convType);
-      final lastReadSeq = syncConversation.lastReadSeq;
-      final messages = syncConversation.messages;
-      syncedMessageCount += messages.length;
+      stage = 'decode';
+      statusCode = response.statusCode;
+      final body = response.data;
+      serverCode = body?['code']?.toString();
+      requestId = body?['requestId']?.toString();
+      if (serverCode != 'OK') {
+        throw const FormatException('Sync did not return a success response');
+      }
+      final page = GatewaySyncPageModel.fromJson(
+        body?['data'],
+        currentUserId: userId,
+        sinceSeq: sinceSeq,
+      );
+      nextSinceSeq = page.nextSinceSeq;
 
-      if (isCustomerServiceConversation) {
-        await local.deleteConversation(spaceId, conversationId);
-        for (final message in messages) {
-          _appendMessageToChatIfKnown(
+      var conversationChanged = false;
+      for (final watermark in page.clearWatermarks) {
+        stage = 'apply_watermark';
+        conversationId = watermark.conversationId;
+        final previous = local
+            .getConfirmedConversationDeletionState(spaceId, conversationId)
+            ?.deletedThroughSeq;
+        if (previous != null && previous >= watermark.clearedSeq) continue;
+        await ref
+            .read(conversationsProvider(spaceId).notifier)
+            .applyClearWatermark(
+              conversationId,
+              clearedSeq: watermark.clearedSeq,
+              removeConversation: false,
+            );
+        if (!isCurrent()) return false;
+        ref.invalidate(chatProvider((spaceId, conversationId, false)));
+        ref.invalidate(chatProvider((spaceId, conversationId, true)));
+        conversationChanged = true;
+      }
+
+      for (final item in page.conversations) {
+        stage = 'apply_conversation';
+        final id = item.conversationId;
+        conversationId = id;
+        final type =
+            item.conversationType ?? _resolveConversationType(ref, spaceId, id);
+        final fallbackType = type ?? ConversationType.direct;
+        if (_isCustomerServiceConversation(ref, id, fallbackType)) {
+          await local.deleteConversation(spaceId, id);
+          if (!isCurrent()) return false;
+          for (final message in item.messages) {
+            appendGatewayMessageToKnownChat(
+              ref,
+              spaceId,
+              id,
+              message,
+              conversationType: fallbackType,
+            );
+          }
+          _refreshCustomerServiceWorkbench(ref);
+          continue;
+        }
+
+        final committed = await local.applySyncedConversation(
+          spaceId,
+          conversationId: id,
+          fallbackType: fallbackType,
+          messages: item.messages,
+          lastReadSeq: item.lastReadSeq,
+          currentUserId: userId,
+        );
+        if (!isCurrent()) return false;
+
+        stage = 'project_conversation';
+        if (committed.conversation != null) conversationChanged = true;
+        if (committed.messages.isNotEmpty) {
+          for (final notifier in _gatewayChatNotifiers(
             ref,
             spaceId,
-            conversationId,
-            message,
-            conversationType: convType,
-          );
+            id,
+            conversationType: type,
+            initializedOnly: true,
+          )) {
+            ref.read(notifier).mergePersistedMessages(committed.messages);
+          }
+          for (final message in committed.messages) {
+            _refreshGroupDetailIfNeeded(
+              ref,
+              spaceId,
+              id,
+              message,
+              conversationType: type,
+            );
+          }
         }
-        _refreshCustomerServiceWorkbench(ref);
-        continue;
       }
 
-      final syncedConversation = await local.applySyncedConversation(
-        spaceId,
-        conversationId: conversationId,
-        fallbackType: convType,
-        messages: messages,
-        lastReadSeq: lastReadSeq,
-        currentUserId: userId,
-      );
-      if (syncedConversation != null) {
-        normalConversationChanged = true;
+      if (!isCurrent()) return false;
+      conversationId = null;
+      stage = 'commit_cursor';
+      if (conversationChanged) ref.invalidate(conversationsProvider(spaceId));
+      if (!page.canCommitCursor) {
+        throw const FormatException('Invalid or non-advancing sync cursor');
       }
-
-      for (final message in messages) {
-        _appendMessageToChatIfKnown(
-          ref,
-          spaceId,
-          conversationId,
-          message,
-          conversationType: convType,
-        );
-        _refreshGroupDetailIfNeeded(
-          ref,
-          spaceId,
-          conversationId,
-          message,
-          conversationType: convType,
+      if (nextSinceSeq != null) {
+        await cursorStore.write(
+          spaceId: spaceId,
+          userId: userId,
+          sinceSeq: nextSinceSeq,
         );
       }
-    }
-
-    final identityAfterPersistence =
-        ref.read(accountRuntimeCurrentSpaceProvider);
-    if (identityAfterPersistence?.spaceId != spaceId ||
-        identityAfterPersistence?.userId.trim() != userId) {
-      return false;
-    }
-
-    // All conversation batches are durable before advancing the global cursor.
-    if (nextSinceSeq != null) {
-      await cursorStore.write(
-        spaceId: spaceId,
-        userId: userId,
-        sinceSeq: nextSinceSeq,
+      if (!isCurrent()) return false;
+      AppDiagnostics.instance.info(
+        'gateway.sync',
+        'page committed',
+        context: {
+          'spaceId': spaceId,
+          'userId': userId,
+          'stage': 'commit_cursor',
+          'requestId': requestId,
+          'sinceSeq': sinceSeq,
+          'nextSinceSeq': nextSinceSeq,
+          'page': pageNumber,
+          'conversationCount': page.conversations.length,
+          'messageCount': page.messageCount,
+        },
       );
+      if (page.messageCount < pageLimit) return true;
+      sinceSeq = nextSinceSeq;
     }
-    if (normalConversationChanged || clearWatermarks.isNotEmpty) {
-      ref.invalidate(conversationsProvider(spaceId));
-    }
-    AppDiagnostics.instance.info(
+    AppDiagnostics.instance.warning(
       'gateway.sync',
-      'completed',
-      context: {
-        'spaceId': spaceId,
-        'userId': userId,
-        'sinceSeq': sinceSeq,
-        'nextSinceSeq': nextSinceSeq,
-        'conversationCount': conversations.length,
-        'messageCount': syncedMessageCount,
-      },
+      'page limit reached before catch-up completed',
+      context: {'spaceId': spaceId, 'userId': userId, 'sinceSeq': sinceSeq},
     );
-    return true;
+    if (retryOnTransientFailure) {
+      throw const GatewaySyncTemporarilyUnavailable();
+    }
+    return false;
+  } on GatewaySyncTemporarilyUnavailable {
+    rethrow;
   } catch (error) {
+    if (!isCurrent()) return false;
+    if (error is DioException) {
+      statusCode = error.response?.statusCode;
+      final body = error.response?.data;
+      if (body is Map<String, dynamic>) {
+        serverCode = body['code']?.toString();
+        requestId = body['requestId']?.toString();
+      }
+    }
     AppDiagnostics.instance.warning(
       'gateway.sync',
       'failed',
       context: {
         'spaceId': spaceId,
-        'error': error.toString(),
+        'userId': userId,
+        'conversationId': conversationId,
+        'sinceSeq': sinceSeq,
+        'nextSinceSeq': nextSinceSeq,
+        'stage': stage,
+        'statusCode': statusCode,
+        'serverCode': serverCode,
+        'requestId': requestId,
+        'errorType': error.runtimeType.toString(),
       },
     );
-    // 同步失败时禁止恢复或重发，避免已被服务端接受的消息重复 POST。
+    if (retryOnTransientFailure &&
+        stage == 'request' &&
+        error is DioException &&
+        _isTransientSyncFailure(error)) {
+      throw const GatewaySyncTemporarilyUnavailable();
+    }
+    // Only flush pending sends after the offline stream has caught up.
     return false;
   }
+}
+
+bool _isTransientSyncFailure(DioException error) {
+  final statusCode = error.response?.statusCode;
+  if (statusCode == 408 ||
+      (statusCode != null && statusCode >= 500 && statusCode < 600)) {
+    return true;
+  }
+  return switch (error.type) {
+    DioExceptionType.connectionTimeout ||
+    DioExceptionType.sendTimeout ||
+    DioExceptionType.receiveTimeout ||
+    DioExceptionType.connectionError =>
+      true,
+    _ => false,
+  };
 }
 
 Future<void> _flushPendingMessages(Dio dio, String spaceId, Ref ref) async {
@@ -1380,7 +1452,7 @@ Future<void> _flushPendingMessages(Dio dio, String spaceId, Ref ref) async {
           pendingMessage.conversationId,
           confirmed,
         );
-        _appendMessageToChatIfKnown(
+        appendGatewayMessageToKnownChat(
           ref,
           spaceId,
           pendingMessage.conversationId,
@@ -1410,7 +1482,7 @@ Future<void> _flushPendingMessages(Dio dio, String spaceId, Ref ref) async {
           pendingMessage.conversationId,
           retrying,
         );
-        _appendMessageToChatIfKnown(
+        appendGatewayMessageToKnownChat(
           ref,
           spaceId,
           pendingMessage.conversationId,
@@ -1442,7 +1514,7 @@ Future<void> _flushPendingMessages(Dio dio, String spaceId, Ref ref) async {
           pendingMessage.conversationId,
           failed,
         );
-        _appendMessageToChatIfKnown(
+        appendGatewayMessageToKnownChat(
           ref,
           spaceId,
           pendingMessage.conversationId,
@@ -1456,7 +1528,7 @@ Future<void> _flushPendingMessages(Dio dio, String spaceId, Ref ref) async {
           pendingMessage.clientMsgId,
         );
         if (confirmed != null) {
-          _appendMessageToChatIfKnown(
+          appendGatewayMessageToKnownChat(
             ref,
             spaceId,
             pendingMessage.conversationId,
@@ -1480,7 +1552,7 @@ Future<void> _flushPendingMessages(Dio dio, String spaceId, Ref ref) async {
           pendingMessage.conversationId,
           unresolved,
         );
-        _appendMessageToChatIfKnown(
+        appendGatewayMessageToKnownChat(
           ref,
           spaceId,
           pendingMessage.conversationId,
@@ -1529,23 +1601,60 @@ Future<Message?> _findLocalPendingMessage(
   return null;
 }
 
-void _appendMessageToChatIfKnown(
+/// Delivers through the existing timeline reducer even before its directory
+/// entry is available. Missing routing metadata must never create a guessed
+/// direct/group timeline; only already initialized instances can be reused.
+void appendGatewayMessageToKnownChat(
   Ref ref,
   String spaceId,
   String conversationId,
   Message message, {
   ConversationType? conversationType,
 }) {
+  final space = ref.read(accountRuntimeCurrentSpaceProvider);
+  if (space == null ||
+      space.spaceId != spaceId ||
+      message.conversationId != conversationId) {
+    return;
+  }
+  for (final notifier in _gatewayChatNotifiers(
+    ref,
+    spaceId,
+    conversationId,
+    conversationType: conversationType,
+    initializedOnly: false,
+  )) {
+    try {
+      ref.read(notifier).appendMessage(message);
+    } catch (_) {}
+  }
+}
+
+Iterable<ProviderListenable<ChatNotifier>> _gatewayChatNotifiers(
+  Ref ref,
+  String spaceId,
+  String conversationId, {
+  required ConversationType? conversationType,
+  required bool initializedOnly,
+}) sync* {
   final resolvedType = conversationType ??
       _resolveConversationType(ref, spaceId, conversationId);
-  if (resolvedType == null) return;
-
-  final isGroup = _isGroupConversationType(resolvedType);
-  try {
-    ref
-        .read(chatProvider((spaceId, conversationId, isGroup)).notifier)
-        .appendMessage(message);
-  } catch (_) {}
+  final routes = resolvedType == null
+      ? const [false, true]
+      : [_isGroupConversationType(resolvedType)];
+  for (final isGroup in routes) {
+    final timeline = chatProvider((spaceId, conversationId, isGroup));
+    if (initializedOnly || resolvedType == null) {
+      // exists() also sees ancestor runtime elements. Reuse only those owned
+      // by the current account container.
+      final initializedHere = ref.exists(timeline) &&
+          ref.container
+              .getAllProviderElements()
+              .any((element) => element.origin == timeline);
+      if (!initializedHere) continue;
+    }
+    yield timeline.notifier;
+  }
 }
 
 ConversationType? _resolveConversationType(
@@ -1685,6 +1794,12 @@ Future<void> _showGatewayMessageNotificationIfAllowed({
   required bool isTimelineEvent,
   CustomerServiceIncomingMessage? customerServiceMessage,
 }) async {
+  if (ref.read(accountStorageContextProvider) != null &&
+      !await ref
+          .read(chatLocalDataSourceProvider)
+          .isConversationDirectoryVisible(spaceId, conversationId)) {
+    return;
+  }
   if (fallbackType == ConversationType.group &&
       ref.read(appUpdateGroupFeaturesBlockedProvider)) {
     AppDiagnostics.instance.info(

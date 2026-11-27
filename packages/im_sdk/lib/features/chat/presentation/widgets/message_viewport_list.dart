@@ -14,6 +14,7 @@ class MessageViewportList extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
   final bool reverse;
   final MessageViewportChanged onViewportChanged;
+  final ValueChanged<List<String>>? onVisibleItemsMeasured;
 
   const MessageViewportList({
     super.key,
@@ -21,6 +22,7 @@ class MessageViewportList extends StatefulWidget {
     required this.itemBuilder,
     required this.scrollController,
     required this.onViewportChanged,
+    this.onVisibleItemsMeasured,
     this.padding,
     this.reverse = false,
   });
@@ -114,6 +116,7 @@ class _MessageViewportListState extends State<MessageViewportList> {
     visible.sort((a, b) => a.top.compareTo(b.top));
     if (_preserveVisibleAnchor(visible, viewportRect)) return;
     final visibleIds = visible.map((item) => item.id).toList(growable: false);
+    widget.onVisibleItemsMeasured?.call(visibleIds);
     if (_sameIds(visibleIds, _lastVisibleIds) &&
         _isScrolling == _lastReportedScrolling) {
       return;

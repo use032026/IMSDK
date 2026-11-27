@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/providers/locale_provider.dart';
 import 'package:im_sdk/core/network/error_handler.dart';
 import 'package:im_sdk/core/permissions/app_permissions.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/core/storage/account_storage_context_provider.dart';
 import 'package:im_sdk/features/contacts/application/friend_relation_status.dart';
@@ -29,6 +33,8 @@ class AddFriendPage extends ConsumerStatefulWidget {
 class _AddFriendPageState extends ConsumerState<AddFriendPage> {
   final _searchCtrl = TextEditingController();
   String _query = '';
+  String? _submittedQuery;
+  int _searchRevision = 0;
   bool _loading = false;
   String? _submittingUserId;
   List<Contact> _results = [];
@@ -41,13 +47,17 @@ class _AddFriendPageState extends ConsumerState<AddFriendPage> {
     super.dispose();
   }
 
-  Future<void> _search() async {
+  Future<void> _search({bool preserveResults = false}) async {
+    final q = _searchCtrl.text.trim();
+    if (q.isEmpty) return;
+    final revision = ++_searchRevision;
+    _submittedQuery = q;
     final l10n = AppLocalizations.of(context);
     final space = ref.read(currentSpaceProvider);
     final sourceSession =
         ref.read(currentAccountOperationContextProvider)?.sessionId;
     bool isCurrentSearch() {
-      if (!mounted) return false;
+      if (!mounted || revision != _searchRevision) return false;
       final current = ref.read(currentSpaceProvider);
       return current?.spaceId == space?.spaceId &&
           current?.userId == space?.userId &&
@@ -55,13 +65,10 @@ class _AddFriendPageState extends ConsumerState<AddFriendPage> {
               sourceSession;
     }
 
-    final q = _searchCtrl.text.trim();
-    if (q.isEmpty) return;
-
     setState(() {
       _loading = true;
       _errorMsg = null;
-      _results = [];
+      if (!preserveResults) _results = [];
     });
 
     try {
@@ -94,7 +101,7 @@ class _AddFriendPageState extends ConsumerState<AddFriendPage> {
       if (!isCurrentSearch()) return;
       setState(() => _errorMsg = l10n.commonOperationFailed);
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (isCurrentSearch()) setState(() => _loading = false);
     }
   }
 
@@ -222,6 +229,11 @@ class _AddFriendPageState extends ConsumerState<AddFriendPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(localeProvider, (previous, next) {
+      if (previous == next || _submittedQuery != _searchCtrl.text.trim())
+        return;
+      unawaited(_search(preserveResults: true));
+    });
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
@@ -423,6 +435,7 @@ class _AddFriendPageState extends ConsumerState<AddFriendPage> {
         if (user.officialAccount != null) {
           return OfficialAccountSearchTile(
             card: user.officialAccount!,
+            sdkSingleSpace: widget.messagingOnly,
             onTap: () => _openProfile(user),
           );
         }
@@ -453,11 +466,14 @@ class _AddFriendPageState extends ConsumerState<AddFriendPage> {
               size: 48,
               borderRadius: 24,
             ),
-            title: Text(user.displayName,
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: colors.onSurface)),
+            title: OfficialVerifiedName(
+              verified: user.showOfficialVerification,
+              name: Text(user.displayName,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: colors.onSurface)),
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -472,6 +488,17 @@ class _AddFriendPageState extends ConsumerState<AddFriendPage> {
                           fontSize: 12, color: colors.onSurfaceVariant),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
+                if (isIncomingPending)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      l10n.scanIncomingFriendRequest,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.primary,
+                      ),
+                    ),
+                  ),
               ],
             ),
             trailing: ElevatedButton(

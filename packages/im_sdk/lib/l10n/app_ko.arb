@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "시스템 공유 작업이 완료되었습니다. 대상 앱에서 파일을 확인하세요.",
   "diagnosticsCancelled": "공유가 취소되었습니다. 다시 내보낼 수 있습니다.",
   "diagnosticsUnconfirmed": "공유 결과를 확인할 수 없습니다. 대상 앱을 확인하세요.",
-  "diagnosticsFailed": "작업에 실패했습니다. 다시 시도하세요."
+  "diagnosticsFailed": "작업에 실패했습니다. 다시 시도하세요.",
+  "scanIncomingFriendRequest": "상대방이 이미 친구 요청을 보냈습니다. 먼저 확인해 주세요.",
+  "chatGroupAddedToGroup": "그룹 채팅에 추가되었습니다",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "즐겨찾기 추가 결과를 확인할 수 없습니다. 다시 시도해 주세요",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

@@ -104,6 +104,9 @@ class ContactsDirectoryLocalDataSource {
         isOnline: map['isOnline'] as bool? ?? false,
         customerTag: map['customerTag'] as String?,
         userType: map['userType'] as int?,
+        isOfficial: map['isOfficial'] == true,
+        isOfficialVerified: map['isOfficialVerified'] == true,
+        officialAccountKind: map['officialAccountKind'] as String?,
       );
 
   static Map<String, Object?> _contactToMap(Contact contact) => {
@@ -114,6 +117,9 @@ class ContactsDirectoryLocalDataSource {
         'isOnline': contact.isOnline,
         'customerTag': contact.customerTag,
         'userType': contact.userType,
+        'isOfficial': contact.isOfficial || contact.officialAccount != null,
+        'isOfficialVerified': contact.isOfficialVerified,
+        'officialAccountKind': contact.officialAccountKind,
       };
 
   static Department _departmentFromMap(Map<String, dynamic> map) => Department(

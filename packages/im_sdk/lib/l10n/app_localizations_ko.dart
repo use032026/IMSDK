@@ -3252,4 +3252,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => '작업에 실패했습니다. 다시 시도하세요.';
+
+  @override
+  String get scanIncomingFriendRequest => '상대방이 이미 친구 요청을 보냈습니다. 먼저 확인해 주세요.';
+
+  @override
+  String get chatGroupAddedToGroup => '그룹 채팅에 추가되었습니다';
+
+  @override
+  String get chatFavoriteUnconfirmed => '즐겨찾기 추가 결과를 확인할 수 없습니다. 다시 시도해 주세요';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
 import 'package:im_sdk/core/diagnostics/media_diagnostics.dart';
 import 'package:im_sdk/core/media/image_resource.dart';
+import 'package:im_sdk/core/media/media_access_retry.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
+import 'package:im_sdk/core/network/chat_media_url.dart';
 import 'package:im_sdk/core/runtime/account_operation_guard.dart';
 
 /// Downloads through the existing credential owner, never stores tokens.
@@ -17,6 +20,8 @@ class ImageDownloadTransport {
     this.accountDio,
     this.adminDio,
     this.adminBaseUrl,
+    this.refresh,
+    this.kind = DiagnosticMediaKind.image,
   });
 
   final Dio publicDio;
@@ -27,12 +32,24 @@ class ImageDownloadTransport {
   final bool Function() isCurrent;
   final String namespace;
   final DiagnosticScope diagnosticScope;
+  final MediaUrlRefresh? refresh;
+  final DiagnosticMediaKind kind;
 
-  Future<FileServiceResponse> get(String url,
+  Future<FileServiceResponse> get(String url, {Map<String, String>? headers}) {
+    return MediaAccessRetry(refresh: refresh, isCurrent: isCurrent).run(
+      url: url,
+      context: MediaRequestContext.fromHeaders(headers),
+      canFallback: (value) =>
+          ChatMediaRequest.resolve(value, apiBaseUrl()).accountPath != null,
+      load: (value) => _get(value, headers: headers),
+    );
+  }
+
+  Future<FileServiceResponse> _get(String url,
       {Map<String, String>? headers}) async {
     final diagnostic = MediaDiagnosticOperation(
       scope: diagnosticScope,
-      kind: DiagnosticMediaKind.image,
+      kind: kind,
       resource: url,
     );
     var resource =

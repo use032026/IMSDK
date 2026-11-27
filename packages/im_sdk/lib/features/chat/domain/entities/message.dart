@@ -339,11 +339,13 @@ class MessageBody {
 class EventDto {
   final String? type;
   final String? text;
+  final List<String> addedUserIds;
   final Map<String, dynamic> raw;
 
   const EventDto({
     this.type,
     this.text,
+    this.addedUserIds = const [],
     this.raw = const {},
   });
 
@@ -354,12 +356,23 @@ class EventDto {
         json['content'] as String? ??
         _formatGroupMemberText(json, type) ??
         _formatTapTapText(json);
+    final addedUsers = json['addedUserIds'];
     return EventDto(
       type: type,
       text: text,
+      addedUserIds: addedUsers is List
+          ? List.unmodifiable(
+              addedUsers.whereType<String>().map((id) => id.trim()),
+            )
+          : const [],
       raw: Map<String, dynamic>.from(json),
     );
   }
+
+  bool addsUser(String userId) =>
+      type == 'members_added' &&
+      userId.isNotEmpty &&
+      addedUserIds.contains(userId);
 
   static String? _formatGroupMemberText(
     Map<String, dynamic> json,
@@ -491,11 +504,15 @@ class EventDto {
       : {
           if (type != null) 'type': type,
           if (text != null) 'text': text,
+          if (addedUserIds.isNotEmpty) 'addedUserIds': addedUserIds,
         };
 }
 
 class MediaResource {
   final String url;
+  final String? signedUrl;
+  final String? downloadUrl;
+  final String? mediaId;
   final String? fileName;
   final String? mimeType;
   final int? sizeBytes;
@@ -508,6 +525,9 @@ class MediaResource {
 
   const MediaResource({
     required this.url,
+    this.signedUrl,
+    this.downloadUrl,
+    this.mediaId,
     this.fileName,
     this.mimeType,
     this.sizeBytes,
@@ -519,9 +539,16 @@ class MediaResource {
     this.localPosterUrl,
   });
 
+  String get displayUrl => _nonEmptyAccessUrl(signedUrl) ?? url;
+
+  String get downloadSourceUrl => _nonEmptyAccessUrl(downloadUrl) ?? displayUrl;
+
   factory MediaResource.fromJson(Map<String, dynamic> json) {
     return MediaResource(
       url: json['url'] as String,
+      signedUrl: json['signedUrl'] as String?,
+      downloadUrl: json['downloadUrl'] as String?,
+      mediaId: json['mediaId'] as String?,
       fileName: json['fileName'] as String?,
       mimeType: json['mimeType'] as String?,
       sizeBytes: json['sizeBytes'] as int?,
@@ -536,6 +563,9 @@ class MediaResource {
 
   MediaResource copyWith({
     String? url,
+    String? signedUrl,
+    String? downloadUrl,
+    String? mediaId,
     String? fileName,
     String? mimeType,
     int? sizeBytes,
@@ -548,6 +578,9 @@ class MediaResource {
   }) {
     return MediaResource(
       url: url ?? this.url,
+      signedUrl: signedUrl ?? this.signedUrl,
+      downloadUrl: downloadUrl ?? this.downloadUrl,
+      mediaId: mediaId ?? this.mediaId,
       fileName: fileName ?? this.fileName,
       mimeType: mimeType ?? this.mimeType,
       sizeBytes: sizeBytes ?? this.sizeBytes,
@@ -576,9 +609,18 @@ class MediaResource {
   Map<String, dynamic> toLocalJson() {
     return {
       ...toJson(),
+      // Access links belong to received/local snapshots, not send payloads.
+      if (signedUrl != null) 'signedUrl': signedUrl,
+      if (downloadUrl != null) 'downloadUrl': downloadUrl,
+      if (mediaId != null) 'mediaId': mediaId,
       if (localPreviewUrl != null) 'localPreviewUrl': localPreviewUrl,
       if (localPosterUrl != null) 'localPosterUrl': localPosterUrl,
     };
+  }
+
+  static String? _nonEmptyAccessUrl(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
   }
 }
 

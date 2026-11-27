@@ -21,6 +21,25 @@ fi
 python3 "$IMSDK_ROOT/scripts/prepare_module.py"
 (
   cd "$IMSDK_ROOT/module"
+  # Flutter 3.41.9 passes all architecture names in one -verify_arch call.
+  # Xcode 27.2 accepts only one name per call. Verify each architecture.
+  export IMSDK_XCODE_LIPO="$(xcrun --find lipo)"
+  lipo_dir="$(mktemp -d "$IMSDK_ROOT/module/.dart_tool/imsdk-lipo.XXXXXX")"
+  trap 'rm -f -- "$lipo_dir/lipo"; rmdir -- "$lipo_dir"' EXIT
+  cat > "$lipo_dir/lipo" <<'LIPO'
+#!/usr/bin/env bash
+if [[ "${2:-}" == "-verify_arch" && $# -gt 3 ]]; then
+  binary="$1"
+  shift 2
+  for architecture in "$@"; do
+    "$IMSDK_XCODE_LIPO" "$binary" -verify_arch "$architecture" || exit $?
+  done
+  exit 0
+fi
+exec "$IMSDK_XCODE_LIPO" "$@"
+LIPO
+  chmod +x "$lipo_dir/lipo"
+  export PATH="$lipo_dir:$PATH"
   imsdk_log "ios-$mode" "$IMSDK_FLUTTER_BIN" --no-version-check build ios-framework --no-pub "${mode_args[@]}" --output "$IMSDK_ROOT/dist/ios" "$@"
 )
 case "$mode" in

@@ -19,7 +19,7 @@ class AppDatabase {
   static final Object _migrationDatabaseKey = Object();
 
   // ── 当前 Schema 版本 ──────────────────────────────────────────────────────
-  static const int _currentVersion = 8;
+  static const int _currentVersion = 9;
 
   // ── DDL：conversations 表 ─────────────────────────────────────────────────
   static const String _createConversationsTable = '''
@@ -142,6 +142,11 @@ class AppDatabase {
     ],
     8: [
       createPendingReadReceiptsTable,
+    ],
+    9: [
+      // Earlier versions queued receipts using the summary's last message,
+      // without recording whether it was displayed. Never replay those rows.
+      'DELETE FROM pending_read_receipts',
     ],
   };
 

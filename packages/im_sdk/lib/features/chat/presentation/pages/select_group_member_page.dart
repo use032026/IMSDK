@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/utils/debouncer.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/chat/presentation/pages/group_settings_page.dart';
 
@@ -310,8 +311,12 @@ class _MemberTile extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(member.displayName,
-                  style: TextStyle(fontSize: 15, color: colorScheme.onSurface)),
+              child: OfficialVerifiedName(
+                verified: member.showOfficialVerification,
+                name: Text(member.displayName,
+                    style:
+                        TextStyle(fontSize: 15, color: colorScheme.onSurface)),
+              ),
             ),
           ],
         ),

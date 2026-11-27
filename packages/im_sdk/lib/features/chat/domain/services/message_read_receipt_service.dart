@@ -3,6 +3,22 @@ import 'package:im_sdk/features/chat/domain/entities/message.dart';
 class MessageReadReceiptService {
   const MessageReadReceiptService();
 
+  int lastDisplayedSeq(
+    Iterable<Message> displayed, {
+    int? throughSeq,
+  }) {
+    var latest = 0;
+    for (final message in displayed) {
+      final seq = message.conversationSeq;
+      if (message.status.isServerUsable &&
+          seq > latest &&
+          (throughSeq == null || seq <= throughSeq)) {
+        latest = seq;
+      }
+    }
+    return latest;
+  }
+
   List<Message> applyDirectPeerReadSeq(
     List<Message> messages, {
     required String currentUserId,

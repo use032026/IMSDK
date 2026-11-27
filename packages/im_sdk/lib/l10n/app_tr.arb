@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Sistem paylaşımı tamamlandı. Dosyayı alıcı uygulamada doğrulayın.",
   "diagnosticsCancelled": "Paylaşım iptal edildi. Yeniden dışa aktarabilirsiniz.",
   "diagnosticsUnconfirmed": "Paylaşım doğrulanamadı. Alıcı uygulamayı kontrol edin.",
-  "diagnosticsFailed": "İşlem başarısız. Tekrar deneyin."
+  "diagnosticsFailed": "İşlem başarısız. Tekrar deneyin.",
+  "scanIncomingFriendRequest": "Bu kişi size zaten arkadaşlık isteği gönderdi. Önce inceleyin.",
+  "chatGroupAddedToGroup": "Grup sohbetine eklendiniz",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Favorilere ekleme sonucu doğrulanamadı. Yeniden deneyin",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

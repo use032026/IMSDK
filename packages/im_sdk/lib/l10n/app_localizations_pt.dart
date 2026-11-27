@@ -3349,6 +3349,20 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Falha na operação. Tente novamente.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Esta pessoa já enviou uma solicitação de amizade para você. Analise-a primeiro.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Adicionaram você ao chat em grupo';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Não foi possível confirmar a adição aos favoritos. Tente novamente';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -6698,4 +6712,18 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get diagnosticsFailed => 'Falha na operação. Tente de novo.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Esta pessoa já enviou uma solicitação de amizade para si. Analise-a primeiro.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Adicionaram-te à conversa de grupo';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Não foi possível confirmar a adição aos favoritos. Tente novamente';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

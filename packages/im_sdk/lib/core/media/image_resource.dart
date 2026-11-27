@@ -1,11 +1,14 @@
 import 'package:im_sdk/core/network/trusted_media_url.dart';
+import 'package:im_sdk/core/network/chat_media_url.dart';
 
 enum ImageRequestAccess { public, client, platform, admin }
 
 /// URL and credential policy only; no widget or token ownership.
 class ImageResource {
   ImageResource(String raw, String apiBaseUrl, {String? adminBaseUrl})
-      : uri = _resolve(raw, apiBaseUrl, adminBaseUrl),
+      : uri = ChatMediaRequest.resolve(
+                _resolve(raw, apiBaseUrl, adminBaseUrl).toString(), apiBaseUrl)
+            .uri,
         _apiBaseUrl = apiBaseUrl,
         _adminBaseUrl = adminBaseUrl;
 
@@ -22,6 +25,7 @@ class ImageResource {
     if (uri.userInfo.isNotEmpty) {
       throw ArgumentError('Network image URL cannot contain credentials');
     }
+    if (hasChatMediaSignature(uri)) return ImageRequestAccess.public;
     final clientPath = _pathWithinBase(uri, _apiBaseUrl);
     final adminPath =
         _adminBaseUrl == null ? null : _pathWithinBase(uri, _adminBaseUrl);

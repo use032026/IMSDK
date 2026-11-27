@@ -2,7 +2,7 @@
   "generatedBy": "im_l10n_catalog",
   "schemaVersion": 1,
   "catalogPackage": "im_l10n_catalog",
-  "catalogVersion": "0.3.0",
+  "catalogVersion": "0.3.15",
   "locales": [
     "zh",
     "zh_TW",
@@ -1098,7 +1098,11 @@
     "diagnosticsShared",
     "diagnosticsCancelled",
     "diagnosticsUnconfirmed",
-    "diagnosticsFailed"
+    "diagnosticsFailed",
+    "scanIncomingFriendRequest",
+    "chatGroupAddedToGroup",
+    "chatFavoriteUnconfirmed",
+    "officialAccountVerifiedBadge"
   ],
   "excludeKeys": [],
   "overrides": {
@@ -1142,5 +1146,5 @@
   "outputClass": "AppLocalizations",
   "profile": "im_sdk",
   "layout": "flat",
-  "bundleSha256": "3bf7a54aa764d7b7d3dcba65b0b78722ff600e3e75b3ee7be23cbde6086737e0"
+  "bundleSha256": "9af323a64e7a895b7b348d131e89b3eb3670c0e62d4d143a2d5c3ea02d558b65"
 }

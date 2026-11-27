@@ -3359,4 +3359,18 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get diagnosticsFailed =>
       'De bewerking is mislukt. Probeer het opnieuw.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Deze persoon heeft u al een vriendschapsverzoek gestuurd. Beoordeel dat eerst.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Je bent toegevoegd aan de groepschat';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Het toevoegen aan favorieten kon niet worden bevestigd. Probeer het opnieuw';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/domain/official_verification.dart';
 import 'package:im_sdk/core/permissions/app_permissions.dart';
 import 'package:im_sdk/core/widgets/app_toast.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/chat/presentation/controllers/conversation_actions_controller.dart';
 import 'package:im_sdk/features/chat/presentation/pages/complaint_page.dart';
@@ -31,6 +33,7 @@ class _ChatSettingsPageState extends ConsumerState<ChatSettingsPage> {
   String? _peerUserId;
   String? _peerName;
   String? _peerAvatarUrl;
+  bool _showOfficialVerification = false;
 
   @override
   void initState() {
@@ -51,6 +54,12 @@ class _ChatSettingsPageState extends ConsumerState<ChatSettingsPage> {
           _peerUserId = data['peerUserId'] as String?;
           _peerName = data['peerDisplayName'] as String?;
           _peerAvatarUrl = data['peerAvatarUrl'] as String?;
+          _showOfficialVerification = showsOfficialVerification(
+            verified: data['peerOfficialVerified'] == true,
+            officialAccountKind: data['officialAccountKind'],
+            isOfficialAccount: data['isOfficialServiceUser'] == true ||
+                data['officialAccount'] != null,
+          );
           _isLoading = false;
         });
       }
@@ -228,15 +237,18 @@ class _ChatSettingsPageState extends ConsumerState<ChatSettingsPage> {
                   const SizedBox(height: 4),
                   SizedBox(
                     width: 56,
-                    child: Text(
-                      _peerName ?? '联系人',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: colorScheme.onSurfaceVariant,
+                    child: OfficialVerifiedName(
+                      verified: _showOfficialVerification,
+                      name: Text(
+                        _peerName ?? '联系人',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],

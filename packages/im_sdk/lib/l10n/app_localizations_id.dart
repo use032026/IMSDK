@@ -3334,4 +3334,18 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Operasi gagal. Silakan coba lagi.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Orang ini sudah mengirim permintaan pertemanan kepada Anda. Tinjau terlebih dahulu.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Anda telah ditambahkan ke chat grup';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Hasil penambahan ke favorit belum dapat dikonfirmasi. Coba lagi';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

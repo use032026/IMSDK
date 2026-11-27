@@ -121,7 +121,10 @@ class UserProfileNotifier extends FamilyAsyncNotifier<UserProfile, String> {
         bubbleId: contact.userId,
         isFriend: true,
         userType: contact.isCustomer ? 1 : 2,
+        isOfficial: contact.isOfficial,
         officialAccount: contact.officialAccount,
+        isOfficialVerified: contact.isOfficialVerified,
+        officialAccountKind: contact.officialAccountKind,
       );
     }
     return null;
@@ -158,6 +161,8 @@ class UserProfileNotifier extends FamilyAsyncNotifier<UserProfile, String> {
       userType: current.userType,
       isOfficial: current.isOfficial,
       officialAccount: current.officialAccount,
+      isOfficialVerified: current.isOfficialVerified,
+      officialAccountKind: current.officialAccountKind,
     );
     state = AsyncData(updated);
     await _saveToCache(space.spaceId, updated);

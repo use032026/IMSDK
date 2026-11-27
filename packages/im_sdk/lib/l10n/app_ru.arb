@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Системная отправка завершена. Проверьте файл в принимающем приложении.",
   "diagnosticsCancelled": "Отправка отменена. Можно экспортировать снова.",
   "diagnosticsUnconfirmed": "Не удалось подтвердить отправку. Проверьте принимающее приложение.",
-  "diagnosticsFailed": "Не удалось выполнить действие. Повторите попытку."
+  "diagnosticsFailed": "Не удалось выполнить действие. Повторите попытку.",
+  "scanIncomingFriendRequest": "Этот человек уже отправил вам запрос в друзья. Сначала рассмотрите его.",
+  "chatGroupAddedToGroup": "Вас добавили в групповой чат",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Не удалось подтвердить добавление в избранное. Повторите попытку",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

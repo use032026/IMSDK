@@ -8,6 +8,7 @@ import 'package:im_sdk/core/storage/account_storage_context_provider.dart';
 import 'package:im_sdk/features/chat/application/chat_draft_write_coordinator.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 import 'package:im_sdk/features/chat/domain/services/chat_text_send_draft_policy.dart';
+import 'package:im_sdk/features/chat/domain/services/message_send_policy.dart';
 import 'package:im_sdk/features/chat/presentation/providers/chat_draft_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/chat_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/chat_local_resources_provider.dart';
@@ -19,12 +20,15 @@ final conversationActionsControllerProvider =
   dependencies: [
     dioProvider,
     chatDraftLocalStoreProvider,
+    chatLocalDataSourceProvider,
     chatDraftProvider,
     pendingMessageQueueProvider,
     conversationsProvider,
     accountRuntimeCurrentSpaceProvider,
   ],
 );
+
+enum FavoriteAddResult { created, alreadyExists, unconfirmed }
 
 class ConversationActionsController {
   final Ref _ref;
@@ -111,22 +115,45 @@ class ConversationActionsController {
     _throwIfApiFailed(response.data);
   }
 
-  Future<void> addFavorite({
+  Future<FavoriteAddResult> addFavorite({
     required String messageId,
     required String conversationId,
   }) async {
     final dio = _ref.read(dioProvider);
-    final response = await dio.post<Map<String, dynamic>>(
-      '/api/client/v1/favorites',
-      data: {
-        'messageId': messageId,
-        'conversationId': conversationId,
-      },
-    );
-    _throwIfApiFailed(response.data);
-    if (!_hasPayloadValue(response.data, const ['favoriteId', 'messageId'])) {
-      throw StateError('Favorite response missing identifier');
+    Response<Map<String, dynamic>> response;
+    try {
+      response = await dio.post<Map<String, dynamic>>(
+        '/api/client/v1/favorites',
+        data: {'messageId': messageId, 'conversationId': conversationId},
+      );
+    } on DioException catch (error) {
+      final data = error.response?.data;
+      if (data is Map && data['code'] == 'FAVORITE_EXISTS') {
+        return FavoriteAddResult.alreadyExists;
+      }
+      if (error.response == null && error.type != DioExceptionType.cancel) {
+        return FavoriteAddResult.unconfirmed;
+      }
+      rethrow;
     }
+    final body = response.data;
+    final code = body?['code'];
+    if (code == 'FAVORITE_EXISTS') return FavoriteAddResult.alreadyExists;
+    if (code is! String || code.isEmpty) return FavoriteAddResult.unconfirmed;
+    _throwIfApiFailed(body);
+    final data = body?['data'];
+    if (data is! Map ||
+        data['favoriteId'] is! String ||
+        (data['favoriteId'] as String).trim().isEmpty ||
+        data['messageId'] != messageId ||
+        data['conversationId'] != conversationId ||
+        DateTime.tryParse(data['createdAt'] is String
+                ? data['createdAt'] as String
+                : '') ==
+            null) {
+      return FavoriteAddResult.unconfirmed;
+    }
+    return FavoriteAddResult.created;
   }
 
   Future<String?> voiceToText(String messageId) async {
@@ -172,16 +199,54 @@ class ConversationActionsController {
     required List<String> sourceMessageIds,
     required String targetConversationId,
   }) async {
+    await _requireWritableConversation(targetConversationId);
     for (final sourceMessageId in sourceMessageIds) {
       try {
         await _forwardSingleMessage(sourceMessageId, targetConversationId);
       } on _ForwardUnconfirmedException {
         rethrow;
+      } on DioException catch (error) {
+        if (error.response?.statusCode == 403) rethrow;
+        await _forwardMessageBatch(
+            <String>[sourceMessageId], targetConversationId);
       } catch (_) {
         await _forwardMessageBatch(
             <String>[sourceMessageId], targetConversationId);
       }
     }
+  }
+
+  Future<void> _requireWritableConversation(String conversationId) async {
+    final space = _ref.read(accountRuntimeCurrentSpaceProvider);
+    if (space == null) return;
+    final inMemory = _ref
+        .read(conversationsProvider(space.spaceId))
+        .valueOrNull
+        ?.where((conversation) => conversation.conversationId == conversationId)
+        .firstOrNull;
+    final knownFailure = MessageSendPolicy(
+      context: MessageSendPolicyContext.personal,
+      customerCanReply: inMemory?.customerCanReply ?? true,
+    ).validateConversationAccess();
+    if (knownFailure != null) throw knownFailure;
+    final local = _ref.read(chatLocalDataSourceProvider);
+    final visible = await local.isConversationDirectoryVisible(
+      space.spaceId,
+      conversationId,
+    );
+    final conversation = await local.getConversationForAccess(
+      space.spaceId,
+      conversationId,
+    );
+    if (!identical(_ref.read(accountRuntimeCurrentSpaceProvider), space)) {
+      throw StateError('Conversation owner changed');
+    }
+    final failure = MessageSendPolicy(
+      context: MessageSendPolicyContext.personal,
+      conversationVisible: visible,
+      customerCanReply: conversation?.customerCanReply ?? true,
+    ).validateConversationAccess();
+    if (failure != null) throw failure;
   }
 
   Future<void> _forwardSingleMessage(
@@ -524,25 +589,6 @@ class ConversationActionsController {
 
     collect(payload);
     return ids.toSet().toList(growable: false);
-  }
-
-  static bool _hasPayloadValue(Map<String, dynamic>? body, List<String> keys) {
-    if (body == null) return false;
-    final payload = body.containsKey('data') ? body['data'] : body;
-
-    bool scan(Object? value) {
-      if (value is Map) {
-        for (final key in keys) {
-          final item = value[key];
-          if (item != null && item.toString().isNotEmpty) return true;
-        }
-        return value.values.any(scan);
-      }
-      if (value is Iterable) return value.any(scan);
-      return false;
-    }
-
-    return scan(payload);
   }
 
   static String? _extractTextResult(Map<String, dynamic>? body) {

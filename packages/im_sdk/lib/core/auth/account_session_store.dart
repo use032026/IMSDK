@@ -66,6 +66,9 @@ abstract interface class AccountSessionStore {
   Future<void> replaceActiveCredentials({
     required String expectedCurrentSessionId,
     required SessionCredentials credentials,
+    DateTime? accessTokenIssuedAt,
+    DateTime? accessTokenExpiresAt,
+    bool Function()? canCommit,
   });
 }
 
@@ -614,6 +617,9 @@ class SecureAccountSessionStore implements AccountSessionStore {
   Future<void> replaceActiveCredentials({
     required String expectedCurrentSessionId,
     required SessionCredentials credentials,
+    DateTime? accessTokenIssuedAt,
+    DateTime? accessTokenExpiresAt,
+    bool Function()? canCommit,
   }) =>
       _lock.synchronized(() async {
         final activation = await _readActiveActivationV3();
@@ -633,22 +639,38 @@ class SecureAccountSessionStore implements AccountSessionStore {
             scope: stored.scope,
             accessToken: credentials.tenantAccessToken,
             refreshToken: credentials.tenantRefreshToken,
-            accessTokenIssuedAt: stored.accessTokenIssuedAt,
-            accessTokenExpiresAt: stored.accessTokenExpiresAt,
+            accessTokenIssuedAt:
+                accessTokenIssuedAt?.toUtc() ?? stored.accessTokenIssuedAt,
+            accessTokenExpiresAt:
+                accessTokenExpiresAt?.toUtc() ?? stored.accessTokenExpiresAt,
           );
-          await _storage.write(storedKey, jsonEncode(updated.toJson()));
-          _storedSpaceCache[storedKey] = updated;
           final platformKey = _platformCredentialV3Key(
             PlatformAccountScope.fromAccountScope(activation.scope),
           );
-          await _storage.write(
-            platformKey,
-            jsonEncode(<String, Object?>{
-              'platformAccessToken': credentials.platformAccessToken,
-              'platformRefreshToken': credentials.platformRefreshToken,
-              'deviceSessionToken': credentials.deviceSessionToken,
-            }),
-          );
+          final previousPlatform = await _storage.read(platformKey);
+          if (canCommit?.call() == false) throw ActiveCandidateDiscarded();
+          try {
+            await _storage.write(storedKey, jsonEncode(updated.toJson()));
+            if (canCommit?.call() == false) throw ActiveCandidateDiscarded();
+            await _storage.write(
+              platformKey,
+              jsonEncode(<String, Object?>{
+                'platformAccessToken': credentials.platformAccessToken,
+                'platformRefreshToken': credentials.platformRefreshToken,
+                'deviceSessionToken': credentials.deviceSessionToken,
+              }),
+            );
+            if (canCommit?.call() == false) throw ActiveCandidateDiscarded();
+          } catch (_) {
+            await _storage.write(storedKey, jsonEncode(stored.toJson()));
+            if (previousPlatform == null) {
+              await _storage.delete(platformKey);
+            } else {
+              await _storage.write(platformKey, previousPlatform);
+            }
+            rethrow;
+          }
+          _storedSpaceCache[storedKey] = updated;
           _platformCredentialCache[platformKey] = _PlatformCredentialsV3(
             accessToken: credentials.platformAccessToken,
             refreshToken: credentials.platformRefreshToken,

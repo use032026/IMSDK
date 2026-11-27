@@ -365,6 +365,7 @@ class _ScanPageState extends ConsumerState<ScanPage>
           ref.read(currentAccountOperationContextProvider)?.sessionId ==
               sourceSession;
     }
+
     try {
       final data = await ref.read(friendInviteQrApiProvider).preview(token);
       if (!mounted || !isCurrentPreview()) return;
@@ -403,7 +404,8 @@ class _ScanPageState extends ConsumerState<ScanPage>
           );
           if (confirmed != true || !mounted || !isCurrentPreview()) return;
         }
-        await openOfficialAccountConversation(context, ref, official, qrToken: token);
+        await openOfficialAccountConversation(context, ref, official,
+            qrToken: token);
         return;
       }
       final inviterUserId = data.inviterUserId;
@@ -430,7 +432,7 @@ class _ScanPageState extends ConsumerState<ScanPage>
           return;
         }
         if (relation.status == FriendRelationStatus.incomingPending) {
-          _showSnack('对方已向你发送好友申请，请先处理');
+          _showSnack(AppLocalizations.of(context).scanIncomingFriendRequest);
           await context.push('/new-friends');
           return;
         }

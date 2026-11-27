@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "システムの共有操作が完了しました。共有先でファイルを確認してください。",
   "diagnosticsCancelled": "共有をキャンセルしました。再度書き出せます。",
   "diagnosticsUnconfirmed": "共有結果を確認できません。共有先で確認してください。",
-  "diagnosticsFailed": "操作に失敗しました。再試行してください。"
+  "diagnosticsFailed": "操作に失敗しました。再試行してください。",
+  "scanIncomingFriendRequest": "このユーザーから友だち申請が届いています。先に確認してください。",
+  "chatGroupAddedToGroup": "グループチャットに追加されました",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "お気に入りへの登録結果を確認できませんでした。再試行してください",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

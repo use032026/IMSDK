@@ -3362,4 +3362,18 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Operațiunea a eșuat. Încercați din nou.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Această persoană v-a trimis deja o cerere de prietenie. Verificați-o mai întâi.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Ai fost adăugat la conversația de grup';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Adăugarea la favorite nu a putut fi confirmată. Încearcă din nou';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

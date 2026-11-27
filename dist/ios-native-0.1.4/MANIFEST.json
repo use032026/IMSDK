@@ -1,0 +1,122 @@
+{
+  "product": "IM SDK iOS",
+  "sdkVersion": "0.1.4",
+  "validatedOn": "2026-11-27",
+  "validationScope": "sdk-release-validation",
+  "localization": {
+    "catalogVersion": "0.3.15",
+    "localeCount": 35,
+    "keysPerLocale": 1044,
+    "nativeManifestSha256": "412edb3a8b4738aa874da722b0fcb271c4f3aa185c98ce9aadd5322d870aa303",
+    "coverageSha256": "408d0cbba68665ec2bfc270127dcaef6fc6a0b9f451b270446320fd86b19a93f",
+    "locales": [
+      "zh-CN",
+      "zh-TW",
+      "en",
+      "ja",
+      "ko",
+      "vi",
+      "ar",
+      "bg",
+      "cs",
+      "da",
+      "de",
+      "el",
+      "es",
+      "fi",
+      "fil",
+      "fr",
+      "hi",
+      "hr",
+      "hu",
+      "id",
+      "it",
+      "ms",
+      "nb",
+      "nl",
+      "pl",
+      "pt-BR",
+      "pt-PT",
+      "ro",
+      "ru",
+      "si",
+      "sk",
+      "sv",
+      "th",
+      "tr",
+      "uk"
+    ],
+    "fallbackPolicy": "SDK/Web exclusive missing translations use English. Existing legal bodies retain their original selection and fallback."
+  },
+  "binaryTreeSha256": "02156add5c52afa7461b7f66c492a7d32f568f77503a153f62790927a09d29b3",
+  "validation": {
+    "status": "passed",
+    "sdkVersion": "0.1.4",
+    "build": {
+      "status": "passed",
+      "modes": [
+        "Debug",
+        "Release"
+      ],
+      "frameworksPerMode": 35,
+      "dynamicFrameworks": 32,
+      "staticFrameworks": 3,
+      "platformSlices": 140,
+      "localeManifestCopies": 4,
+      "matchingCurrent35LocaleManifest": true,
+      "debugSimulatorKernel": true
+    },
+    "binaryTreeSha256": "02156add5c52afa7461b7f66c492a7d32f568f77503a153f62790927a09d29b3",
+    "sampleHostTreeSha256": "c78d25c89d51af943901b531fa1e5ac5f0ea8a2005e00d733cc88314494fd58a",
+    "consumerValidation": {
+      "status": "passed",
+      "sdkVersion": "0.1.4",
+      "swiftAndObjCCombinations": 6,
+      "independentUIKitBuilds": [
+        {
+          "configuration": "Debug",
+          "sdk": "iphonesimulator",
+          "result": "BUILD SUCCEEDED",
+          "embeddedDynamicFrameworks": 32,
+          "embeddedLocaleManifestByteEqual": true,
+          "codeSigningAllowed": false,
+          "runtimeExecuted": false
+        },
+        {
+          "configuration": "Release",
+          "sdk": "iphoneos",
+          "result": "BUILD SUCCEEDED",
+          "embeddedDynamicFrameworks": 32,
+          "embeddedLocaleManifestByteEqual": true,
+          "codeSigningAllowed": false,
+          "runtimeExecuted": false
+        }
+      ]
+    },
+    "simulatorRuntime": {
+      "status": "passed",
+      "device": "iPhone 17 Pro",
+      "runtime": "iOS 26.5",
+      "scope": "Offline consent and uninitialized guards, Flutter/Dart readiness, local initialization, unauthenticated-open guards, shutdown",
+      "summary": {
+        "passedTests": 2,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "result": "Passed"
+      }
+    },
+    "realBackend": "not_run",
+    "physicalDevice": "not_run",
+    "flutterReleaseEngineCodeSignatureVerified": true
+  },
+  "realServiceValidation": {
+    "status": "not_run"
+  },
+  "physicalDeviceValidation": "not_run",
+  "remotelyPublished": false,
+  "modes": [
+    "Debug",
+    "Release"
+  ],
+  "frameworksPerMode": 35
+}

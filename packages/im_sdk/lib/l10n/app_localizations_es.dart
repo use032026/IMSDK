@@ -3367,4 +3367,18 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get diagnosticsFailed =>
       'La operación ha fallado. Inténtalo de nuevo.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Esta persona ya te ha enviado una solicitud de amistad. Revísala primero.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Te añadieron al chat de grupo';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'No se pudo confirmar si se añadió a favoritos. Vuelve a intentarlo';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

@@ -61,6 +61,8 @@ String? imageBubbleVisualSource(
   if (localPreview != null) return localPreview;
   final url = _nonEmpty(media.url);
   if (isLocalVisualMediaUrl(url)) return url;
+  final signedUrl = _nonEmpty(media.signedUrl);
+  if (signedUrl != null) return signedUrl;
   return _nonEmpty(media.thumbnailUrl) ?? url;
 }
 
@@ -68,7 +70,7 @@ String? imageBubbleFallbackSource(MediaResource? media, String failedSource) {
   if (media == null || failedSource != _nonEmpty(media.thumbnailUrl)) {
     return null;
   }
-  final original = _nonEmpty(media.url);
+  final original = _nonEmpty(media.displayUrl);
   return original == null || original == failedSource ? null : original;
 }
 
@@ -91,6 +93,8 @@ bool imageBubbleVisualIdentityChanged(
 ) {
   return previous?.localPreviewUrl != next?.localPreviewUrl ||
       previous?.thumbnailUrl != next?.thumbnailUrl ||
+      previous?.signedUrl != next?.signedUrl ||
+      previous?.mediaId != next?.mediaId ||
       previous?.url != next?.url;
 }
 

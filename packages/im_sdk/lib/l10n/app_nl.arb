@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Delen via het systeem voltooid. Controleer het bestand in de ontvangende app.",
   "diagnosticsCancelled": "Delen geannuleerd. U kunt opnieuw exporteren.",
   "diagnosticsUnconfirmed": "Delen kon niet worden bevestigd. Controleer de ontvangende app.",
-  "diagnosticsFailed": "De bewerking is mislukt. Probeer het opnieuw."
+  "diagnosticsFailed": "De bewerking is mislukt. Probeer het opnieuw.",
+  "scanIncomingFriendRequest": "Deze persoon heeft u al een vriendschapsverzoek gestuurd. Beoordeel dat eerst.",
+  "chatGroupAddedToGroup": "Je bent toegevoegd aan de groepschat",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Het toevoegen aan favorieten kon niet worden bevestigd. Probeer het opnieuw",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

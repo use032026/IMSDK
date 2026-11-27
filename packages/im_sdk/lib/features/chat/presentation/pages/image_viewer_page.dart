@@ -9,6 +9,7 @@ import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/diagnostics/media_diagnostics.dart';
 import 'package:im_sdk/core/diagnostics/media_image_observer.dart';
 import 'package:im_sdk/core/platform/local_file.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/core/widgets/app_network_image.dart';
 import 'package:im_sdk/features/chat/domain/entities/media_local_file.dart';
 import 'package:im_sdk/features/chat/domain/entities/message.dart';
@@ -617,7 +618,15 @@ class _ChatMediaViewerPageState extends ConsumerState<ChatMediaViewerPage>
                   messageId: item.messageId,
                   mediaKind: MediaKind.image,
                   variant: MediaVariant.original,
-                  remoteUrl: media.url,
+                  remoteUrl: media.downloadSourceUrl,
+                  context: MediaRequestContext(
+                    conversationId: item.conversationId,
+                    messageId: item.messageId,
+                    conversationSeq: item.conversationSeq,
+                    kind: 'image',
+                    download: true,
+                    fallbackUrl: media.url,
+                  ),
                   localCandidateUrl: media.localPreviewUrl,
                   fileName: media.fileName?.trim().isNotEmpty == true
                       ? media.fileName!.trim()
@@ -1131,6 +1140,13 @@ class _ChatMediaViewerPageState extends ConsumerState<ChatMediaViewerPage>
       image = AppNetworkImage(
         key: ValueKey('viewer-preview-${item.messageId}-${item.previewUrl}'),
         url: item.previewUrl,
+        mediaContext: MediaRequestContext(
+          conversationId: item.conversationId,
+          messageId: item.messageId,
+          conversationSeq: item.conversationSeq,
+          kind: 'image',
+          fallbackUrl: item.media.url,
+        ),
         fit: BoxFit.contain,
         cacheInMemory: true,
         placeholderBuilder: (_) => const SizedBox.expand(),

@@ -17,6 +17,7 @@ const artifact = resolve(option('--package') ?? resolve(root, `dist/web/imsdk-we
 const work = resolve(option('--work') ?? resolve(root, '.codex-build/web-connected-20261028/web-consumer'));
 const evidence = resolve(option('--evidence') ?? resolve(root, 'logs/web-connected-20261028'));
 const livePath = resolve(option('--live-report') ?? resolve(evidence, 'source-default-entry-live.json'));
+const privateInputs = resolve(option('--private-inputs') ?? resolve(root, '.work/runtime-private'));
 const validationScope = option('--validation-scope') ?? 'real-service';
 assert(['real-service', 'localization'].includes(validationScope), 'Unknown consumer validation scope');
 const localizationPath = option('--localization-report');
@@ -130,7 +131,7 @@ void [register,code,settings,group,search,request,requests,mountMessenger,displa
       else if (item && typeof item === 'object') collect(item);
     }
   }
-  for (const path of (await files(resolve(root, '.work/runtime-private'))).filter(path => path.endsWith('.json'))) { try { collect(JSON.parse(await readFile(path, 'utf8'))); } catch {} }
+  for (const path of (await files(privateInputs)).filter(path => path.endsWith('.json'))) { try { collect(JSON.parse(await readFile(path, 'utf8'))); } catch {} }
   for (const path of await files(resolve(work, 'package'))) {
     assert(!/(^|\/)(\.work|runtime-private|\.env)(\/|$)/.test(relative(resolve(work, 'package'), path)));
     const text = await readFile(path, 'utf8');

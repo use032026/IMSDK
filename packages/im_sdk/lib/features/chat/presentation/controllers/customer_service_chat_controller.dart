@@ -112,6 +112,18 @@ class CustomerServiceChatController {
     return _repository.getThread(thread);
   }
 
+  Future<bool> markDisplayedMessagesRead(CsThread thread, int readSeq) async {
+    if (!canOperateOfficialReception(
+      inOfficial: thread.isOfficialReception,
+      assignedStaffUserId: thread.assignedStaffUserId,
+      userId: _currentUserIdResolver?.call() ?? '',
+    )) {
+      return false;
+    }
+    await _repository.markThreadRead(thread, readSeq);
+    return true;
+  }
+
   Future<CsThreadDetail> takeoverThread(CsThread thread) {
     return _receptionService.takeover(thread);
   }

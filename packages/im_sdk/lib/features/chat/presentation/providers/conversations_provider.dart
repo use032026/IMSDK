@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
@@ -13,6 +15,7 @@ import 'package:im_sdk/features/chat/data/datasources/chat_remote_datasource.dar
 import 'package:im_sdk/features/chat/data/mappers/group_member_payload_mapper.dart';
 import 'package:im_sdk/features/chat/data/repositories/chat_repository_impl.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
+import 'package:im_sdk/features/chat/domain/entities/conversation_page.dart';
 import 'package:im_sdk/features/contacts/domain/entities/contact.dart';
 import 'package:im_sdk/features/chat/domain/repositories/chat_repository.dart';
 import 'package:im_sdk/features/chat/domain/services/conversation_read_state_policy.dart';
@@ -20,7 +23,6 @@ import 'package:im_sdk/features/chat/domain/services/conversation_unread_policy.
 import 'package:im_sdk/features/chat/domain/services/conversation_summary_policy.dart';
 import 'package:im_sdk/features/chat/domain/usecases/filter_conversations.dart';
 import 'package:im_sdk/features/chat/domain/usecases/sort_conversations.dart';
-import 'package:im_sdk/features/chat/presentation/providers/active_chat_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/chat_local_resources_provider.dart';
 import 'package:im_sdk/features/contacts/presentation/providers/contacts_provider.dart';
 import 'package:im_sdk/features/customer_service/domain/customer_service_unread_ledger.dart';
@@ -34,20 +36,27 @@ final _chatRepositoryProvider =
     Provider.family<ChatRepository, String>((ref, spaceId) {
   final dio = ref.watch(dioProvider);
   final storage = ref.watch(accountStorageContextProvider);
-  ref.watch(accountRuntimeCurrentSpaceProvider)?.spaceId;
+  final space = ref.watch(accountRuntimeCurrentSpaceProvider);
+  var disposed = false;
+  ref.onDispose(() => disposed = true);
+  bool isOperationCurrent() =>
+      !disposed &&
+      identical(ref.read(accountStorageContextProvider), storage) &&
+      ref.read(accountRuntimeCurrentSpaceProvider)?.spaceId == spaceId &&
+      ref.read(accountRuntimeCurrentSpaceProvider)?.userId == space?.userId;
   return ChatRepositoryImpl(
     remote: ChatRemoteDataSourceImpl(
       dio,
       accessTokenGetter: () {
-        final space = ref.read(accountRuntimeCurrentSpaceProvider);
-        if (space?.spaceId != spaceId) return null;
-        return space?.accessToken;
+        if (!isOperationCurrent()) throw ConversationDirectorySyncSuperseded();
+        return ref.read(accountRuntimeCurrentSpaceProvider)?.accessToken;
       },
     ),
     local: ref.watch(chatLocalDataSourceProvider),
     spaceId: spaceId,
     draftStore: storage == null ? null : ref.watch(chatDraftLocalStoreProvider),
     draftUserId: storage?.scope.userId,
+    isOperationCurrent: isOperationCurrent,
   );
 }, dependencies: [
   dioProvider,
@@ -78,6 +87,7 @@ class ConversationsNotifier
   bool _hasLoadError = false;
   bool _isFlushingReadReceipts = false;
   int _firstPageRequestGeneration = 0;
+  int _lifecycleRevision = 0;
   final Map<(String, bool), Future<void>> _settingWriteTails = {};
 
   String? get nextCursor => _nextCursor;
@@ -91,6 +101,8 @@ class ConversationsNotifier
   Future<List<Conversation>> build(String arg) async {
     // keepAlive：切换 tab 不销毁，保持内存缓存
     ref.keepAlive();
+    _lifecycleRevision++;
+    ref.onDispose(() => _lifecycleRevision++);
 
     // 监听当前空间，确保 token 已就绪再发请求
     final space = ref.watch(accountRuntimeCurrentSpaceProvider);
@@ -99,6 +111,10 @@ class ConversationsNotifier
     }
 
     final repo = _repo;
+    final lifecycle = AppLifecycleListener(onResume: () {
+      unawaited(refresh());
+    });
+    ref.onDispose(lifecycle.dispose);
     Future.microtask(flushPendingReadReceipts);
 
     // ── 本地优先策略（微信做法）──────────────────────────────────────────
@@ -128,6 +144,11 @@ class ConversationsNotifier
       _hasLoadError = false;
       final fresh = await _prepareVisibleConversations(page.items);
       Future.microtask(() => _prefetchAvatars(fresh));
+      // The first page is enough for first paint. Directory removals are
+      // reconciled only after the background sweep has collected every page.
+      if (repo is ChatRepositoryImpl) {
+        Future.microtask(() => _syncFromRemote(repo));
+      }
       return fresh;
     } catch (_) {
       _hasLoadError = true;
@@ -148,6 +169,9 @@ class ConversationsNotifier
             requestGeneration != _firstPageRequestGeneration) {
           return;
         }
+        _nextCursor = null;
+        _isLoadingMore = false;
+        _hasLoadError = false;
         final result =
             await _prepareVisibleConversations(_keepNewerLocalPreviews(fresh));
         final latestSpaceId =
@@ -308,11 +332,15 @@ class ConversationsNotifier
   }
 
   /// 刷新：重新从服务端拉取，以服务端为准
-  Future<void> refresh() async {
+  Future<void> refresh({bool restartDirectory = false}) async {
     final requestGeneration = ++_firstPageRequestGeneration;
     try {
       final repo = _repo;
-      final page = await repo.getConversations();
+      final page = repo is ChatRepositoryImpl
+          ? ConversationsPage(
+              items: await repo.syncConversationsFromRemote(
+                  restart: restartDirectory))
+          : await repo.getConversations();
       if (requestGeneration != _firstPageRequestGeneration) return;
       _nextCursor = page.nextCursor;
       _isLoadingMore = false;
@@ -336,13 +364,29 @@ class ConversationsNotifier
   /// 加载下一页
   Future<void> loadMore() async {
     if (_isLoadingMore || _nextCursor == null) return;
+    final cursor = _nextCursor!;
+    final requestGeneration = _firstPageRequestGeneration;
     _isLoadingMore = true;
     _hasLoadError = false;
     try {
-      final page = await _repo.getConversations(cursor: _nextCursor);
-      _nextCursor = page.nextCursor;
+      final page = await _repo.getConversations(cursor: cursor);
+      if (requestGeneration != _firstPageRequestGeneration ||
+          cursor != _nextCursor) {
+        return;
+      }
       final nextItems = await _prepareVisibleConversations(page.items);
-      state = state.whenData((list) => [...list, ...nextItems]);
+      if (requestGeneration != _firstPageRequestGeneration ||
+          cursor != _nextCursor) {
+        return;
+      }
+      _nextCursor = page.nextCursor;
+      state = state.whenData((list) {
+        final byId = {
+          for (final item in list) item.conversationId: item,
+          for (final item in nextItems) item.conversationId: item,
+        };
+        return byId.values.toList();
+      });
     } catch (_) {
       _hasLoadError = true;
     } finally {
@@ -378,21 +422,92 @@ class ConversationsNotifier
     }
   }
 
-  /// 标记已读
+  /// Explicit "mark as read" action in the conversation list.
   Future<void> markRead(
       String conversationId, bool isGroup, int readSeq) async {
-    final effectiveReadSeq = await markReadLocally(
+    final conversation = state.valueOrNull
+        ?.where((item) => item.conversationId == conversationId)
+        .firstOrNull;
+    final latest = conversation?.lastMessageSeq ?? 0;
+    final previous = conversation?.lastReadSeq ?? 0;
+    final summarySeq = latest > previous ? latest : previous;
+    await _persistAndSendRead(
       conversationId,
       isGroup: isGroup,
-      readSeqHint: readSeq,
+      readSeq: summarySeq > readSeq ? summarySeq : readSeq,
+      clearAllUnread: true,
     );
-    if (effectiveReadSeq == null) return;
+  }
+
+  /// The display observation is the upper bound for automatic read receipts.
+  Future<bool> markDisplayedMessagesRead(
+    String conversationId, {
+    required bool isGroup,
+    required int displayedSeq,
+  }) =>
+      _persistAndSendRead(
+        conversationId,
+        isGroup: isGroup,
+        readSeq: displayedSeq,
+        clearAllUnread: false,
+      );
+
+  Future<bool> _persistAndSendRead(
+    String conversationId, {
+    required bool isGroup,
+    required int readSeq,
+    required bool clearAllUnread,
+  }) async {
+    final space = ref.read(accountRuntimeCurrentSpaceProvider);
+    if (readSeq <= 0 || space?.spaceId != arg) return false;
+    final storage = ref.read(accountStorageContextProvider);
+    final local = _local;
+    final repo = _repo;
+    bool ownsRead() {
+      final current = ref.read(accountRuntimeCurrentSpaceProvider);
+      return identical(ref.read(accountStorageContextProvider), storage) &&
+          current?.spaceId == arg &&
+          current?.userId == space?.userId;
+    }
+
     try {
-      await _repo.markRead(conversationId, isGroup, effectiveReadSeq);
-      await _local.acknowledgePendingReadReceipt(
+      await local.markConversationReadAndEnqueue(
         arg,
         conversationId,
-        throughSeq: effectiveReadSeq,
+        isGroup: isGroup,
+        readSeq: readSeq,
+        clearAllUnread: clearAllUnread,
+      );
+    } catch (error) {
+      AppDiagnostics.instance.error(
+        'chat.read.local_persist_failed',
+        'Failed to persist local read cursor',
+        context: {
+          'spaceId': arg,
+          'conversationId': conversationId,
+          'readSeq': readSeq,
+          'error': error.toString(),
+        },
+      );
+      return false;
+    }
+    try {
+      if (!ownsRead()) return true;
+      state = state.whenData((list) => list.map((conversation) {
+            if (conversation.conversationId != conversationId) {
+              return conversation;
+            }
+            final advanced =
+                _readStatePolicy.advanceReadCursor(conversation, readSeq);
+            return clearAllUnread
+                ? advanced.copyWith(unreadCount: 0)
+                : advanced;
+          }).toList(growable: false));
+      await repo.markRead(conversationId, isGroup, readSeq);
+      await local.acknowledgePendingReadReceipt(
+        arg,
+        conversationId,
+        throughSeq: readSeq,
       );
     } catch (error) {
       AppDiagnostics.instance.warning(
@@ -401,83 +516,38 @@ class ConversationsNotifier
         context: {
           'spaceId': arg,
           'conversationId': conversationId,
-          'readSeq': effectiveReadSeq,
+          'readSeq': readSeq,
           'error': error.toString(),
         },
       );
     }
-  }
-
-  /// 本地标记已读 + 持久化到 SQLite
-  Future<int?> markReadLocally(
-    String conversationId, {
-    bool isGroup = false,
-    int readSeqHint = 0,
-  }) async {
-    var localReadSeq = readSeqHint;
-    final current = state.valueOrNull;
-    if (current != null) {
-      for (final conversation in current) {
-        if (conversation.conversationId != conversationId) continue;
-        final persistedSeq =
-            conversation.lastMessageSeq > conversation.lastReadSeq
-                ? conversation.lastMessageSeq
-                : conversation.lastReadSeq;
-        if (persistedSeq > localReadSeq) localReadSeq = persistedSeq;
-        break;
-      }
-    }
-    try {
-      await _local.markConversationReadAndEnqueue(
-        arg,
-        conversationId,
-        isGroup: isGroup,
-        readSeq: localReadSeq,
-      );
-      state = state.whenData((list) => list.map((conversation) {
-            if (conversation.conversationId != conversationId) {
-              return conversation;
-            }
-            final effectiveSeq = conversation.lastReadSeq > localReadSeq
-                ? conversation.lastReadSeq
-                : localReadSeq;
-            return conversation.copyWith(
-              unreadCount: 0,
-              lastReadSeq: effectiveSeq,
-            );
-          }).toList(growable: false));
-    } catch (error) {
-      AppDiagnostics.instance.error(
-        'chat.read.local_persist_failed',
-        'Failed to persist local read cursor',
-        context: {
-          'spaceId': arg,
-          'conversationId': conversationId,
-          'readSeq': localReadSeq,
-          'error': error.toString(),
-        },
-      );
-      return null;
-    }
-    return localReadSeq;
+    return true;
   }
 
   Future<void> flushPendingReadReceipts() async {
     if (_isFlushingReadReceipts) return;
     _isFlushingReadReceipts = true;
     try {
-      final pending = await _local.getPendingReadReceipts(arg);
+      final space = ref.read(accountRuntimeCurrentSpaceProvider);
+      if (space?.spaceId != arg) return;
+      final storage = ref.read(accountStorageContextProvider);
+      final local = _local;
+      final repo = _repo;
+      final pending = await local.getPendingReadReceipts(arg);
       for (final receipt in pending) {
-        if (ref.read(accountRuntimeCurrentSpaceProvider)?.spaceId != arg) {
+        final current = ref.read(accountRuntimeCurrentSpaceProvider);
+        if (!identical(ref.read(accountStorageContextProvider), storage) ||
+            current?.spaceId != arg ||
+            current?.userId != space?.userId) {
           return;
         }
         try {
-          await _repo.markRead(
+          await repo.markRead(
             receipt.conversationId,
             receipt.isGroup,
             receipt.readSeq,
           );
-          await _local.acknowledgePendingReadReceipt(
+          await local.acknowledgePendingReadReceipt(
             arg,
             receipt.conversationId,
             throughSeq: receipt.readSeq,
@@ -720,8 +790,73 @@ class ConversationsNotifier
   }
 
   /// Gateway 推送新消息时更新会话
-  void mergeConversationFromGateway(Conversation partial,
-      {bool isSelf = false}) {
+  Future<void> mergeConversationFromGateway(Conversation partial,
+      {bool isSelf = false}) async {
+    final storage = ref.read(accountStorageContextProvider);
+    Conversation? persistedAccess;
+    Conversation? reconciledSummary;
+    if (storage != null) {
+      final lifecycleRevision = _lifecycleRevision;
+      final directory = _local as ConversationDirectoryLocalStore;
+      bool ownsCurrentDirectory() =>
+          lifecycleRevision == _lifecycleRevision &&
+          identical(_local, directory) &&
+          identical(ref.read(accountStorageContextProvider), storage) &&
+          ref.read(accountRuntimeCurrentSpaceProvider)?.spaceId == arg;
+      var retriedDirectoryRead = false;
+      try {
+        while (true) {
+          final directoryRevision = directory.conversationDirectoryRevision;
+          final visible = await directory.isConversationDirectoryVisible(
+            arg,
+            partial.conversationId,
+          );
+          if (!ownsCurrentDirectory()) return;
+          if (directory.conversationDirectoryRevision != directoryRevision) {
+            retriedDirectoryRead = true;
+            continue;
+          }
+          if (!visible) return;
+          final access = await directory.getConversationForAccess(
+            arg,
+            partial.conversationId,
+          );
+          if (!ownsCurrentDirectory()) return;
+          if (directory.conversationDirectoryRevision != directoryRevision) {
+            retriedDirectoryRead = true;
+            continue;
+          }
+          persistedAccess = access;
+          // A directory commit invalidates the read, not the incoming message.
+          // Reuse the settled summary if SQLite already includes the message.
+          if (retriedDirectoryRead &&
+              access?.lastMessage != null &&
+              (_isSameLastMessage(access!, partial) ||
+                  (partial.lastMessageSeq > 0 &&
+                      access.lastMessageSeq >= partial.lastMessageSeq))) {
+            reconciledSummary = access;
+          }
+          break;
+        }
+      } catch (error) {
+        if (ownsCurrentDirectory()) {
+          AppDiagnostics.instance.warning(
+            'chat.conversations.cache',
+            'realtime conversation access read failed',
+            context: {'errorType': error.runtimeType.toString()},
+          );
+        }
+        return;
+      }
+      if (persistedAccess != null) {
+        partial = partial.copyWith(
+          isOfficialServiceUser: persistedAccess.isOfficialServiceUser,
+          officialAccountKind: persistedAccess.officialAccountKind,
+          peerOfficialVerified: persistedAccess.peerOfficialVerified,
+          customerCanReply: persistedAccess.customerCanReply,
+        );
+      }
+    }
     if (partial.type == ConversationType.tempSession ||
         _isKnownCustomerServiceConversation(partial.conversationId)) {
       Future.microtask(() async {
@@ -745,17 +880,27 @@ class ConversationsNotifier
         message: partial.lastMessage,
         currentUserId: currentUserId,
       );
-      final isActiveConversation =
-          ref.read(activeChatConversationProvider) == partial.conversationId;
       final idx =
           list.indexWhere((c) => c.conversationId == partial.conversationId);
+      final snapshot = reconciledSummary;
+      if (snapshot != null) {
+        final updated = idx < 0
+            ? _readStatePolicy.normalize(snapshot)
+            : _summaryPolicy.mergeRemoteSnapshot(
+                local: list[idx], remote: snapshot);
+        requiresRemoteHydration = updated.title.trim().isEmpty;
+        if (idx < 0) return [...list, updated];
+        final next = List<Conversation>.from(list);
+        next[idx] = updated;
+        return next;
+      }
       if (idx < 0) {
         requiresRemoteHydration = partial.title.trim().isEmpty;
         final isEvent = partial.lastMessage?.messageType == 'event';
         return [
           ...list,
           partial.copyWith(
-            unreadCount: isCurrentUserMessage || isEvent || isActiveConversation
+            unreadCount: isCurrentUserMessage || isEvent
                 ? 0
                 : partial.unreadCount > 0
                     ? partial.unreadCount
@@ -771,6 +916,14 @@ class ConversationsNotifier
         incoming: partial,
       );
       final updated = existing.copyWith(
+        isOfficialServiceUser: persistedAccess?.isOfficialServiceUser ??
+            existing.isOfficialServiceUser,
+        officialAccountKind: persistedAccess?.officialAccountKind ??
+            existing.officialAccountKind,
+        peerOfficialVerified: persistedAccess?.peerOfficialVerified ??
+            existing.peerOfficialVerified,
+        customerCanReply:
+            persistedAccess?.customerCanReply ?? existing.customerCanReply,
         type: _shouldKeepExistingType(existing, partial)
             ? existing.type
             : partial.type,
@@ -791,7 +944,7 @@ class ConversationsNotifier
           isCurrentUserMessage: isCurrentUserMessage,
           isEvent: isEvent,
           isDuplicate: isDuplicateLastMessage,
-          isActiveConversation: isActiveConversation,
+          isActiveConversation: false,
           advancesConversation: !keepExistingLast,
         ),
       );

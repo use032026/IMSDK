@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Systémové zdieľanie dokončené. Overte súbor v cieľovej aplikácii.",
   "diagnosticsCancelled": "Zdieľanie zrušené. Môžete exportovať znova.",
   "diagnosticsUnconfirmed": "Zdieľanie sa nepodarilo potvrdiť. Skontrolujte cieľovú aplikáciu.",
-  "diagnosticsFailed": "Akcia zlyhala. Skúste to znova."
+  "diagnosticsFailed": "Akcia zlyhala. Skúste to znova.",
+  "scanIncomingFriendRequest": "Táto osoba vám už poslala žiadosť o priateľstvo. Najprv ju skontrolujte.",
+  "chatGroupAddedToGroup": "Pridali vás do skupinového chatu",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Výsledok pridania medzi obľúbené sa nepodarilo potvrdiť. Skúste to znova",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

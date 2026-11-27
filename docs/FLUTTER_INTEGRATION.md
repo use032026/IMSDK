@@ -1,4 +1,4 @@
-# Flutter 宿主接入（0.1.3）
+# Flutter 宿主接入（0.1.4）
 
 主要流程为 **注册 / 登录 → 会话列表 → 添加好友 → 单聊 / 新建群聊及群聊**。注册完成后默认登录个人空间，服务端直接返回企业登录态时进入企业空间；不显示空间选择，同时只登录一个空间。已有账号的个人/企业登录方式由接入方配置，用户不填写 token、空间 ID 或会话 ID。
 
@@ -67,7 +67,7 @@ await client.registerWithPassword(
 );
 ```
 
-服务端要求安全验证时，调用 `requestLoginCaptcha()`，将返回的 token 和用户答案传入发送验证码或注册方法的 `captchaToken` / `captchaAnswer`。`REGISTER_PENDING_APPROVAL` 表示账号已创建、待审核；`REGISTER_LOGIN_FAILED` 表示账号已创建但自动登录失败，应尝试登录而非重复注册。个人账号登录按手机号、邮箱或平台账号输入匹配登录类型。
+服务端要求安全验证时，调用 `requestLoginCaptcha()`，将返回的 token 和用户答案传入发送验证码或注册方法的 `captchaToken` / `captchaAnswer`。`REGISTER_PENDING_APPROVAL` 表示账号已创建、待审核；`REGISTER_LOGIN_FAILED` 表示账号已创建但自动登录失败。SDK 注册页支持对临时失败重试进入空间。自定义注册页可调用 `retryRegistrationActivation()`，当前激活已失效时回到登录页。个人账号登录按手机号、邮箱或平台账号输入匹配登录类型。
 
 不要自行保存密码，或把密码、token、完整服务端响应输出到日志。
 
@@ -92,7 +92,7 @@ await client.registerWithPassword(
 
 ## 当前版本验证范围
 
-0.1.3 包含 35 语资源，已通过构建、独立消费与逐文件校验；没有本版真实服务、原生宿主运行或实体设备验收，详见 [35 语交付说明](L10N35_DELIVERY-2026-10-29.md)。
+0.1.4 包含公共词库 0.3.15 的 35 语资源。归档和独立样例的验收范围见 [最新交付说明](https://github.com/use032026/IMSDK/blob/main/dist/README.md)。
 
 ## 运行样例与历史验证
 

@@ -1,6 +1,6 @@
-# Web SDK 0.1.6 API 参考
+# Web SDK 0.1.7 API 参考
 
-文档整理日期：2026-10-29。本文对应交付包中的 `@imsdk/web` 0.1.6 与 `sdk/im-sdk.js`，完整 TypeScript 声明位于 `sdk/types/`。
+文档整理日期：2026-11-27。本文对应交付包中的 `@imsdk/web` 0.1.7 与 `sdk/im-sdk.js`，完整 TypeScript 声明位于 `sdk/types/`。
 
 本版包含注册后自动登录一个空间、好友搜索 / 申请处理和新建群聊接口。完整类型以包内 TypeScript 声明为准，构建与验证记录见 `MANIFEST.json`。
 
@@ -155,7 +155,7 @@ interface ImSdkCredentials {
 - SDK 会先用收到的 bearer 请求服务端身份，再核对身份和空间，不直接把宿主声称的用户 ID 当作认证依据。开始有效的身份切换后，旧会话和旧请求会失效。
 - 后续请求在凭证临近到期时尝试刷新；并发刷新合并，HTTP 401 最多刷新并重试一次。暂时的网络错误不会被当作必须清除账号的凭据。
 
-其他系统的账号与 IM 账号映射、取票、服务端撤销由后端完成。不要将其他业务系统 token、管理员密钥或服务端密钥作为 `accessToken`。可选的平台凭证字段不代表 SDK 提供跨系统 SSO；IM 自身续期以 IM `refreshToken` 为准。0.1.6 的 `hostManagedAuth` 模式可通过宿主 provider 静默获取新 IM 凭证，契约如下；旧0.1.5包保持原样。
+其他系统的账号与 IM 账号映射、取票、服务端撤销由后端完成。不要将其他业务系统 token、管理员密钥或服务端密钥作为 `accessToken`。可选的平台凭证字段不代表 SDK 提供跨系统 SSO；IM 自身续期以 IM `refreshToken` 为准。0.1.7 的 `hostManagedAuth` 模式可通过宿主 provider 静默获取新 IM 凭证，契约如下；旧0.1.5包保持原样。
 
 ### 宿主显示设置 API（源码新增）
 
@@ -170,7 +170,7 @@ client.updatePresentation({ themeMode: 'dark', locale: 'ja-JP' }); // void
 - `system` 主题实时响应系统深浅色媒体设置；`system` 语言响应浏览器语言及 `languagechange`，无支持语言时回退 `zh-CN`。显式选择时系统变化不覆盖宿主的值。
 - 更新同步生效，`config` 返回新快照；`presentationChanged` 包含完整规范化值。无实际变化时不重复发事件。身份和会话 revision 均不变，不调用认证或宿主取票。
 - 已挂载界面原位更新 SDK 文案、错误提示、占位、日期及 aria 标签；保留表单、草稿、滚动和路由。消息正文、昵称、群名、好友附言及后端验证码问题维持原文。缺省名称与标题通过 SDK 标记识别，只有 SDK 生成的占位名会翻译。
-- `close()` 取消该 view 的语言及显示监听。该 API 适用于独立登录和宿主账号同步两种模式；本次0.1.6包已包含这些接口；旧版本分发快照不会自动更新。
+- `close()` 取消该 view 的语言及显示监听。该 API 适用于独立登录和宿主账号同步两种模式；本次0.1.7包已包含这些接口；旧版本分发快照不会自动更新。
 
 ### 宿主账号同步 API（源码新增）
 
@@ -209,7 +209,7 @@ handleFriendRequest(requestId: string, action: 'accept' | 'reject'): Promise<voi
 createGroup(request: { title: string; memberUserIds?: string[] }): Promise<Conversation>
 ```
 
-好友申请按服务端 `pending` / `accepted` 状态显示；申请发出不代表已经成为好友。处理申请后刷新申请及好友列表，接受后可选择好友发起单聊或创建群聊。返回类型的完整字段以重建后的 TypeScript 声明为准。建群、成员和聊天权限仍由服务端校验。
+好友申请按服务端 `pending` / `accepted` 状态显示。搜索结果命中当前用户收到的待处理申请时可直接接受，处理后刷新申请和好友列表。企业空间可调用 `checkGroupCreateAccess()` 核对当前角色，再用 `listGroupCandidates()` 获取候选成员。个人空间继续使用好友目录。群创建及成员操作仍由服务端校验。
 
 以下方法均要求已初始化且已认证：
 
@@ -384,6 +384,7 @@ const unsubscribe = client.on(event => {
 | `loggedOut` | 无 | 本地账号已退出 |
 | `authenticationRequired` | `code: 'SESSION_EXPIRED'` | 需要重新认证，包括服务端安全退出及明确的凭证失效 |
 | `connectionChanged` | `state: 'connecting' \| 'connected' \| 'reconnecting' \| 'disconnected'` | 网关状态；断开不等于历史或账号已被清空 |
+| `groupInvitationReceived` | `spaceId`、`conversationId`、`messageId` | 当前空间实时收到的入群通知，同一会话及消息只发一次 |
 | `conversationsChanged` | 无 | 当前会话快照需要刷新 |
 | `messagesChanged` | `conversationId?: string`、`reset?: boolean` | 重取消息；未指定会话时按当前视图处理，`reset` 表示旧历史快照应失效 |
 | `conversationDeleted` | `conversationId?: string` | 会话删除提示，刷新列表并校验当前视图 |
@@ -440,4 +441,4 @@ try {
 
 本版公开数据接口及内置 UI 面向单聊/群聊文本基础能力。未提供媒体上传预览、音视频通话、推送、群管理、找回密码或完整离线消息数据库；非文本历史为占位显示。
 
-0.1.6 本轮验证构建、35语言选择、既有六语保值、宿主显示同步及独立包消费，使用显式隔离配置与模拟响应，没有当前版本真实后端写入。0.1.5 在 2026-10-28 的双账号注册、好友及单聊/群聊记录属于历史。新增29语的Web专属文案中45条复用共享译文、101条明确英语回退；详细清单见本包 LOCALIZATION.json。Safari、实体设备、微信、生产Origin及所有法务正文35语翻译未据此完成。具体构建和独立消费证据见本包 MANIFEST.json。
+0.1.7 本轮验证构建、35语言选择、既有六语保值、宿主显示同步及独立包消费，使用显式隔离配置与模拟响应，没有当前版本真实后端写入。0.1.5 在 2026-10-28 的双账号注册、好友及单聊/群聊记录属于历史。新增29语的Web专属文案中45条复用共享译文、101条明确英语回退；详细清单见本包 LOCALIZATION.json。Safari、实体设备、微信、生产Origin及所有法务正文35语翻译未据此完成。具体构建和独立消费证据见本包 MANIFEST.json。

@@ -1,0 +1,28 @@
+{
+  "sdkVersion": "0.1.4",
+  "flutterVersion": "3.41.9",
+  "validatedOn": "2026-11-27",
+  "validationScope": "sdk-release-validation",
+  "sourceFileCount": 889,
+  "archiveSha256": "7567a963f4f93f901ef9cd6a15118e713e50c610d2ecbb7ef6ef4b65f256a830",
+  "languageCatalogVersion": "0.3.15",
+  "localeCount": 35,
+  "keysPerLocale": 1044,
+  "sourceClosure": "passed",
+  "extractedArchiveLockedDependencies": "passed",
+  "extractedArchiveOfflineLocalization": "passed",
+  "sdkTestsPassed": 132,
+  "consumerValidation": {
+    "status": "passed",
+    "version": "0.1.4",
+    "buildNumber": 4,
+    "platform": "Android",
+    "mode": "Debug",
+    "builtFromExtractedArchive": true,
+    "localeManifestMatch": true,
+    "apkSha256": "76675cc0f789d619bf2b9cb5ea18a261a2d5ec35ea96e48caff162192e769ffe",
+    "compiledOnly": true
+  },
+  "realServiceValidation": "not_run",
+  "physicalDeviceValidation": "not_run"
+}

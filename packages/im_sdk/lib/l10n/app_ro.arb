@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Distribuirea prin sistem s-a încheiat. Verificați fișierul în aplicația destinatară.",
   "diagnosticsCancelled": "Distribuire anulată. Puteți exporta din nou.",
   "diagnosticsUnconfirmed": "Distribuirea nu a putut fi confirmată. Verificați aplicația destinatară.",
-  "diagnosticsFailed": "Operațiunea a eșuat. Încercați din nou."
+  "diagnosticsFailed": "Operațiunea a eșuat. Încercați din nou.",
+  "scanIncomingFriendRequest": "Această persoană v-a trimis deja o cerere de prietenie. Verificați-o mai întâi.",
+  "chatGroupAddedToGroup": "Ai fost adăugat la conversația de grup",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Adăugarea la favorite nu a putut fi confirmată. Încearcă din nou",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

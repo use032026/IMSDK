@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:im_sdk/app/account_runtime_provider.dart';
+import 'package:im_sdk/app/authenticated_runtime_host.dart';
 import 'package:im_sdk/core/auth/account_session.dart';
 import 'package:im_sdk/core/auth/token_refresh_service.dart';
 import 'package:im_sdk/core/di/injector.dart';
@@ -32,7 +33,13 @@ import 'package:im_sdk/features/chat/domain/usecases/message_badge_count.dart';
 import 'package:im_sdk/features/chat/presentation/providers/chat_local_resources_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/conversations_provider.dart';
 import 'package:im_sdk/features/chat/presentation/providers/gateway_provider.dart';
+import 'package:im_sdk/features/chat/presentation/providers/group_invitation_notice_provider.dart';
 import 'package:im_sdk/features/chat/presentation/controllers/media_open_controller.dart';
+import 'package:im_sdk/features/chat/presentation/pages/group_settings_page.dart'
+    show groupDetailProvider, groupMembersProvider;
+import 'package:im_sdk/features/contacts/presentation/providers/contacts_provider.dart';
+import 'package:im_sdk/features/contacts/presentation/providers/user_profile_provider.dart';
+import 'package:im_sdk/features/official_account/presentation/providers/official_account_provider.dart';
 import 'data/sdk_customer_service_repository.dart';
 import 'im_sdk_models.dart';
 import 'im_sdk_host_session.dart';
@@ -125,8 +132,35 @@ class ImSdkClient with WidgetsBindingObserver {
         : supportedLocaleFromTag(selected)!;
     return Future.wait<void>([
       root.read(themeModeProvider.notifier).setThemeMode(mode),
-      root.read(localeProvider.notifier).setLocale(locale),
+      _applyHostLocale(root, locale),
     ]).then<void>((_) {});
+  }
+
+  Future<void> _applyHostLocale(ProviderContainer root, Locale locale) {
+    final previous = root.read(localeProvider);
+    final write = root.read(localeProvider.notifier).setLocale(locale);
+    final account = _account;
+    final spaceId = _installed?.session.scope.spaceId;
+    if (previous == locale || account == null || spaceId == null) return write;
+
+    final conversations = conversationsProvider(spaceId);
+    if (account.exists(conversations)) {
+      unawaited(account.read(conversations.notifier).refresh(restartDirectory: true));
+    }
+    if (account.exists(friendsProvider)) {
+      unawaited(account.read(friendsProvider.notifier).refresh());
+    }
+    if (account.exists(tenantMembersProvider)) {
+      unawaited(account.read(tenantMembersProvider.notifier).refresh());
+    }
+    if (account.exists(profileProvider)) {
+      unawaited(account.read(profileProvider.notifier).refresh());
+    }
+    account.invalidate(userProfileProvider);
+    account.invalidate(officialAccountProvider);
+    account.invalidate(groupDetailProvider);
+    account.invalidate(groupMembersProvider);
+    return write;
   }
 
   Locale _systemLocale() {
@@ -143,8 +177,7 @@ class ImSdkClient with WidgetsBindingObserver {
         !_hostClosed &&
         !_disposed &&
         _config?.normalizedLocale == 'system') {
-      unawaited(
-          _root!.read(localeProvider.notifier).setLocale(_systemLocale()));
+      unawaited(_applyHostLocale(_root!, _systemLocale()));
       _changed();
     }
   }
@@ -321,8 +354,9 @@ class ImSdkClient with WidgetsBindingObserver {
       await _verifyHostSession(epoch, session);
       await _serial(() async {
         await _verifyHostSession(epoch, session);
-        await _authenticateCredentials(credentials,
+        final refreshedCurrent = await _authenticateCredentials(credentials,
             publishAuthentication: false,
+            preserveMatchingSession: session == _authenticatedHostSession,
             externalOperationIsCurrent: () =>
                 epoch == _hostEpoch && !_hostClosed && !_disposed,
             verifyExternalSession: () => _verifyHostSession(epoch, session));
@@ -332,7 +366,9 @@ class ImSdkClient with WidgetsBindingObserver {
         ++_hostCredentialRevision;
         _authenticated = true;
         _changed();
-        _emit('authenticated', {'spaceId': credentials.spaceId});
+        if (!refreshedCurrent) {
+          _emit('authenticated', {'spaceId': credentials.spaceId});
+        }
       });
       _ensureHostEpoch(epoch);
       return isAuthenticated;
@@ -452,20 +488,26 @@ class ImSdkClient with WidgetsBindingObserver {
         await _authenticateCredentials(credentials);
       });
 
-  Future<void> _authenticateCredentials(ImSdkCredentials credentials,
+  Future<bool> _authenticateCredentials(ImSdkCredentials credentials,
       {bool publishAuthentication = true,
+      bool preserveMatchingSession = false,
       bool Function()? externalOperationIsCurrent,
       Future<void> Function()? verifyExternalSession}) async {
     final root = _requireRoot();
-    _authenticated = false;
-    _generation++;
-    _changed();
     credentials.validate();
     final scope = AccountScope.tryCreate(
         serviceRealmId: _config!.serviceRealmId,
         platformUserId: credentials.platformUserId,
         spaceId: credentials.spaceId,
         userId: credentials.userId)!;
+    final preserveActiveSession = preserveMatchingSession &&
+        isAuthenticated &&
+        _installed?.session.scope == scope;
+    if (!preserveActiveSession) {
+      _authenticated = false;
+      _generation++;
+      _changed();
+    }
     await root.read(authProvider.notifier).acceptExternalSession(
         scope: scope,
         credentials: SessionCredentials(
@@ -477,7 +519,8 @@ class ImSdkClient with WidgetsBindingObserver {
         issuedAt: DateTime.now().toUtc(),
         expiresAt: credentials.expiresAt.toUtc(),
         externalOperationIsCurrent: externalOperationIsCurrent,
-        verifyExternalSession: verifyExternalSession);
+        verifyExternalSession: verifyExternalSession,
+        preserveActiveSession: preserveActiveSession);
     await _waitForRuntime(scope,
         operationIsCurrent: externalOperationIsCurrent);
     await verifyExternalSession?.call();
@@ -489,6 +532,7 @@ class ImSdkClient with WidgetsBindingObserver {
       _changed();
       _emit('authenticated', {'spaceId': scope.spaceId});
     }
+    return preserveActiveSession;
   }
 
   /// Uses the existing IM authentication service. Other-app account integration
@@ -514,13 +558,16 @@ class ImSdkClient with WidgetsBindingObserver {
         _generation++;
         _changed();
         try {
+          final mobile = login.usePersonalSpace || login.loginType == 'mobile'
+              ? Validators.normalizeMainlandMobile(account)
+              : null;
           await root.read(authProvider.notifier).loginByPassword(
-                account.trim(),
+                mobile ?? account.trim(),
                 password,
                 login.usePersonalSpace
                     ? (Validators.isEmail(account)
                         ? 'email'
-                        : Validators.isMobile(account)
+                        : mobile != null
                             ? 'mobile'
                             : 'lpp_id')
                     : login.loginType,
@@ -591,7 +638,8 @@ class ImSdkClient with WidgetsBindingObserver {
           String? captchaAnswer}) =>
       _serial(() async {
         final root = _requireRoot();
-        _validateRegistrationIdentifier(identifier, channel);
+        final normalizedIdentifier =
+            _registrationIdentifier(identifier, channel);
         _validateCaptcha(captchaToken, captchaAnswer);
         try {
           final settings =
@@ -602,10 +650,11 @@ class ImSdkClient with WidgetsBindingObserver {
                 'REGISTER_CHANNEL_DISABLED', '当前注册方式不可用');
           }
           await root.read(authProvider.notifier).sendVerificationCode(
-              identifier.trim(), channel,
+              normalizedIdentifier, channel,
               purpose: 'register',
               captchaToken: captchaToken,
-              captchaAnswer: captchaAnswer);
+              captchaAnswer: captchaAnswer,
+              reportInAuthState: false);
         } catch (error) {
           throw _registrationFailure(error);
         }
@@ -626,10 +675,16 @@ class ImSdkClient with WidgetsBindingObserver {
         if (_config?.hostManagedAuth == true) {
           throw const ImSdkException('HOST_AUTH_MANAGED', '请通过应用登录状态同步聊天');
         }
-        _validateRegistrationIdentifier(identifier, channel);
+        final normalizedIdentifier =
+            _registrationIdentifier(identifier, channel);
         _validateCaptcha(captchaToken, captchaAnswer);
         if (displayName.trim().isEmpty || password.length < 6) {
           throw const ImSdkException('INVALID_ARGUMENT', '请输入昵称和至少6位密码');
+        }
+        final auth = root.read(authProvider.notifier);
+        if (auth.canRetryRegistrationActivation) {
+          throw const ImSdkException(
+              'REGISTER_LOGIN_FAILED', '账号已创建，暂时无法进入聊天，请稍后登录');
         }
         bool created = false;
         try {
@@ -649,46 +704,85 @@ class ImSdkClient with WidgetsBindingObserver {
           _authenticated = false;
           _generation++;
           _changed();
-          await root.read(authProvider.notifier).registerPlatform(
+          await auth.registerPlatform(
               displayName: displayName.trim(),
               password: password,
               loginType: channel == 'sms' ? 'mobile' : 'email',
-              mobile: channel == 'sms' ? identifier.trim() : null,
-              email: channel == 'email' ? identifier.trim() : null,
+              mobile: channel == 'sms' ? normalizedIdentifier : null,
+              email: channel == 'email' ? normalizedIdentifier : null,
               verificationCode: verificationCode?.trim(),
               captchaToken: captchaToken,
               captchaAnswer: captchaAnswer,
               useDefaultRegistrationSpace: true);
           created = true;
-          final auth = root.read(authProvider).valueOrNull;
-          final session =
-              auth == null ? null : activeAccountSessionFromAuthState(auth);
-          if (session == null) {
-            throw const ImSdkException('REGISTER_LOGIN_FAILED', '账号已创建，请稍后登录');
-          }
-          await _waitForRuntime(session.scope);
-          if (root.read(authProvider).valueOrNull?.accountSession?.sessionId !=
-              session.sessionId) {
-            throw const ImSdkException('REGISTER_LOGIN_FAILED', '账号已创建，请稍后登录');
-          }
-          _authenticated = true;
-          _changed();
-          _emit('authenticated', {'spaceId': session.scope.spaceId});
+          await _finishRegistration(root);
         } catch (error) {
           final failure = created
               ? const ImSdkException(
                   'REGISTER_LOGIN_FAILED', '账号已创建，暂时无法进入聊天，请稍后登录')
               : _registrationFailure(error);
-          _authenticated = false;
-          try {
-            await root.read(authProvider.notifier).logout();
-          } catch (_) {}
-          _installRuntime(null);
-          _changed();
-          _emit('authenticationFailed', {'code': failure.code});
+          await _reportRegistrationFailure(auth, failure);
           throw failure;
         }
       });
+
+  bool get canRetryRegistrationActivation =>
+      isInitialized &&
+      _config?.hostManagedAuth != true &&
+      _root!.read(authProvider.notifier).canRetryRegistrationActivation;
+
+  /// Retries entering chat after a completed account creation.
+  Future<void> retryRegistrationActivation() => _serial(() async {
+        final root = _requireRoot();
+        if (!canRetryRegistrationActivation) {
+          throw const ImSdkException(
+              'REGISTER_LOGIN_FAILED', '账号已创建，请稍后登录');
+        }
+        final auth = root.read(authProvider.notifier);
+        try {
+          await auth.retryRegistrationActivation();
+          await _finishRegistration(root);
+        } catch (error) {
+          final failure = _registrationFailure(error);
+          await _reportRegistrationFailure(auth, failure);
+          throw failure;
+        }
+      });
+
+  void discardPendingRegistrationActivation() {
+    if (canRetryRegistrationActivation) {
+      _root!.read(authProvider.notifier).discardPendingRegistrationActivation();
+    }
+  }
+
+  Future<void> _finishRegistration(ProviderContainer root) async {
+    final auth = root.read(authProvider).valueOrNull;
+    final session = auth == null ? null : activeAccountSessionFromAuthState(auth);
+    if (session == null) {
+      throw const ImSdkException('REGISTER_LOGIN_FAILED', '账号已创建，请稍后登录');
+    }
+    await _waitForRuntime(session.scope);
+    if (root.read(authProvider).valueOrNull?.accountSession?.sessionId !=
+        session.sessionId) {
+      throw const ImSdkException('REGISTER_LOGIN_FAILED', '账号已创建，请稍后登录');
+    }
+    _authenticated = true;
+    _changed();
+    _emit('authenticated', {'spaceId': session.scope.spaceId});
+  }
+
+  Future<void> _reportRegistrationFailure(
+      AuthNotifier auth, ImSdkException failure) async {
+    _authenticated = false;
+    if (!auth.canRetryRegistrationActivation) {
+      try {
+        await auth.logout();
+      } catch (_) {}
+    }
+    _installRuntime(null);
+    _changed();
+    _emit('authenticationFailed', {'code': failure.code});
+  }
 
   Future<ImSdkCaptchaChallenge> requestLoginCaptcha() => _serial(() async {
         final root = _requireRoot();
@@ -858,14 +952,22 @@ class ImSdkClient with WidgetsBindingObserver {
       _changed();
       return;
     }
-    final child =
-        ProviderContainer(parent: _root, overrides: runtime.providerOverrides);
+    final child = createAuthenticatedRuntimeContainer(_root!, runtime);
     _account = child;
     final generation = _generation;
     final gateway = child.read(gatewayProvider);
     _gatewayStatus = gateway.statusStream.listen((status) {
       if (generation == _generation)
         _emit('connectionChanged', {'status': status.name});
+    });
+    child.listen<GroupInvitationNotice?>(groupInvitationNoticeProvider, (_, notice) {
+      if (notice != null && generation == _generation) {
+        _emit('groupInvitationReceived', {
+          'spaceId': notice.spaceId,
+          'conversationId': notice.conversationId,
+          'messageId': notice.messageId,
+        });
+      }
     });
     _badgeSubscription = child.listen<int?>(
         _sdkUnreadCountProvider(runtime.session.scope.spaceId), (_, count) {
@@ -984,18 +1086,31 @@ ImSdkException imSdkPasswordLoginFailure(Object error) {
     'LOGIN_FAILED': '登录未完成，请重试',
   };
   final message = messages[code];
-  return message == null
-      ? const ImSdkException('LOGIN_FAILED', '登录未完成，请重试')
-      : ImSdkException(code, message);
+  return ImSdkException(
+    message == null ? 'LOGIN_FAILED' : code,
+    message ?? '登录未完成，请重试',
+    requestId: _publicRequestId(error),
+  );
 }
 
-void _validateRegistrationIdentifier(String identifier, String channel) {
-  if ((channel != 'sms' && channel != 'email') ||
-      (channel == 'sms'
-          ? !Validators.isMobile(identifier)
-          : !Validators.isEmail(identifier))) {
-    throw const ImSdkException('INVALID_ARGUMENT', '请输入有效的手机号或邮箱');
+String? _publicRequestId(Object error) {
+  final id = switch (error) {
+    ServerError e => e.requestId,
+    AuthError e => e.requestId,
+    ImSdkException e => e.requestId,
+    _ => null,
+  };
+  return id != null && RegExp(r'^[A-Za-z0-9_.:-]{1,96}$').hasMatch(id) ? id : null;
+}
+
+String _registrationIdentifier(String identifier, String channel) {
+  if (channel == 'sms') {
+    final mobile = Validators.normalizeMainlandMobile(identifier);
+    if (mobile != null) return mobile;
+  } else if (channel == 'email' && Validators.isEmail(identifier)) {
+    return identifier.trim();
   }
+  throw const ImSdkException('INVALID_ARGUMENT', '请输入有效的手机号或邮箱');
 }
 
 void _validateCaptcha(String? token, String? answer) {
@@ -1027,6 +1142,9 @@ ImSdkException _registrationFailure(Object error) {
     'INVALID_ARGUMENT': '请检查注册信息',
     'AUTH_ACCOUNT_EXISTS': '账号已存在，请登录',
   };
-  return ImSdkException(messages.containsKey(code) ? code : 'REGISTER_FAILED',
-      messages[code] ?? '注册未完成，请检查信息或稍后重试');
+  return ImSdkException(
+    messages.containsKey(code) ? code : 'REGISTER_FAILED',
+    messages[code] ?? '注册未完成，请检查信息或稍后重试',
+    requestId: _publicRequestId(error),
+  );
 }

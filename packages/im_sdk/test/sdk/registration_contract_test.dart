@@ -81,6 +81,7 @@ Future<void> _withAuth(Future<void> Function(ProviderContainer, _Adapter) body,
     {Map<String, dynamic>? registration,
     Map<String, dynamic>? selected,
     Map<String, dynamic>? profile,
+    int personalSelectionFailures = 0,
     SecureStorageService? storage}) async {
   ServiceRealmConfig.configureForSdk(
       realmId: 'registration-contract', apiBaseUrl: 'https://im.example.test');
@@ -98,6 +99,13 @@ Future<void> _withAuth(Future<void> Function(ProviderContainer, _Adapter) body,
           'platformUserId': 'platform-user'
         };
       case '/api/platform/v1/auth/select-personal-space':
+        if (personalSelectionFailures > 0) {
+          personalSelectionFailures--;
+          throw DioException.connectionTimeout(
+            timeout: const Duration(seconds: 1),
+            requestOptions: request,
+          );
+        }
         return selected ?? _personal();
       case '/api/client/v1/tenant/features':
         return {'friendMode': 'social'};
@@ -136,6 +144,32 @@ Future<void> _register(ProviderContainer container) =>
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test('a transient activation failure can retry without a second signup',
+      () async {
+    await _withAuth((container, adapter) async {
+      final notifier = container.read(authProvider.notifier);
+      await expectLater(
+        _register(container),
+        throwsA(
+            predicate((e) => e.toString().contains('REGISTER_LOGIN_FAILED'))),
+      );
+      expect(notifier.canRetryRegistrationActivation, true);
+      expect(container.read(activeAccountSessionProvider), isNull);
+
+      await notifier.retryRegistrationActivation();
+
+      expect(notifier.canRetryRegistrationActivation, false);
+      expect(container.read(activeAccountSessionProvider)?.scope.spaceId,
+          'personal');
+      expect(adapter.requests.map((request) => request.path), [
+        '/api/platform/v1/auth/register',
+        '/api/platform/v1/auth/select-personal-space',
+        '/api/platform/v1/auth/select-personal-space',
+        '/api/client/v1/profile/me',
+      ]);
+    }, personalSelectionFailures: 1);
+  });
+
   test(
       'registration selects personal without tenant lookup and verifies identity',
       () async {

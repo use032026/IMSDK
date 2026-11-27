@@ -24,6 +24,7 @@ class FriendRequestResultSignal {
     required this.requestId,
     required this.status,
     required this.eventName,
+    this.autoAccepted = false,
     this.peerUserId,
     this.peerDisplayName,
     this.peerAvatarUrl,
@@ -33,6 +34,7 @@ class FriendRequestResultSignal {
   final String requestId;
   final FriendRequestStatus status;
   final String eventName;
+  final bool autoAccepted;
   final String? peerUserId;
   final String? peerDisplayName;
   final String? peerAvatarUrl;
@@ -116,7 +118,9 @@ class FriendRequestResultApplicationHandler {
     final effectiveRequestId = signal.requestId.trim().isNotEmpty
         ? signal.requestId.trim()
         : resolvedRequest?.requestId ?? '';
-    if (effectiveRequestId.isEmpty) {
+    final addedDirectly =
+        signal.status == FriendRequestStatus.accepted && signal.autoAccepted;
+    if (effectiveRequestId.isEmpty && !addedDirectly) {
       diagnostic('result_request_unresolved', {
         'eventName': signal.eventName,
         'status': signal.status.wireValue,
@@ -127,14 +131,16 @@ class FriendRequestResultApplicationHandler {
     }
 
     if (!isCurrentScope()) return;
-    try {
-      await showResultNotification(effectiveRequestId, signal.status);
-    } catch (error) {
-      diagnostic('result_notification_failed', {
-        'requestId': effectiveRequestId,
-        'status': signal.status.wireValue,
-        'error': error.toString(),
-      });
+    if (!addedDirectly) {
+      try {
+        await showResultNotification(effectiveRequestId, signal.status);
+      } catch (error) {
+        diagnostic('result_notification_failed', {
+          'requestId': effectiveRequestId,
+          'status': signal.status.wireValue,
+          'error': error.toString(),
+        });
+      }
     }
 
     if (!isCurrentScope() || signal.status == FriendRequestStatus.rejected) {
@@ -144,27 +150,32 @@ class FriendRequestResultApplicationHandler {
     final requestCandidates = resolvedRequest == null
         ? requestsBefore
         : <FriendRequest>[resolvedRequest];
-    final cachedDraft = resolveFriendAcceptanceConversationDraft(
-      requestId: effectiveRequestId,
-      currentUserId: currentUserId,
-      pendingRequests: requestCandidates,
-      friendsBefore: friendsBefore,
-      friendsAfter: friendsBefore,
-      eventPeerUserId: signal.peerUserId,
-      eventPeerDisplayName: signal.peerDisplayName,
-      eventPeerAvatarUrl: signal.peerAvatarUrl,
-      requestMessage: signal.requestMessage,
-    );
+    final cachedDraft = addedDirectly
+        ? null
+        : resolveFriendAcceptanceConversationDraft(
+            requestId: effectiveRequestId,
+            currentUserId: currentUserId,
+            pendingRequests: requestCandidates,
+            friendsBefore: friendsBefore,
+            friendsAfter: friendsBefore,
+            eventPeerUserId: signal.peerUserId,
+            eventPeerDisplayName: signal.peerDisplayName,
+            eventPeerAvatarUrl: signal.peerAvatarUrl,
+            requestMessage: signal.requestMessage,
+          );
 
     try {
-      await refreshFriends(cachedDraft?.peerUserId ?? '');
+      await refreshFriends(
+        cachedDraft?.peerUserId ?? signal.peerUserId?.trim() ?? '',
+      );
     } catch (error) {
       diagnostic('friends_refresh_failed', {
         'requestId': effectiveRequestId,
         'error': error.toString(),
       });
     }
-    if (!isCurrentScope()) return;
+    // Direct additions did not have an approval action to materialize in chat.
+    if (!isCurrentScope() || addedDirectly) return;
 
     final friendsAfter = readFriends();
     final draft = cachedDraft ??

@@ -1,12 +1,12 @@
 # Shared language resources
 
 The `im_l10n_catalog` package in the remote Ln18 repository owns the SDK's versioned translation
-sources. `l10n.resources.json` selects version 0.3.0 and the SDK renderer;
+sources. `l10n.resources.json` selects version 0.3.15 and the SDK renderer;
 `packages/im_sdk/l10n.bundle.json` preserves the Flutter language/key subset.
 The generated resources remain in this repository and source deliveries.
 
 `l10n.source.json` pins the GitHub repository, a full commit revision, the
-0.3.0 archive and its SHA256. The maintenance command downloads only that
+0.3.15 archive and its SHA256. The maintenance command downloads only that
 language package into the ignored `.l10n-cache/`; no desktop Ln18 checkout is
 required. It validates the archive and cached source before running its generator.
 The Flutter toolchain must match `.flutter-version` (or set `FLUTTER_BIN` /
@@ -42,7 +42,7 @@ file validation still falls back to the previous Simplified Chinese text.
 Legal documents retain all original text, language and platform selection;
 this operation does not amend agreements or add translations.
 
-The Flutter profile still selects exactly 1040 keys per locale. Its original
+The Flutter profile selects 1044 keys per locale. Its original
 six translations, metadata and 30 wording overrides are retained. New locales
 reuse the shared ARB source. Supplementary SDK/Web strings reuse shared keys
 only when meaning and parameters agree; missing exclusive translations fall

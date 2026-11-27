@@ -44,10 +44,28 @@ class ServerError extends AppError {
 /// 认证错误（需要重新登录或刷新 Token）
 class AuthError extends AppError {
   final String code;
-  const AuthError(this.code);
+  final String? message;
+  final int? statusCode;
+  final String? requestId;
+
+  const AuthError(this.code, {this.message, this.statusCode, this.requestId});
 
   @override
   String toString() => 'AuthError($code)';
+}
+
+enum CredentialFailure { rejected, sessionRevoked, exhausted }
+
+/// A credential endpoint confirmed that a credential or session was rejected.
+class CredentialRenewalError extends AuthError {
+  final CredentialFailure failure;
+
+  const CredentialRenewalError(
+    super.code,
+    this.failure, {
+    super.statusCode,
+    super.requestId,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +111,7 @@ class ErrorHandler {
 
   /// 将 DioException 转换为 AppError
   static AppError fromDioException(DioException e) {
+    if (e.error case final CredentialRenewalError error) return error;
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
@@ -117,7 +136,9 @@ class ErrorHandler {
               );
             }
           }
-          return const AuthError(_ErrorCodes.authInvalidToken);
+          return AuthError(_ErrorCodes.authInvalidToken,
+              statusCode: statusCode,
+              requestId: body is Map ? body['requestId']?.toString() : null);
         }
         if (body is Map<String, dynamic>) {
           final code = body['code'] as String? ?? 'SERVER_ERROR';
@@ -163,7 +184,8 @@ class ErrorHandler {
       // 认证错误 → AuthError（触发 Token 刷新或跳转登录）
       case _ErrorCodes.authInvalidCredentials:
       case _ErrorCodes.authInvalidToken:
-        return AuthError(code);
+        return AuthError(code,
+            message: message, statusCode: statusCode, requestId: requestId);
 
       // 需要图形验证码 → ServerError（展示验证码弹窗）
       case _ErrorCodes.authCaptchaRequired:

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/features/customer_service/domain/official_reception_policy.dart';
 
 import 'package:dio/dio.dart' as dio_package;
@@ -16,9 +17,11 @@ import 'package:im_sdk/core/platform/local_video_poster.dart';
 import 'package:im_sdk/core/platform/media_saver.dart';
 import 'package:im_sdk/core/permissions/app_permissions.dart';
 import 'package:im_sdk/core/space/space_context.dart';
+import 'package:im_sdk/core/storage/account_storage_context_provider.dart';
 import 'package:im_sdk/core/widgets/app_alert_dialog.dart';
 import 'package:im_sdk/core/widgets/app_toast.dart';
 import 'package:im_sdk/core/widgets/identity_badge.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/core/widgets/user_avatar.dart';
 import 'package:im_sdk/features/app_update/presentation/app_update_provider.dart';
 import 'package:im_sdk/features/call/presentation/models/call_route_intent.dart';
@@ -29,6 +32,7 @@ import 'package:im_sdk/features/chat/application/auto_translation_coordinator.da
 import 'package:im_sdk/features/chat/application/providers/draft_translation_selection_provider.dart';
 import 'package:im_sdk/features/chat/application/providers/auto_translate_preferences_provider.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
+import 'package:im_sdk/features/chat/domain/services/message_send_policy.dart';
 import 'package:im_sdk/features/chat/domain/services/auto_translation_policy.dart';
 import 'package:im_sdk/features/chat/domain/services/conversation_peer_identity.dart';
 import 'package:im_sdk/features/chat/domain/services/audio_player_service.dart';
@@ -97,6 +101,7 @@ import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:im_sdk/features/official_account/domain/services/official_account_menu_policy.dart';
+import 'package:im_sdk/features/official_account/domain/entities/official_account_card.dart';
 import 'package:im_sdk/features/official_account/presentation/widgets/official_account_menu_bar.dart';
 import 'package:im_sdk/features/teen_mode/presentation/providers/teen_mode_providers.dart';
 import 'package:im_sdk/features/teen_mode/presentation/utils/teen_mode_ui.dart';
@@ -112,6 +117,7 @@ bool shouldShowGroupSenderInfo({
 class ChatPage extends ConsumerStatefulWidget {
   /// Restricts the embedded messenger to messaging rather than App services.
   final bool messagingOnly;
+  final bool allowOfficialProfileRoute;
   final String conversationId;
   final bool isGroup;
   final String title;
@@ -128,10 +134,12 @@ class ChatPage extends ConsumerStatefulWidget {
   final String? customerServiceSource;
   final String? customerServiceInitialStatus;
   final bool customerServiceReadOnly;
+  final OfficialAccountCard? initialOfficialAccount;
 
   const ChatPage({
     super.key,
     this.messagingOnly = false,
+    this.allowOfficialProfileRoute = true,
     required this.conversationId,
     this.isGroup = false,
     required this.title,
@@ -148,6 +156,7 @@ class ChatPage extends ConsumerStatefulWidget {
     this.customerServiceSource,
     this.customerServiceInitialStatus,
     this.customerServiceReadOnly = false,
+    this.initialOfficialAccount,
   });
 
   @override
@@ -164,6 +173,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   final _scrollController = ScrollController();
   final _mediaPreviewLayoutCache = MediaPreviewLayoutCache();
   late final ActiveChatLifecycle _activeChatLifecycle;
+  late final AppLifecycleListener _chatAppLifecycle;
+  ModalRoute<dynamic>? _chatRoute;
+  bool _routeIsCurrent = false;
+  bool _foreground = false;
+  bool _chatInTree = true;
+  bool _historyRefreshScheduled = false;
   bool _isSending = false;
   String _spaceId = '';
   Timer? _refreshTimer;
@@ -185,8 +200,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   bool _autoTranslationSyncScheduled = false;
   String? _lastImmediateScheduledMessageProbeKey;
   bool _requestedScrollTarget = false;
-  // 退出时上报已读的 seq（微信做法：进入立即本地清零，退出时才上报服务器）
-  int? _pendingReadSeq;
+  (String, String, bool, String)? _automaticReadScope;
+  int _submittedReadSeq = 0;
   int? _initialMentionLastReadSeq;
   // 非好友/无权限发消息（MSG_MEMBER_FORBIDDEN）
   bool _notFriend = false;
@@ -254,6 +269,22 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     }
     if (detail != null && !detail.isTerminal) return false;
     return routeReadOnly;
+  }
+
+  bool get _isCustomerReadOnlyConversation {
+    if (_isCustomerServiceThread || _spaceId.isEmpty) return false;
+    final conversation = ref
+        .read(conversationsProvider(_spaceId))
+        .valueOrNull
+        ?.where((item) => item.conversationId == _activeConversationId)
+        .firstOrNull;
+    return !MessageSendPolicy.customerCanReplyForConversation(
+      spaceId: _spaceId,
+      userId: ref.read(currentSpaceProvider)?.userId ?? '',
+      conversationId: _activeConversationId,
+      conversation: conversation,
+      initialOfficialAccount: widget.initialOfficialAccount,
+    );
   }
 
   CustomerServiceChatState get _customerServiceChatState =>
@@ -417,13 +448,23 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _activeChatLifecycle = ActiveChatLifecycle(
       ref.read(activeChatConversationProvider.notifier),
     );
+    final lifecycleState = WidgetsBinding.instance.lifecycleState;
+    _foreground =
+        lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
+    _chatAppLifecycle = AppLifecycleListener(onStateChange: (state) {
+      _foreground = state == AppLifecycleState.resumed;
+      if (_chatIsVisible) {
+        _scheduleVisibleHistoryRefresh();
+        // Ask the viewport to measure the actual rendered rows again on resume.
+        setState(() {});
+      }
+    });
     _resolvedIsGroup = widget.isGroup;
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _markActiveChatForNotifications();
     });
-    // 进入聊天页时立即本地清零未读数
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _spaceId.isEmpty) return;
       if (_isPendingDirectChat) return;
@@ -445,59 +486,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         }
       }
       _captureInitialMentionReadSeq();
-      if (!_isCustomerServiceThread ||
-          !_customerServiceThread().isOfficialReception) {
-        ref.read(conversationsProvider(_spaceId).notifier).markReadLocally(
-              _activeConversationId,
-              isGroup: _effectiveIsGroup,
-            );
+      if (_effectiveIsGroup) {
+        ref.listenManual(
+          chatProvider((_spaceId, _activeConversationId, true)),
+          (_, next) => next.whenData(_scheduleGroupReadReceiptAutoSync),
+          fireImmediately: true,
+        );
       }
-      // 监听消息加载完成，只有有未读时才上报已读到服务器
-      ref.listenManual(
-        chatProvider((_spaceId, _activeConversationId, _effectiveIsGroup)),
-        (prev, next) {
-          next.whenData((msgs) {
-            if (msgs.isNotEmpty) {
-              final maxSeq = msgs
-                  .map((m) => m.conversationSeq)
-                  .reduce((a, b) => a > b ? a : b);
-              if (_pendingReadSeq != null && maxSeq <= _pendingReadSeq!) {
-                return;
-              }
-              _pendingReadSeq = maxSeq;
-              // 进入聊天页后立即上报已读（无论 unreadCount 是否为 0，
-              // 确保服务端也清零；后台同步拉到更大 seq 时继续补报）
-              if (_isCustomerServiceThread &&
-                  !_customerServiceThread().isTempSession) {
-                final detail = _customerServiceThreadDetailForSend();
-                if (canOperateOfficialReception(
-                    inOfficial: detail.isOfficialReception,
-                    assignedStaffUserId: detail.assignedStaffUserId,
-                    userId: ref.read(currentSpaceProvider)?.userId ?? '')) {
-                  unawaited(ref
-                      .read(customerServiceRepositoryProvider)
-                      .markThreadRead(
-                          _customerServiceThreadForDisplay(), maxSeq)
-                      .catchError((Object error) {
-                    _pendingReadSeq = null;
-                    return 0;
-                  }));
-                } else {
-                  _pendingReadSeq = null;
-                }
-              } else {
-                ref
-                    .read(conversationsProvider(_spaceId).notifier)
-                    .markRead(_activeConversationId, _effectiveIsGroup, maxSeq);
-              }
-              if (_effectiveIsGroup) {
-                _scheduleGroupReadReceiptAutoSync(msgs);
-              }
-            }
-          });
-        },
-        fireImmediately: true,
-      );
       if (_isCustomerServiceThread) {
         _customerServiceThreadsSub ??= ref.listenManual(
           customerServiceThreadsProvider,
@@ -529,6 +524,103 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     });
   }
 
+  bool get _chatIsVisible =>
+      mounted &&
+      _chatInTree &&
+      _foreground &&
+      TickerMode.of(context) &&
+      (_chatRoute?.isCurrent ?? true);
+
+  void _scheduleVisibleHistoryRefresh() {
+    if (_historyRefreshScheduled) return;
+    _historyRefreshScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _historyRefreshScheduled = false;
+      if (!_chatIsVisible ||
+          _spaceId.isEmpty ||
+          _isPendingDirectChat ||
+          _effectiveIsGroup ||
+          _isCustomerServiceThread) {
+        return;
+      }
+      final chat = ref.read(
+        chatProvider((_spaceId, _activeConversationId, false)).notifier,
+      );
+      unawaited(chat.refreshDirectHistory());
+    });
+  }
+
+  Future<void> _reportDisplayedMessages(
+    (String, String, bool) timeline,
+    String renderedUserId,
+    List<Message> displayed,
+  ) async {
+    if (!_chatIsVisible || _isPendingDirectChat || _isReadOnlyConversation) {
+      return;
+    }
+    final (spaceId, conversationId, isGroup) = timeline;
+    final space = ref.read(accountRuntimeCurrentSpaceProvider);
+    if (spaceId.isEmpty ||
+        space?.spaceId != spaceId ||
+        renderedUserId.isEmpty ||
+        space?.userId != renderedUserId ||
+        conversationId != _activeConversationId) {
+      return;
+    }
+
+    const receipts = MessageReadReceiptService();
+    final displayedMax = receipts.lastDisplayedSeq(displayed);
+    if (displayedMax <= 0) return;
+    final bound = ref
+        .read(chatProvider(timeline).notifier)
+        .boundAutomaticReadSeq(displayedMax);
+    final readSeq = receipts.lastDisplayedSeq(displayed, throughSeq: bound);
+    final scope = (spaceId, conversationId, isGroup, renderedUserId);
+    if (_automaticReadScope != scope) {
+      _automaticReadScope = scope;
+      _submittedReadSeq = 0;
+    }
+    if (readSeq <= _submittedReadSeq) return;
+
+    _submittedReadSeq = readSeq;
+    var recorded = false;
+    try {
+      if (_isCustomerServiceThread && !_customerServiceThread().isTempSession) {
+        recorded = await ref
+            .read(customerServiceChatControllerProvider)
+            .markDisplayedMessagesRead(
+              _customerServiceThreadForDisplay(),
+              readSeq,
+            );
+      } else {
+        recorded = await ref
+            .read(conversationsProvider(spaceId).notifier)
+            .markDisplayedMessagesRead(
+              conversationId,
+              isGroup: isGroup,
+              displayedSeq: readSeq,
+            );
+      }
+    } catch (error) {
+      AppDiagnostics.instance.warning(
+        'chat.read.viewport_failed',
+        'Displayed read receipt was not recorded',
+        context: {
+          'spaceId': spaceId,
+          'conversationId': conversationId,
+          'readSeq': readSeq,
+          'errorType': error.runtimeType.toString(),
+        },
+      );
+    } finally {
+      if (!recorded &&
+          _automaticReadScope == scope &&
+          _submittedReadSeq == readSeq) {
+        _submittedReadSeq = 0;
+      }
+    }
+  }
+
   void _markActiveChatForNotifications() {
     _activeChatLifecycle.markActive(_activeConversationId);
   }
@@ -547,10 +639,16 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final routeIsCurrent = ModalRoute.isCurrentOf(context) ?? true;
+    _chatRoute = ModalRoute.of(context);
     final space = ref.read(currentSpaceProvider);
     final nextSpaceId = space?.spaceId ?? '';
     final spaceChanged = nextSpaceId != _spaceId;
     _spaceId = nextSpaceId;
+    if (routeIsCurrent && (!_routeIsCurrent || spaceChanged)) {
+      _scheduleVisibleHistoryRefresh();
+    }
+    _routeIsCurrent = routeIsCurrent;
     if (spaceChanged && _spaceId.isNotEmpty) {
       unawaited(_refreshScheduledMessages());
     }
@@ -1224,6 +1322,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   void dispose() {
+    _chatAppLifecycle.dispose();
     _refreshTimer?.cancel();
     _groupDetailRefreshTimer?.cancel();
     _groupReadReceiptAutoSyncTimer?.cancel();
@@ -1235,13 +1334,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     }
     _manualTranslationCancellations.clear();
     _scrollController.dispose();
-    // 退出时上报已读（微信做法：退出才调服务器接口）
-    // 注意：dispose 里不能用 ref，用 fire-and-forget 方式在 deactivate 里处理
     super.dispose();
   }
 
   @override
   void deactivate() {
+    _chatInTree = false;
     // 路由退出时 Element 会先失活、后 dispose。账号切换期间如果只在
     // dispose 取消定时器，回调可能在这段窗口读取已经失活的 ProviderScope。
     _refreshTimer?.cancel();
@@ -1262,7 +1360,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   void activate() {
     super.activate();
+    _chatInTree = true;
     _activeChatLifecycle.activate(_activeConversationId);
+    _scheduleVisibleHistoryRefresh();
   }
 
   void _onScroll() {
@@ -1336,7 +1436,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       if (capabilities.canMultiSelect)
         _WxMenuItem('multiselect', Icons.check_box_outlined,
             AppLocalizations.of(context).chatMenuMultiSelect),
-      if (capabilities.canReply)
+      if (capabilities.canReply && !_isCustomerReadOnlyConversation)
         _WxMenuItem('reply', Icons.reply_outlined,
             AppLocalizations.of(context).chatMenuReply),
       if (capabilities.canAiReply)
@@ -1601,15 +1701,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     }
 
     try {
-      await ref.read(conversationActionsControllerProvider).addFavorite(
-            messageId: msg.messageId,
-            conversationId: msg.conversationId.isNotEmpty
-                ? msg.conversationId
-                : widget.conversationId,
-          );
+      final result =
+          await ref.read(conversationActionsControllerProvider).addFavorite(
+                messageId: msg.messageId,
+                conversationId: msg.conversationId.isNotEmpty
+                    ? msg.conversationId
+                    : widget.conversationId,
+              );
+      if (!mounted) return;
       ref.invalidate(favoritesProvider);
       ref.invalidate(favoritesSummaryProvider);
-      if (mounted) {
+      if (result == FavoriteAddResult.unconfirmed) {
+        AppToast.info(
+            context, AppLocalizations.of(context).chatFavoriteUnconfirmed);
+      } else {
         AppToast.success(
           context,
           AppLocalizations.of(context).chatFavoriteSuccess,
@@ -1640,7 +1745,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       final mimeType = resource.mimeType ?? _defaultMimeType(msg.type);
       final bytes = await ref
           .read(mediaOpenControllerProvider(_spaceId))
-          .bytesForResource(resource);
+          .bytesForResource(resource,
+              context: MediaRequestContext(
+                conversationId: msg.conversationId,
+                messageId: msg.messageId,
+                conversationSeq: msg.conversationSeq,
+                kind: msg.type.name,
+                download: true,
+                fallbackUrl: resource.url,
+              ));
       final result = await _mediaSaver.saveMedia(
         bytes: bytes,
         fileName: fileName,
@@ -2402,6 +2515,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       Message updated,
     ) onMessageUpdate,
   }) async {
+    if (_isCustomerReadOnlyConversation) {
+      throw const ServerError(
+        code: 'OFFICIAL_ACCOUNT_READONLY',
+        message: 'customer replies are disabled for this official account',
+      );
+    }
     if (_isCustomerServiceThread) {
       final action = type == MessageType.text
           ? CustomerServiceAction.sendText
@@ -2498,6 +2617,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   Future<bool> _scheduleTextMessage(String text, DateTime scheduledAt) async {
+    if (_isCustomerReadOnlyConversation) return false;
     const timePolicy = ScheduledMessageTimePolicy();
     final now = DateTime.now();
     if (timePolicy.isBeforeMinLeadTime(scheduledAt, now)) {
@@ -2548,6 +2668,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     required String text,
     required DateTime scheduledAt,
   }) async {
+    if (_isCustomerReadOnlyConversation) return false;
     const timePolicy = ScheduledMessageTimePolicy();
     final now = DateTime.now();
     if (timePolicy.isBeforeMinLeadTime(scheduledAt, now)) {
@@ -2747,6 +2868,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             );
     if (mounted) {
       setState(() => _createdConversationId = chatId);
+      _scheduleVisibleHistoryRefresh();
     } else {
       _createdConversationId = chatId;
     }
@@ -3103,6 +3225,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   /// 重发失败消息
   Future<void> _retryMessage(Message message) async {
+    if (_isCustomerReadOnlyConversation) return;
     if (!canRetryMessageTransport(message)) return;
     if (shouldBlockChatSendAction(
       ChatSendAction.retryFailed,
@@ -3193,7 +3316,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     final convs =
         ref.read(releaseVisibleConversationsProvider(_spaceId)).valueOrNull ??
             [];
-    if (convs.isEmpty) {
+    final writableConversations = convs
+        .where((conversation) => !conversation.isCustomerReadOnly)
+        .toList();
+    if (writableConversations.isEmpty) {
       if (mounted) {
         AppToast.info(
             context, AppLocalizations.of(context).chatNoConversations);
@@ -3204,7 +3330,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     // 打开转发选择页面（全屏页面，不用底部弹窗）
     final target = await Navigator.of(context).push<Conversation>(
       MaterialPageRoute(
-        builder: (_) => _ForwardSelectPage(conversations: convs),
+        builder: (_) =>
+            _ForwardSelectPage(conversations: writableConversations),
       ),
     );
     if (target == null || !mounted) return;
@@ -3297,7 +3424,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         return;
       case OfficialAccountClickKind.openRoute:
         if (decision.value == 'ztchat://profile' && mounted) {
-          await context.push('/my-profile');
+          if (widget.allowOfficialProfileRoute) {
+            await context.push('/my-profile');
+          } else {
+            AppToast.info(context, AppLocalizations.of(context).officialAccountOpenFailed);
+          }
         }
         return;
       case OfficialAccountClickKind.openHandoff:
@@ -3376,6 +3507,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final renderedSpaceId = _spaceId;
     final conversationsAsync = _spaceId.isNotEmpty
         ? ref.watch(conversationsProvider(_spaceId))
         : const AsyncData(<Conversation>[]);
@@ -3806,12 +3938,23 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                           ? null
                           : (msg) => _showFailedMessageSheet(context, msg),
                       onViewportChanged: _handleMessageViewportChanged,
+                      onDisplayedMessages: (displayed) => unawaited(
+                        _reportDisplayedMessages(
+                          (
+                            renderedSpaceId,
+                            activeConversationId,
+                            effectiveIsGroup
+                          ),
+                          currentUserId,
+                          displayed,
+                        ),
+                      ),
                     );
                   },
                 ),
               ),
               // 回复预览条（对照 figma ChatPage 的 replyingTo 区域）
-              if (_replyingTo != null)
+              if (_replyingTo != null && !_isCustomerReadOnlyConversation)
                 _ReplyPreview(
                   senderName: _replyingTo!.sender,
                   text: _replyingTo!.text,
@@ -3824,6 +3967,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   previewText: customerTypingPreview.previewText,
                 ),
               if (!_isReadOnlyConversation &&
+                  !_isCustomerReadOnlyConversation &&
                   !_customerServiceThreadEnded &&
                   !_customerServiceRequiresManualEntry &&
                   !teenConversationRestricted &&
@@ -3852,7 +3996,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     _customerServiceThreadForDisplay(),
                   ),
                 )
-              else if (_isReadOnlyConversation)
+              else if (_isReadOnlyConversation ||
+                  _isCustomerReadOnlyConversation)
                 const _ReadOnlyConversationNotice()
               else if (_customerServiceThreadEnded)
                 CustomerServiceEndedNotice(
@@ -4319,6 +4464,19 @@ class _ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final reserveSubtitleSlot = customerServiceSubtitle?.isNotEmpty == true ||
         isGroup ||
         (space != null && !space.isPersonal);
+    final chatTitle = OfficialVerifiedName(
+      verified: !isCustomerServiceThread &&
+          conv?.showsPeerOfficialVerification == true,
+      name: Text(
+        title,
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSurface,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
 
     return AppBar(
       backgroundColor: colorScheme.surface,
@@ -4384,17 +4542,7 @@ class _ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+                    Flexible(child: chatTitle),
                     if (identity != null) ...[
                       const SizedBox(width: 6),
                       IdentityBadge(
@@ -4423,17 +4571,7 @@ class _ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Flexible(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                Flexible(child: chatTitle),
                 if (identity != null) ...[
                   const SizedBox(width: 6),
                   IdentityBadge(
@@ -5766,6 +5904,7 @@ class _MessageList extends ConsumerWidget {
   final void Function(Message msg)? onCallLogTap;
   final void Function(Message msg)? onFailedTap;
   final MessageViewportChanged onViewportChanged;
+  final ValueChanged<List<Message>>? onDisplayedMessages;
 
   const _MessageList({
     required this.messages,
@@ -5794,6 +5933,7 @@ class _MessageList extends ConsumerWidget {
     this.onCallLogTap,
     this.onFailedTap,
     required this.onViewportChanged,
+    this.onDisplayedMessages,
   });
 
   bool get _isSelfChat => conversationId.startsWith('self-');
@@ -5878,12 +6018,23 @@ class _MessageList extends ConsumerWidget {
       if (clientMessageId.isNotEmpty) return clientMessageId;
       return 'local:${message.conversationSeq}:$index';
     }, growable: false);
+    final displayedCallback = onDisplayedMessages;
+    final messagesById = displayedCallback == null
+        ? const <String, Message>{}
+        : Map<String, Message>.fromIterables(
+            viewportItemIds, messages.reversed);
     final listView = MessageViewportList(
       itemIds: viewportItemIds,
       scrollController: scrollController,
       reverse: true,
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 24),
       onViewportChanged: onViewportChanged,
+      onVisibleItemsMeasured: displayedCallback == null
+          ? null
+          : (ids) => displayedCallback([
+                for (final id in ids)
+                  if (messagesById[id] case final message?) message,
+              ]),
       itemBuilder: (context, index) {
         // reverse: true 时 index 0 是最新消息，需要反转
         final realIndex = messages.length - 1 - index;

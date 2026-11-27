@@ -3242,4 +3242,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => '操作に失敗しました。再試行してください。';
+
+  @override
+  String get scanIncomingFriendRequest => 'このユーザーから友だち申請が届いています。先に確認してください。';
+
+  @override
+  String get chatGroupAddedToGroup => 'グループチャットに追加されました';
+
+  @override
+  String get chatFavoriteUnconfirmed => 'お気に入りへの登録結果を確認できませんでした。再試行してください';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

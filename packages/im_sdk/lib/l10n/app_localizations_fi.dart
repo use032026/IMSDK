@@ -3351,4 +3351,18 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Toiminto epäonnistui. Yritä uudelleen.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Tämä henkilö on jo lähettänyt sinulle ystäväpyynnön. Tarkista se ensin.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Sinut lisättiin ryhmäkeskusteluun';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Suosikkeihin lisäämisen tulosta ei voitu vahvistaa. Yritä uudelleen';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

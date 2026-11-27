@@ -74,6 +74,16 @@ void main() {
       expect(text.localeName, locale.toString(), reason: '$locale');
       expect(text.commonRetry, isNotEmpty, reason: '$locale');
       expect(
+        [
+          text.scanIncomingFriendRequest,
+          text.chatGroupAddedToGroup,
+          text.chatFavoriteUnconfirmed,
+          text.officialAccountVerifiedBadge,
+        ],
+        everyElement(isNotEmpty),
+        reason: '$locale must provide the adopted messaging strings',
+      );
+      expect(
         text.chatReadCount(3),
         allOf(contains('3'), isNot(contains('{count}'))),
         reason: '$locale must format the typed count parameter',

@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "सिस्टम से साझा करना पूरा हुआ। प्राप्त करने वाले ऐप में फ़ाइल जाँचें।",
   "diagnosticsCancelled": "साझा करना रद्द हुआ। आप फिर निर्यात कर सकते हैं।",
   "diagnosticsUnconfirmed": "साझा करने की पुष्टि नहीं हो सकी। प्राप्त करने वाला ऐप जाँचें।",
-  "diagnosticsFailed": "कार्रवाई विफल हुई। फिर कोशिश करें।"
+  "diagnosticsFailed": "कार्रवाई विफल हुई। फिर कोशिश करें।",
+  "scanIncomingFriendRequest": "इस व्यक्ति ने आपको पहले से दोस्ती का अनुरोध भेजा है। पहले उसे देखें।",
+  "chatGroupAddedToGroup": "आपको समूह चैट में जोड़ दिया गया है",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "पसंदीदा में जोड़ने के परिणाम की पुष्टि नहीं हो सकी। फिर कोशिश करें",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

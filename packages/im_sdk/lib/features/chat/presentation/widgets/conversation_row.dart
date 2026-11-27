@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:im_sdk/core/providers/font_size_provider.dart';
 import 'package:im_sdk/core/space/space_manager.dart';
 import 'package:im_sdk/core/widgets/identity_badge.dart';
+import 'package:im_sdk/core/widgets/official_verified_name.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 import 'package:im_sdk/features/chat/domain/services/mention_reminder.dart';
 import 'package:im_sdk/features/chat/domain/services/conversation_peer_identity.dart';
@@ -85,7 +86,7 @@ class ConversationRow extends ConsumerWidget {
             .valueOrNull
         : null;
 
-    bool isPeerOfficial = false;
+    final isPeerOfficial = conversation.isEnterpriseOfficialAccount;
     ({String label, String shortLabel, IdentityBadgeTone tone})? peerIdentity;
     if (!isPersonal && !isGroup) {
       int? directoryUserType;
@@ -99,8 +100,6 @@ class ConversationRow extends ConsumerWidget {
           if (peer != null) {
             directoryUserType = peer.userType;
             directoryRoleLabel = peer.customerTag;
-          } else if (conversation.peerUserType == null) {
-            isPeerOfficial = true;
           }
         }
       }
@@ -197,17 +196,21 @@ class ConversationRow extends ConsumerWidget {
                               child: Row(
                                 children: [
                                   Flexible(
-                                    child: Text(
-                                      directTitle,
-                                      style: TextStyle(
-                                        fontSize: 14.5,
-                                        fontWeight: FontWeight.w400,
-                                        color: _rowTitleColor(context),
-                                        height: 1.18,
+                                    child: OfficialVerifiedName(
+                                      verified: conversation
+                                          .showsPeerOfficialVerification,
+                                      name: Text(
+                                        directTitle,
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w400,
+                                          color: _rowTitleColor(context),
+                                          height: 1.18,
+                                        ),
+                                        textScaler:
+                                            TextScaler.linear(rowTextScale),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      textScaler:
-                                          TextScaler.linear(rowTextScale),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 4),

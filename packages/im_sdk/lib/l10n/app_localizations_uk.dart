@@ -3340,4 +3340,18 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Не вдалося виконати дію. Спробуйте ще раз.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Ця людина вже надіслала вам запит у друзі. Спочатку розгляньте його.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Вас додали до групового чату';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Не вдалося підтвердити додавання до обраного. Повторіть спробу';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

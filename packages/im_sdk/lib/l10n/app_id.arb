@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Berbagi melalui sistem selesai. Pastikan berkas ada di aplikasi penerima.",
   "diagnosticsCancelled": "Berbagi dibatalkan. Anda dapat mengekspor lagi.",
   "diagnosticsUnconfirmed": "Berbagi tidak dapat dikonfirmasi. Periksa aplikasi penerima.",
-  "diagnosticsFailed": "Operasi gagal. Silakan coba lagi."
+  "diagnosticsFailed": "Operasi gagal. Silakan coba lagi.",
+  "scanIncomingFriendRequest": "Orang ini sudah mengirim permintaan pertemanan kepada Anda. Tinjau terlebih dahulu.",
+  "chatGroupAddedToGroup": "Anda telah ditambahkan ke chat grup",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Hasil penambahan ke favorit belum dapat dikonfirmasi. Coba lagi",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

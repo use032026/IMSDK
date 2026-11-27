@@ -5,6 +5,7 @@ import 'package:im_sdk/features/customer_service/presentation/providers/customer
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:im_sdk/core/diagnostics/app_diagnostics.dart';
 import 'package:im_sdk/core/di/injector.dart';
+import 'package:im_sdk/core/network/error_handler.dart';
 import 'package:im_sdk/core/space/space_context.dart';
 import 'package:im_sdk/core/storage/account_storage_context.dart';
 import 'package:im_sdk/core/storage/account_storage_context_provider.dart';
@@ -20,6 +21,7 @@ import 'package:im_sdk/features/chat/domain/entities/message.dart';
 import 'package:im_sdk/features/chat/domain/entities/read_receipt.dart';
 import 'package:im_sdk/features/chat/domain/repositories/chat_repository.dart';
 import 'package:im_sdk/features/chat/domain/services/conversation_deletion_policy.dart';
+import 'package:im_sdk/features/chat/domain/services/direct_history_coverage.dart';
 import 'package:im_sdk/features/chat/domain/services/call_log_policy.dart';
 import 'package:im_sdk/features/chat/domain/services/message_read_receipt_service.dart';
 import 'package:im_sdk/features/chat/domain/services/message_timeline_policy.dart';
@@ -42,15 +44,24 @@ final _chatRepositoryProvider =
     Provider.family<ChatRepository, String>((ref, spaceId) {
   final dio = ref.watch(dioProvider);
   final storage = ref.watch(accountStorageContextProvider);
+  var disposed = false;
+  ref.onDispose(() => disposed = true);
   return ChatRepositoryImpl(
     remote: ChatRemoteDataSourceImpl(dio),
     local: ref.watch(chatLocalDataSourceProvider),
     spaceId: spaceId,
     draftStore: storage == null ? null : ref.watch(chatDraftLocalStoreProvider),
     draftUserId: storage?.scope.userId,
+    isOperationCurrent: () =>
+        !disposed &&
+        storage?.scope.spaceId == spaceId &&
+        storage?.scope
+                .ownsSpace(ref.read(accountRuntimeCurrentSpaceProvider)) ==
+            true,
   );
 }, dependencies: [
   dioProvider,
+  accountRuntimeCurrentSpaceProvider,
   accountStorageContextProvider,
   chatLocalDataSourceProvider,
   chatDraftLocalStoreProvider,
@@ -72,11 +83,17 @@ class ChatNotifier
   DateTime? _explicitDeletedAt;
   bool _initialLoadCompleted = false;
   final List<Message> _pendingRealtimeMessages = [];
+  final Set<String> _pendingPersistedMessageIds = {};
   (AccountStorageContext?, String)? _pendingRealtimeOwner;
   final Map<String, Future<void>> _messageWriteTails = {};
   final Set<String> _diagnosedInvalidCallLogIds = <String>{};
   int? _oldestRawServerSequence;
   int _loadRevision = 0;
+  DirectHistoryCoverage _directHistoryCoverage = DirectHistoryCoverage();
+  Future<void>? _directHistoryRefresh;
+  bool _needsInitialDirectHistory = false;
+  bool _directHistoryIncludesLatest = false;
+  bool _directHistoryBaselineVerified = false;
   // Ownership metadata for the existing snapshot; no separate message cache.
   (AccountStorageContext?, String)? _messageOwner;
 
@@ -94,6 +111,11 @@ class ChatNotifier
     });
     final (spaceId, _, _) = arg;
     _oldestRawServerSequence = null;
+    _directHistoryCoverage = DirectHistoryCoverage();
+    _directHistoryRefresh = null;
+    _needsInitialDirectHistory = false;
+    _directHistoryIncludesLatest = false;
+    _directHistoryBaselineVerified = false;
     _initialLoadCompleted = false;
     _isLoadingMore = false;
     _hasMore = true;
@@ -162,13 +184,31 @@ class ChatNotifier
     final pending = _pendingRealtimeOwner == owner
         ? _visibleMessages(_pendingRealtimeMessages)
         : const <Message>[];
+    final pendingWrites = pending
+        .where(
+          (message) => !_pendingPersistedMessageIds.contains(message.messageId),
+        )
+        .toList(growable: false);
     _pendingRealtimeMessages.clear();
+    _pendingPersistedMessageIds.clear();
     _pendingRealtimeOwner = null;
     _messageOwner = owner;
     _initialLoadCompleted = true;
     final merged = _visibleMessages(_mergeMessages(initial, pending));
     _recordRawPaginationWindow(merged);
-    for (final message in pending) {
+    _observeDirectHistory(pending);
+    if (_needsInitialDirectHistory ||
+        (pending.isNotEmpty &&
+            !_directHistoryBaselineVerified &&
+            _usesDirectHistory)) {
+      final revision = _loadRevision;
+      scheduleMicrotask(() {
+        if (revision == _loadRevision) unawaited(refreshDirectHistory());
+      });
+    } else if (_directHistoryCoverage.firstGap != null) {
+      _scheduleDirectGapRecovery();
+    }
+    for (final message in pendingWrites) {
       _persistMessage(arg.$1, arg.$2, message);
     }
     return merged;
@@ -204,12 +244,18 @@ class ChatNotifier
     _publishTimeline(_visibleMessages(reduce(current)));
   }
 
-  void _bufferMessage((AccountStorageContext?, String) owner, Message message) {
+  void _bufferMessage(
+    (AccountStorageContext?, String) owner,
+    Message message, {
+    bool persisted = false,
+  }) {
     if (_pendingRealtimeOwner != owner) {
       _pendingRealtimeMessages.clear();
+      _pendingPersistedMessageIds.clear();
       _pendingRealtimeOwner = owner;
     }
     _pendingRealtimeMessages.add(message);
+    if (persisted) _pendingPersistedMessageIds.add(message.messageId);
   }
 
   Future<List<Message>> _loadInitial(
@@ -246,6 +292,7 @@ class ChatNotifier
     if (repo is ChatRepositoryImpl) {
       final cached = await repo.getCachedMessages(conversationId);
       if (revision != _loadRevision) return const [];
+      if (!isGroup) _observeDirectHistory(cached ?? const []);
       final visibleCached = _mergeInitialMessages(cached ?? const [], owner);
       _recordRawPaginationWindow(cached ?? const []);
       _recordRawPaginationWindow(visibleCached);
@@ -257,9 +304,10 @@ class ChatNotifier
               visibleCached,
             );
 
-        // 2. 后台增量同步：只拉比本地更新的消息
-        _syncInBackground(conversationId, isGroup);
-        if (!isGroup) {
+        if (isGroup) {
+          _syncInBackground(conversationId, isGroup);
+        } else {
+          _needsInitialDirectHistory = true;
           _syncDirectPeerReadStatusInBackground(conversationId);
           _startDirectReadStatusFastTrack(conversationId);
         }
@@ -270,8 +318,16 @@ class ChatNotifier
 
     // 3. 无缓存（首次进入）：走网络，显示 loading
     try {
-      final messages = await repo.getMessages(conversationId, isGroup: isGroup);
+      final directRepo = repo is ChatRepositoryImpl && !isGroup ? repo : null;
+      final messages = directRepo != null
+          ? await directRepo.getMessages(conversationId,
+              allowCachedFallback: false)
+          : await repo.getMessages(conversationId, isGroup: isGroup);
       if (revision != _loadRevision) return const [];
+      if (directRepo != null) {
+        _directHistoryBaselineVerified = messages.isNotEmpty;
+        _observeDirectHistory(messages);
+      }
       _recordRawPaginationWindow(messages);
       final visibleMessages = _projectForDisplay(
         _visibleMessages(messages),
@@ -293,6 +349,163 @@ class ChatNotifier
       final current = _retainedMessages(owner);
       if (current != null && current.isNotEmpty) return current;
       return [];
+    }
+  }
+
+  bool get _usesDirectHistory =>
+      _repo is ChatRepositoryImpl && !_resolveIsGroup(arg.$1, arg.$2, arg.$3);
+
+  void _observeDirectHistory(Iterable<Message> messages) {
+    if (messages.isEmpty || !_usesDirectHistory) return;
+    _discardClearedHistoryCoverage();
+    final floor = _deletedThroughSeq ?? 0;
+    for (final message in messages) {
+      if (message.conversationId == arg.$2 && message.conversationSeq > floor) {
+        _directHistoryCoverage.observe(message.conversationSeq);
+      }
+    }
+  }
+
+  void _discardClearedHistoryCoverage() {
+    _refreshConfirmedDeletionState();
+    _directHistoryCoverage.discardThrough(_deletedThroughSeq ?? 0);
+  }
+
+  /// A read receipt is cumulative. A newer row can be visible while an
+  /// earlier portion of the timeline is still being recovered.
+  int boundAutomaticReadSeq(int displayedSeq) {
+    // A sparse cached tail can contain only the higher send confirmation.
+    // Without an authoritative baseline it cannot certify an earlier window.
+    if (_messageOwner == null ||
+        (_usesDirectHistory && !_directHistoryBaselineVerified)) {
+      return 0;
+    }
+    _discardClearedHistoryCoverage();
+    return _directHistoryCoverage.boundRead(displayedSeq);
+  }
+
+  /// Recover the open direct chat on entry, route return or foreground.
+  /// Initial loading already requests or schedules history for this revision.
+  Future<void> refreshDirectHistory() => _recoverDirectHistory(latest: true);
+
+  void _scheduleDirectGapRecovery() {
+    final needsBaseline = _initialLoadCompleted &&
+        !_directHistoryBaselineVerified &&
+        _usesDirectHistory;
+    if (!needsBaseline && _directHistoryCoverage.firstGap == null) return;
+    final revision = _loadRevision;
+    scheduleMicrotask(() {
+      if (revision == _loadRevision) {
+        unawaited(_recoverDirectHistory(latest: needsBaseline));
+      }
+    });
+  }
+
+  Future<void> _recoverDirectHistory({required bool latest}) {
+    final running = _directHistoryRefresh;
+    if (running != null) {
+      _directHistoryIncludesLatest |= latest;
+      return running;
+    }
+    if (!_initialLoadCompleted) return Future<void>.value();
+    final owner = _currentMessageOwner();
+    final repo = _repo;
+    if (owner == null ||
+        _messageOwner != owner ||
+        repo is! ChatRepositoryImpl ||
+        !_usesDirectHistory) {
+      return Future<void>.value();
+    }
+    final revision = _loadRevision;
+    bool isCurrent() =>
+        revision == _loadRevision &&
+        _currentMessageOwner() == owner &&
+        _usesDirectHistory;
+
+    late final Future<void> refresh;
+    _directHistoryIncludesLatest = latest;
+    refresh = _runDirectHistoryRecovery(repo, isCurrent).whenComplete(() {
+      if (identical(_directHistoryRefresh, refresh)) {
+        _directHistoryRefresh = null;
+      }
+    });
+    return _directHistoryRefresh = refresh;
+  }
+
+  Future<void> _runDirectHistoryRecovery(
+    ChatRepositoryImpl repo,
+    bool Function() isCurrent,
+  ) async {
+    var hasRecoveredMessages = false;
+    int? beforeSeq;
+    try {
+      var fetchedLatest = false;
+      // Bound each trigger. A later resume, entry or gap retries any remainder.
+      for (var page = 0; page < 4 && isCurrent(); page++) {
+        _discardClearedHistoryCoverage();
+        final gap = _directHistoryCoverage.firstGap;
+        final fetchLatest = _directHistoryIncludesLatest && !fetchedLatest;
+        if (!fetchLatest && gap == null) return;
+        fetchedLatest |= fetchLatest;
+        beforeSeq = fetchLatest ? null : gap!.last + 1;
+        final history = await repo.recoverDirectHistoryPage(
+          arg.$2,
+          beforeSeq: beforeSeq,
+          isCurrent: isCurrent,
+        );
+        if (history == null || !isCurrent()) return;
+        final (:messages, :firstSeq, :lastSeq) = history;
+        if (firstSeq != null && lastSeq != null) {
+          _directHistoryCoverage.cover(firstSeq, lastSeq);
+          _discardClearedHistoryCoverage();
+          if (fetchLatest) _directHistoryBaselineVerified = true;
+        }
+        _recordRawPaginationWindow(messages);
+        final visible = _visibleMessages(messages);
+        hasRecoveredMessages |= visible.isNotEmpty;
+        ref.read(mediaPrefetchControllerProvider(arg.$1)).prefetchMessages(
+              visible,
+            );
+        // A current row may have changed while history was in flight.
+        // Publish even when a page certified an empty sequence interval.
+        _updateTimeline((current) => _mergeMessages(visible, current));
+        if (beforeSeq != null) {
+          AppDiagnostics.instance.info(
+            'chat.history.gap_checked',
+            'Direct history gap window reconciled',
+            context: {
+              'spaceId': arg.$1,
+              'conversationId': arg.$2,
+              'beforeSeq': beforeSeq,
+              'firstSeq': firstSeq,
+              'lastSeq': lastSeq,
+              'messageCount': visible.length,
+            },
+          );
+        }
+      }
+    } catch (error) {
+      if (!isCurrent()) return;
+      AppDiagnostics.instance.warning(
+        'chat.history.recovery_failed',
+        'Direct history recovery failed',
+        context: {
+          'spaceId': arg.$1,
+          'conversationId': arg.$2,
+          'beforeSeq': beforeSeq,
+          'error': error.runtimeType.toString(),
+          if (error is ServerError) ...{
+            'statusCode': error.statusCode,
+            'serverCode': error.code,
+            'requestId': error.requestId,
+          },
+        },
+      );
+    } finally {
+      if (hasRecoveredMessages && isCurrent()) {
+        _syncDirectPeerReadStatusInBackground(arg.$2);
+        _startDirectReadStatusFastTrack(arg.$2);
+      }
     }
   }
 
@@ -575,6 +788,11 @@ class ChatNotifier
     Message updated,
   ) async {
     final (spaceId, conversationId, argIsGroup) = arg;
+    if (updated.status.isServerUsable) {
+      // Capture the gap before acknowledging this send in the timeline/SQLite.
+      _observeDirectHistory([updated]);
+      _scheduleDirectGapRecovery();
+    }
     Message? applied = updated;
     _updateTimeline((list) => list.map((m) {
           if (m.clientMsgId == clientMsgId || m.messageId == clientMsgId) {
@@ -599,7 +817,7 @@ class ChatNotifier
       message: message,
       isSelf: true,
     );
-    ref
+    await ref
         .read(conversationsProvider(spaceId).notifier)
         .mergeConversationFromGateway(summary, isSelf: true);
     if (!argIsGroup) {
@@ -667,25 +885,42 @@ class ChatNotifier
 
   /// 追加新消息（WebSocket 收到时调用）
   void appendMessage(Message message) {
+    _mergeIncomingMessages([message], persisted: false);
+  }
+
+  /// /sync already committed this batch to the owning SQLite store.
+  void mergePersistedMessages(List<Message> messages) {
+    _mergeIncomingMessages(messages, persisted: true);
+  }
+
+  void _mergeIncomingMessages(List<Message> messages,
+      {required bool persisted}) {
     final owner = _currentMessageOwner();
     if (owner == null) return;
+    final accepted = _visibleMessages(
+      messages.where((message) => message.conversationId == arg.$2),
+    );
+    if (accepted.isEmpty) return;
     if (!_initialLoadCompleted) {
-      _bufferMessage(owner, message);
+      for (final message in accepted) {
+        _bufferMessage(owner, message, persisted: persisted);
+      }
       return;
     }
     if (_messageOwner != owner) return;
     final (spaceId, conversationId, _) = arg;
-    final visible = _visibleMessages([message]);
-    if (visible.isEmpty) return;
-    final accepted = visible.single;
-    final current = state.valueOrNull;
-    _publishTimeline(_mergeMessages(current, [accepted]));
-    unawaited(
-      ref.read(mediaPrefetchControllerProvider(spaceId)).prefetchMessage(
-            accepted,
-          ),
-    );
-    _persistMessage(spaceId, conversationId, accepted);
+    _observeDirectHistory(accepted);
+    _scheduleDirectGapRecovery();
+    _updateTimeline((current) => _mergeMessages(current, accepted));
+    final prefetch = ref.read(mediaPrefetchControllerProvider(spaceId));
+    if (persisted) {
+      prefetch.prefetchMessages(accepted);
+    } else {
+      for (final message in accepted) {
+        unawaited(prefetch.prefetchMessage(message));
+        _persistMessage(spaceId, conversationId, message);
+      }
+    }
   }
 
   /// Applies server-enriched link metadata to an existing message only.
@@ -978,6 +1213,7 @@ final sendMessageUseCaseProvider =
     failureMapper: mapTeenModeAwareMessageSendFailure,
     sendPolicy: MessageSendPolicy(
       context: messageSendPolicyContextForSpace(space),
+      customerCanReply: conversation?.customerCanReply ?? true,
       restrictions: messageSendRestrictionsForTeenMode(
         teenState,
         isReliefConversation: conversation?.isOfficialServiceUser == true,

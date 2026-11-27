@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:im_sdk/core/di/injector.dart';
 import 'package:im_sdk/core/media/image_file_service.dart';
 import 'package:im_sdk/core/media/image_resource.dart';
+import 'package:im_sdk/core/media/media_access_retry.dart';
 import 'package:im_sdk/core/network/http_client.dart';
 import 'package:im_sdk/core/storage/account_storage_context_provider.dart';
 import 'package:im_sdk/core/space/account_scope.dart';
@@ -128,10 +129,12 @@ class AuthCacheManager extends CacheManager {
     return null;
   }
 
-  Stream<Uint8List> imageBytes(String url) async* {
+  Stream<Uint8List> imageBytes(String url,
+      {Map<String, String>? headers}) async* {
     final memory = memoryBytes(url);
     if (memory != null) yield memory;
-    await for (final event in getFileStream(url, key: memoryKey(url))) {
+    await for (final event
+        in getFileStream(url, key: memoryKey(url), headers: headers)) {
       if (event is! FileInfo) continue;
       final data = await event.file.readAsBytes();
       remember(url, data);
@@ -226,6 +229,7 @@ final accountAuthCacheManagerProvider = Provider<AuthCacheManager>((ref) {
   accountStorageContextProvider,
   dioProvider,
   adminDioProvider,
+  mediaUrlRefreshProvider,
 ]);
 
 AuthCacheManager _bindAccountImageTransport(
@@ -237,6 +241,7 @@ AuthCacheManager _bindAccountImageTransport(
     adminDio: () => ref.read(adminDioProvider),
     adminBaseUrl: () => AdminHttpClient.adminBaseUrl,
     apiBaseUrl: () => HttpClient.baseUrl,
+    refresh: ref.watch(mediaUrlRefreshProvider),
     namespace: manager.namespace,
     diagnosticScope: DiagnosticScope.account(scope),
     isCurrent: () =>
@@ -286,6 +291,7 @@ final spaceDirectoryImageCacheManagerProvider =
 }, dependencies: [
   accountStorageContextProvider,
   accountRuntimeCurrentSpaceProvider,
+  mediaUrlRefreshProvider,
   networkImageCacheManagerProvider,
   dioProvider,
   adminDioProvider

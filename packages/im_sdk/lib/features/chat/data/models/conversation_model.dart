@@ -1,3 +1,4 @@
+import 'package:im_sdk/core/domain/official_verification.dart';
 import 'package:im_sdk/features/chat/domain/entities/conversation.dart';
 import 'package:im_sdk/features/chat/domain/entities/message.dart';
 import 'package:im_sdk/features/chat/data/models/message_payload_classifier.dart';
@@ -25,6 +26,8 @@ class ConversationModel {
 
   static Conversation fromJson(Map<String, dynamic> json) {
     final type = parseType(json['conversationType'] as String?);
+    final officialAccountKind = json['officialAccountKind'];
+    final officialServiceUser = _boolValue(json['isOfficialServiceUser']);
 
     final lastMsgJson = json['lastMessage'] as Map<String, dynamic>?;
     final lastMessageSentAt =
@@ -86,7 +89,19 @@ class ConversationModel {
       memberCount: json['memberCount'] as int?,
       ownerUserId: json['ownerUserId'] as String?,
       peerUserType: json['peerUserType'] as int?,
-      isOfficialServiceUser: _boolValue(json['isOfficialServiceUser']),
+      isOfficialServiceUser: officialServiceUser,
+      officialAccountKind: switch (officialAccountKind) {
+        'service' => OfficialAccountKind.service,
+        'broadcast' => OfficialAccountKind.broadcast,
+        _ => null,
+      },
+      peerOfficialVerified: type == ConversationType.direct &&
+          showsOfficialVerification(
+            verified: json['peerOfficialVerified'] == true,
+            officialAccountKind: officialAccountKind,
+            isOfficialAccount: officialServiceUser,
+          ),
+      customerCanReply: json['customerCanReply'] != false,
       // 群成员头像和名字（用于生成宫格群头像）
       memberAvatarUrls: _parseMemberAvatarUrls(json),
       memberNames: _parseMemberNames(json),
@@ -196,6 +211,9 @@ class ConversationModel {
       'peerUserId': c.peerUserId,
       if (c.peerUserType != null) 'peerUserType': c.peerUserType,
       if (c.isOfficialServiceUser) 'isOfficialServiceUser': true,
+      'officialAccountKind': c.officialAccountKind?.name,
+      'peerOfficialVerified': c.peerOfficialVerified,
+      'customerCanReply': c.customerCanReply,
       'memberCount': c.memberCount,
       'ownerUserId': c.ownerUserId,
       if (c.lastMessage != null)

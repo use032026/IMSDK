@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Systemdelningen klar. Kontrollera filen i mottagarappen.",
   "diagnosticsCancelled": "Delningen avbruten. Du kan exportera igen.",
   "diagnosticsUnconfirmed": "Delningen kunde inte bekräftas. Kontrollera mottagarappen.",
-  "diagnosticsFailed": "Åtgärden misslyckades. Försök igen."
+  "diagnosticsFailed": "Åtgärden misslyckades. Försök igen.",
+  "scanIncomingFriendRequest": "Den här personen har redan skickat dig en vänförfrågan. Granska den först.",
+  "chatGroupAddedToGroup": "Du har lagts till i gruppchatten",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Det gick inte att bekräfta om objektet lades till i favoriter. Försök igen",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

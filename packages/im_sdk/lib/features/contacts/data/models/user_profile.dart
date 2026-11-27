@@ -1,3 +1,4 @@
+import 'package:im_sdk/core/domain/official_verification.dart';
 import 'package:im_sdk/features/official_account/data/official_account_card_mapper.dart';
 import 'package:im_sdk/features/official_account/domain/entities/official_account_card.dart';
 
@@ -19,6 +20,8 @@ class UserProfile {
   final int userType;
   final bool isOfficial;
   final OfficialAccountCard? officialAccount;
+  final bool isOfficialVerified;
+  final String? officialAccountKind;
 
   const UserProfile({
     required this.userId,
@@ -36,10 +39,18 @@ class UserProfile {
     this.userType = 2,
     this.isOfficial = false,
     this.officialAccount,
+    this.isOfficialVerified = false,
+    this.officialAccountKind,
   });
 
   bool get isEmployee => userType == 2;
   bool get isCustomer => userType == 1;
+
+  bool get showOfficialVerification => showsOfficialVerification(
+        verified: isOfficialVerified,
+        officialAccountKind: officialAccountKind,
+        isOfficialAccount: isOfficial || officialAccount != null,
+      );
 
   Map<String, Object?> toCache() => {
         'userId': userId,
@@ -55,6 +66,8 @@ class UserProfile {
         'isFriend': isFriend,
         'userType': userType,
         'isOfficial': isOfficial,
+        'isOfficialVerified': isOfficialVerified,
+        'officialAccountKind': officialAccountKind,
         if (officialAccount != null)
           'officialAccount': officialAccountCardToJson(officialAccount!),
       };
@@ -80,6 +93,10 @@ class UserProfile {
           ((json['isEmployee'] as bool?) == true ? 2 : 1),
       isOfficial: json['isOfficial'] == true || json['officialAccount'] != null,
       officialAccount: optionalOfficialAccountCard(json['officialAccount']),
+      isOfficialVerified: json['isOfficialVerified'] == true,
+      officialAccountKind: json['officialAccountKind'] is String
+          ? json['officialAccountKind'] as String
+          : null,
     );
   }
 }

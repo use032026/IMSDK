@@ -3359,4 +3359,18 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Hindi naisagawa. Subukang muli.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Nagpadala na sa iyo ng friend request ang taong ito. Suriin muna iyon.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Idinagdag ka sa panggrupong chat';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Hindi makumpirma kung naidagdag sa mga paborito. Subukang muli';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

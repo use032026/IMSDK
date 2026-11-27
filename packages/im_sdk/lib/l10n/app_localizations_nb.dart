@@ -3333,4 +3333,18 @@ class AppLocalizationsNb extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Handlingen mislyktes. Prøv igjen.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Denne personen har allerede sendt deg en venneforespørsel. Se gjennom den først.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Du ble lagt til i gruppechatten';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Det kunne ikke bekreftes om elementet ble lagt til i favoritter. Prøv igjen';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:im_sdk/core/platform/local_file.dart';
+import 'package:im_sdk/core/media/media_request_context.dart';
 import 'package:im_sdk/core/diagnostics/media_diagnostics.dart';
 import 'package:im_sdk/core/widgets/app_network_image.dart';
 import 'package:im_sdk/features/chat/domain/entities/media_local_file.dart';
@@ -394,6 +395,14 @@ class _ChatMediaVideoPageState extends ConsumerState<ChatMediaVideoPage>
     }
     return AppNetworkImage(
       url: source,
+      mediaContext: MediaRequestContext(
+        conversationId: widget.message.conversationId,
+        messageId: widget.message.messageId,
+        conversationSeq: widget.message.conversationSeq,
+        kind: 'video',
+        variant: 'videoPoster',
+        fallbackUrl: widget.media.thumbnailUrl,
+      ),
       fit: BoxFit.contain,
       cacheInMemory: true,
       placeholderBuilder: (_) => const ColoredBox(color: Colors.black),

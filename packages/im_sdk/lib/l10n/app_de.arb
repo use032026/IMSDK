@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "Systemfreigabe abgeschlossen. Bitte die Datei in der empfangenden App prüfen.",
   "diagnosticsCancelled": "Teilen abgebrochen. Sie können erneut exportieren.",
   "diagnosticsUnconfirmed": "Das Teilen konnte nicht bestätigt werden. Bitte empfangende App prüfen.",
-  "diagnosticsFailed": "Vorgang fehlgeschlagen. Bitte erneut versuchen."
+  "diagnosticsFailed": "Vorgang fehlgeschlagen. Bitte erneut versuchen.",
+  "scanIncomingFriendRequest": "Diese Person hat Ihnen bereits eine Freundschaftsanfrage gesendet. Bitte diese zuerst prüfen.",
+  "chatGroupAddedToGroup": "Du wurdest zum Gruppenchat hinzugefügt",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "Das Hinzufügen zu den Favoriten konnte nicht bestätigt werden. Versuche es erneut",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

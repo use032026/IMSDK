@@ -72,11 +72,18 @@ class _IdentityAdapter implements HttpClientAdapter {
   _IdentityAdapter({this.userId = 'user-new'});
   final String userId;
   final String platformId = 'platform-new';
+  bool unavailable = false;
   final requests = <RequestOptions>[];
   @override
   Future<ResponseBody> fetch(RequestOptions options,
       Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
     requests.add(options);
+    if (unavailable) {
+      throw DioException.connectionTimeout(
+        timeout: const Duration(seconds: 1),
+        requestOptions: options,
+      );
+    }
     return ResponseBody.fromString(
       jsonEncode({
         'code': 'OK',
@@ -187,6 +194,55 @@ void main() {
     expect(auth.currentSpace!.membershipRole, 0);
     expect(auth.accountSession!.sessionId, isNot(old.activationId));
     expect((await store.loadActive())!.credentials.adminToken, isNull);
+  });
+
+  test(
+      'confirmed same-scope host renewal verifies first and retains activation',
+      () async {
+    final storage = _MemoryStorage();
+    final store = _CountingStore(storage);
+    final adapter = _IdentityAdapter();
+    final container = create(storage, store, adapter);
+    final auth = container.read(authProvider.notifier);
+    await container.read(authProvider.future);
+    final accountScope = scope('platform-new', 'user-new');
+    final initialIssue = DateTime.now().toUtc();
+    await auth.acceptExternalSession(
+      scope: accountScope,
+      credentials: incoming,
+      issuedAt: initialIssue,
+      expiresAt: initialIssue.add(const Duration(hours: 1)),
+    );
+    final original = container.read(activeAccountSessionProvider)!;
+    final expiry = initialIssue.add(const Duration(hours: 2));
+    Future<void> renew() => auth.acceptExternalSession(
+          scope: accountScope,
+          credentials: const SessionCredentials(
+            tenantAccessToken: 'replacement-access',
+            tenantRefreshToken: 'replacement-refresh',
+          ),
+          issuedAt: DateTime.now().toUtc(),
+          expiresAt: expiry,
+          preserveActiveSession: true,
+        );
+
+    adapter.unavailable = true;
+    await expectLater(renew(), throwsA(anything));
+    expect(container.read(activeAccountSessionProvider), same(original));
+    expect(container.read(currentSpaceProvider)!.accessToken, 'test-access');
+    expect((await store.loadActive())!.credentials.tenantAccessToken,
+        'test-access');
+
+    adapter.unavailable = false;
+    await renew();
+    expect(container.read(activeAccountSessionProvider), same(original));
+    expect(container.read(currentSpaceProvider)!.accessToken,
+        'replacement-access');
+    final persisted = (await store.loadActive())!;
+    expect(persisted.activationId, original.sessionId);
+    expect(persisted.accessTokenExpiresAt, expiry);
+    expect(persisted.credentials.tenantRefreshToken, 'replacement-refresh');
+    expect(store.expectedActivations, [null]);
   });
 
   test(

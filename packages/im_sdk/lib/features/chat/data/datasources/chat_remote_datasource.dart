@@ -209,7 +209,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         response.data!,
         (json) {
           final data = json as Map<String, dynamic>;
-          final items = data['items'] as List<dynamic>? ?? [];
+          final rawItems = data['items'];
+          if (rawItems is! List) {
+            throw const FormatException('Missing conversation directory items');
+          }
+          final items = rawItems;
           final nextCursor = data['nextCursor'] as String?;
           return ConversationsPage(
             items: items

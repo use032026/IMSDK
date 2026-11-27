@@ -1,6 +1,6 @@
 # 构建与交付
 
-当前版本为原生 / Flutter **0.1.3**、Web **0.1.6**，公共语言资源 **0.3.0**。本轮构建、语言资源、独立消费与逐文件校验通过，验证范围是 `localization-rebuild`，见 [35 语言交付说明](L10N35_DELIVERY-2026-10-29.md)。原生宿主未启动，未执行本版实服业务、实体设备或生产验收；旧版实服结果不能替代本版验收。
+当前版本为原生 / Flutter **0.1.4**、Web **0.1.7**，公共词库 **0.3.15**。本版构建和验证证据见[最新交付说明](https://github.com/use032026/IMSDK/blob/main/dist/README.md)。
 
 ## 自包含边界
 
@@ -44,7 +44,7 @@ cd native/android
 ./gradlew -p example :app:assembleDebug --console=plain
 ```
 
-设置本机 `JAVA_HOME`（支持 Java 17+）和 `ANDROID_HOME`。原生调用层坐标为 `com.imsdk:im-sdk-native:0.1.3`，依赖 module 坐标 `com.startlink.im_sdk_module:flutter_release:0.1.3`。示例 APK 在 `native/android/example/app/build/outputs/apk/debug/app-debug.apk`；交付时复制到 `dist/android/example` 后重新计算 Android 校验清单。当前基线 minSdk 24、compileSdk 36、desugar 2.1.5。
+设置本机 `JAVA_HOME`（支持 Java 17+）和 `ANDROID_HOME`。原生调用层坐标为 `com.imsdk:im-sdk-native:0.1.4`，依赖 module 坐标 `com.startlink.im_sdk_module:flutter_release:0.1.4`。示例 APK 在 `native/android/example/app/build/outputs/apk/debug/app-debug.apk`；交付时复制到 `dist/android/example` 后重新计算 Android 校验清单。当前基线 minSdk 24、compileSdk 36、desugar 2.1.5。
 
 ## iOS
 
@@ -57,9 +57,9 @@ python3 scripts/build_ios_facade.py --mode Debug
 python3 scripts/write_checksums.py dist/ios
 ```
 
-使用锁定工具链的 `flutter build ios-framework`，输出在 `dist/ios/<构建类型>`。脚本补齐 Flutter 导出未包含的 vendored WebRTC，按设备和模拟器的 hook 输出生成 objective_c.xcframework，避免把模拟器 native asset 嵌入真机。其后单独编译 IMSDKNative 原生 facade。完整模式导出会替换该模式目录，所以必须在每次导出后再构建 facade。
+使用锁定工具链的 `flutter build ios-framework`，输出在 `dist/ios/<构建类型>`。构建脚本逐一核验架构，兼容 Xcode 27.2 的 `lipo -verify_arch` 参数行为。脚本补齐 Flutter 导出未包含的 vendored WebRTC，按设备和模拟器的 hook 输出生成 objective_c.xcframework，避免把模拟器 native asset 嵌入真机。其后单独编译 IMSDKNative 原生 facade。完整模式导出会替换该模式目录，所以必须在每次导出后再构建 facade。
 
-当前工具链的模拟器使用 debug/JIT bundle；Release 模式导出的模拟器 App 不含运行所需的 kernel_blob.bin。模拟器运行必须用完整 Debug 组及交付的 flutter_lldbinit/相邻 helper，不能把 Release 的编译/链接通过当作模拟器可运行。Release 的设备及两种模拟器架构仅做二进制消费编译/链接；0.1.2 历史 iOS 运行使用 Debug、iOS 26.5；本版仅完成编译与独立消费。详见 native/ios/example/README.md。
+当前工具链的模拟器使用 debug/JIT bundle；Release 模式导出的模拟器 App 不含运行所需的 kernel_blob.bin。模拟器运行必须用完整 Debug 组及交付的 flutter_lldbinit/相邻 helper，不能把 Release 的编译/链接通过当作模拟器可运行。Release 的设备及两种模拟器架构用于二进制消费编译与链接。模拟器运行证据按 Debug 组记录。详见 native/ios/example/README.md。
 
 完整原生 iOS 示例（没有 Flutter 源码或 podhelper 依赖）：
 
@@ -99,7 +99,7 @@ python3 scripts/verify_independence.py
 
 ## 35 语言交付包
 
-当前交付由 `scripts/package_localization_handoff.py` 组装：`prepare --platform ios|android|web` 后，对该目录执行独立消费和资源验证，再使用 `finalize --platform <平台> --validation-report logs/l10n35-handoff-20261029/validation.json` 完成打包。Web 另以 `--library dist/web-library-0.1.6` 指定已验证模块包。输出为 `IMSDK-iOS-0.1.3.zip`、`IMSDK-Android-0.1.3.zip`、`IMSDK-Web-H5-0.1.6.zip`。此入口明确标记 localization-rebuild，不复用旧版真实服务通过声明。
+原生和 Web 使用 `scripts/package_localization_handoff.py`。执行 `prepare --platform ios|android|web`，对交付目录执行独立消费和语言资源验证，再以本次报告执行 `finalize --platform <平台> --validation-report <报告路径>`。Web 使用 `--library dist/web-library-0.1.7` 提供已验证模块包。本版报告使用 `sdk-release-validation`，分别记录编译、运行夹具和未覆盖的真实服务场景。Flutter 源码包使用 `scripts/package_flutter.sh`。
 
 ## 真实服务完整发版流程（历史入口）
 

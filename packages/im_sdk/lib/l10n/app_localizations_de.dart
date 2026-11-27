@@ -3382,4 +3382,18 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diagnosticsFailed =>
       'Vorgang fehlgeschlagen. Bitte erneut versuchen.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Diese Person hat Ihnen bereits eine Freundschaftsanfrage gesendet. Bitte diese zuerst prüfen.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Du wurdest zum Gruppenchat hinzugefügt';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Das Hinzufügen zu den Favoriten konnte nicht bestätigt werden. Versuche es erneut';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

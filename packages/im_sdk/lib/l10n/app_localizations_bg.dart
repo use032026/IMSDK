@@ -3365,4 +3365,18 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Действието е неуспешно. Опитайте отново.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Този човек вече ви е изпратил покана за приятелство. Първо я прегледайте.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Добавиха ви в груповия чат';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Резултатът от добавянето в любими не е потвърден. Опитайте отново';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

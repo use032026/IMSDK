@@ -3340,4 +3340,18 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Åtgärden misslyckades. Försök igen.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Den här personen har redan skickat dig en vänförfrågan. Granska den först.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Du har lagts till i gruppchatten';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Det gick inte att bekräfta om objektet lades till i favoriter. Försök igen';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }

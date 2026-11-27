@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "La acción de compartir del sistema ha finalizado. Comprueba el archivo en la aplicación receptora.",
   "diagnosticsCancelled": "Se canceló el uso compartido. Puedes exportar de nuevo.",
   "diagnosticsUnconfirmed": "No se pudo confirmar el uso compartido. Comprueba la aplicación receptora.",
-  "diagnosticsFailed": "La operación ha fallado. Inténtalo de nuevo."
+  "diagnosticsFailed": "La operación ha fallado. Inténtalo de nuevo.",
+  "scanIncomingFriendRequest": "Esta persona ya te ha enviado una solicitud de amistad. Revísala primero.",
+  "chatGroupAddedToGroup": "Te añadieron al chat de grupo",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "No se pudo confirmar si se añadió a favoritos. Vuelve a intentarlo",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

@@ -1054,5 +1054,15 @@
   "diagnosticsShared": "A rendszermegosztás befejeződött. Ellenőrizze a fájlt a fogadó alkalmazásban.",
   "diagnosticsCancelled": "A megosztás megszakítva. Újra exportálhat.",
   "diagnosticsUnconfirmed": "A megosztás nem volt megerősíthető. Ellenőrizze a fogadó alkalmazást.",
-  "diagnosticsFailed": "A művelet sikertelen. Próbálja újra."
+  "diagnosticsFailed": "A művelet sikertelen. Próbálja újra.",
+  "scanIncomingFriendRequest": "Ez a személy már küldött Önnek barátkérelmet. Először ellenőrizze azt.",
+  "chatGroupAddedToGroup": "Hozzáadtak a csoportos beszélgetéshez",
+  "@chatGroupAddedToGroup": {
+    "description": "In-app hint shown to the current user when another member adds them to a group chat."
+  },
+  "chatFavoriteUnconfirmed": "A kedvencekhez adás eredményét nem sikerült megerősíteni. Próbálja újra",
+  "officialAccountVerifiedBadge": "Verified",
+  "@officialAccountVerifiedBadge": {
+    "description": "Badge for an employee account officially verified by its company. The product contract specifies the same wording in both Chinese locales and English wording in all other locales."
+  }
 }

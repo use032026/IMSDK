@@ -3354,4 +3354,18 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get diagnosticsFailed => 'Η ενέργεια απέτυχε. Δοκιμάστε ξανά.';
+
+  @override
+  String get scanIncomingFriendRequest =>
+      'Αυτό το άτομο σάς έχει ήδη στείλει αίτημα φιλίας. Ελέγξτε το πρώτα.';
+
+  @override
+  String get chatGroupAddedToGroup => 'Προστεθήκατε στην ομαδική συνομιλία';
+
+  @override
+  String get chatFavoriteUnconfirmed =>
+      'Δεν ήταν δυνατή η επιβεβαίωση της προσθήκης στα αγαπημένα. Δοκιμάστε ξανά';
+
+  @override
+  String get officialAccountVerifiedBadge => 'Verified';
 }
